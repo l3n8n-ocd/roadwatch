@@ -1,0 +1,217 @@
+// Integration tests against a REAL local database. They are skipped unless RUN_DB_TESTS=true,
+// and they refuse to run against Aiven or any non-local host. Use a throwaway local database only.
+const test = require('node:test');
+const assert = require('node:assert');
+const bcrypt = require('bcrypt');
+
+const enabled = process.env.RUN_DB_TESTS === 'true';
+const host = process.env.DB_HOST || '';
+const safeHost = ['localhost', '127.0.0.1', '::1', 'mysql', 'mariadb'].includes(host);
+const skip = !enabled ? 'set RUN_DB_TESTS=true with a local database to run' : (!safeHost ? 'refusing to run on a non-local database' : false);
+
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-test-secret-test-secret-123456';
+process.env.AUTH_RATE_LIMIT = '1000';
+
+test('JWT secret placeholder is rejected', () => {
+  const { getJwtSecret } = require('../src/config/env');
+  const old = process.env.JWT_SECRET;
+  for (const bad of ['', 'change-me', 'short', 'replace_with_a_random_secret_at_least_32_characters_long']) {
+    process.env.JWT_SECRET = bad;
+    assert.throws(() => getJwtSecret(), /JWT_SECRET/);
+  }
+  process.env.JWT_SECRET = old;
+  assert.ok(getJwtSecret());
+});
+
+test('database-backed API flow', { skip }, async (t) => {
+  const { sequelize, User, Role, Report, AuditLog, ReportStatusHistory, Notification } = require('../src/models');
+  const app = require('../src/app');
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}/api`;
+  const run = Date.now();
+  const pw = 'password123';
+
+  const call = async (method, path, { token, body } = {}) => {
+    const res = await fetch(base + path, {
+      method,
+      headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const type = res.headers.get('content-type') || '';
+    return { status: res.status, body: type.includes('json') ? await res.json() : Buffer.from(await res.arrayBuffer()), type };
+  };
+  const makeStaff = async (roleName, label) => {
+    const role = await Role.findOne({ where: { role_name: roleName } });
+    const email = `${label}.${run}@test.local`;
+    const u = await User.create({ role_id: role.role_id, full_name: label, contact_email: email, password_hash: await bcrypt.hash(pw, 4) });
+    const login = await call('POST', '/auth/login', { body: { contact_email: email, password: pw } });
+    return { user: u, token: login.body.data.token, email };
+  };
+  const report = (over = {}) => ({
+    accident_type_id: 1, accident_date: '2026-10-15', accident_time: '14:30', accident_location: 'MacArthur Highway, Malolos',
+    injury_information: 'injuries', accident_description: 'Two vehicles collided at the intersection.', latitude: 14.84, longitude: 120.81, ...over,
+  });
+
+  try {
+    const admin = await makeStaff('Administrator', 'admin');
+
+    await t.test('register always creates a Reporter and ignores a client-sent role', async () => {
+      const r = await call('POST', '/auth/register', { body: { full_name: 'Rep One', contact_email: `rep.${run}@test.local`, password: pw, role: 'Administrator' } });
+      assert.equal(r.status, 201);
+      assert.equal(r.body.data.user.role, 'Reporter');
+      const dup = await call('POST', '/auth/register', { body: { full_name: 'Rep One', contact_email: `REP.${run}@test.local`, password: pw } });
+      assert.equal(dup.status, 409);
+      const weak = await call('POST', '/auth/register', { body: { full_name: 'Weak', contact_email: `weak.${run}@test.local`, password: 'short' } });
+      assert.equal(weak.status, 400);
+    });
+
+    const rep = { email: `rep.${run}@test.local` };
+    rep.token = (await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw } })).body.data.token;
+    const rep2 = await (async () => {
+      await call('POST', '/auth/register', { body: { full_name: 'Rep Two', contact_email: `rep2.${run}@test.local`, password: pw } });
+      return { token: (await call('POST', '/auth/login', { body: { contact_email: `rep2.${run}@test.local`, password: pw } })).body.data.token };
+    })();
+
+    await t.test('login rejects wrong password; endpoints need a token', async () => {
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'wrongpass1' } })).status, 401);
+      assert.equal((await call('GET', '/reports')).status, 401);
+      assert.equal((await call('GET', '/reports', { token: 'garbage' })).status, 401);
+    });
+
+    let reportId;
+    await t.test('reporter submits a report; history, audit and notification are written', async () => {
+      assert.equal((await call('POST', '/reports', { token: rep.token, body: report({ accident_description: 'short' }) })).status, 400);
+      assert.equal((await call('POST', '/reports', { token: rep.token, body: report({ injury_information: 'bogus' }) })).status, 400);
+      assert.equal((await call('POST', '/reports', { token: rep.token, body: report({ longitude: undefined }) })).status, 400);
+      const r = await call('POST', '/reports', { token: rep.token, body: report() });
+      assert.equal(r.status, 201);
+      reportId = r.body.data.report_id;
+      assert.equal(r.body.data.report_status, 'Submitted');
+      assert.equal(r.body.data.record_type, 'public_submission');
+      assert.equal(await ReportStatusHistory.count({ where: { report_id: reportId } }), 1);
+      assert.ok(await AuditLog.findOne({ where: { action_taken: 'report.created' }, order: [['log_id', 'DESC']] }));
+      assert.ok(await Notification.findOne({ where: { report_id: reportId, user_id: admin.user.user_id } }));
+    });
+
+    await t.test('reporters only see their own reports (404 for others)', async () => {
+      assert.equal((await call('GET', `/reports/${reportId}`, { token: rep.token })).status, 200);
+      assert.equal((await call('GET', `/reports/${reportId}`, { token: rep2.token })).status, 404);
+      assert.equal((await call('GET', '/reports', { token: rep2.token })).body.pagination.total, 0);
+      assert.equal((await call('GET', '/admin/reports', { token: rep.token })).status, 403);
+      assert.equal((await call('GET', '/users', { token: rep.token })).status, 403);
+    });
+
+    const officer = {};
+    await t.test('admin creates a Traffic Officer; cannot create with bad data', async () => {
+      const bad = await call('POST', '/users', { token: admin.token, body: { full_name: 'X', contact_email: 'x@test.local', password: pw, role: 'Superuser' } });
+      assert.equal(bad.status, 400);
+      const ok = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer One', contact_email: `off1.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
+      assert.equal(ok.status, 201);
+      officer.id = ok.body.data.user_id;
+      officer.token = (await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: pw } })).body.data.token;
+      const other = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer Two', contact_email: `off2.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
+      officer.token2 = (await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw } })).body.data.token;
+      officer.id2 = other.body.data.user_id;
+    });
+
+    await t.test('admin filters, verifies, rejects (reason required) and assigns', async () => {
+      const list = await call('GET', `/admin/reports?status=Submitted&q=Malolos&date_from=2026-10-01&date_to=2026-10-31`, { token: admin.token });
+      assert.ok(list.body.data.some((r) => r.report_id === reportId));
+      assert.equal((await call('GET', '/admin/reports?status=Nonsense', { token: admin.token })).status, 400);
+      assert.equal((await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Rejected' } })).status, 400);
+      assert.equal((await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Assigned' } })).status, 400);
+      const v = await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Verified', remarks: 'Checked against photos' } });
+      assert.equal(v.body.data.record_type, 'verified_record');
+      assert.equal(v.body.data.is_verified_record, true);
+      assert.equal((await call('PATCH', `/admin/reports/${reportId}/assign`, { token: admin.token, body: { officer_id: admin.user.user_id } })).status, 400); // an Administrator is not a Traffic Officer
+      const a = await call('PATCH', `/admin/reports/${reportId}/assign`, { token: admin.token, body: { officer_id: officer.id } });
+      assert.equal(a.status, 200);
+      assert.equal(a.body.data.report_status, 'Assigned');
+      assert.equal(a.body.data.assigned_officer_id, officer.id);
+      assert.ok(await Notification.findOne({ where: { user_id: officer.id, report_id: reportId } }));
+      assert.ok((await ReportStatusHistory.count({ where: { report_id: reportId } })) >= 3);
+    });
+
+    await t.test('officer sees ONLY assigned reports and cannot see contact of others', async () => {
+      assert.equal((await call('GET', `/officer/reports/${reportId}`, { token: officer.token })).status, 200);
+      assert.equal((await call('GET', `/officer/reports/${reportId}`, { token: officer.token2 })).status, 404);
+      assert.equal((await call('GET', '/officer/reports', { token: officer.token2 })).body.pagination.total, 0);
+      const mine = await call('GET', '/officer/reports', { token: officer.token });
+      assert.equal(mine.body.data[0].report_id, reportId);
+      assert.ok(mine.body.data[0].reporter.contact_email, 'assigned officer may see reporter contact');
+      const r = await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'In Progress', remarks: 'On site' } });
+      assert.equal(r.body.data.report_status, 'In Progress');
+      assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'Rejected' } })).status, 400);
+      assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token2, body: { remarks: 'hi' } })).status, 404);
+      assert.equal((await call('PATCH', `/admin/reports/${reportId}/assign`, { token: officer.token, body: { officer_id: officer.id } })).status, 403);
+    });
+
+    await t.test('rejection records the reason and goes back to public_submission', async () => {
+      const r2 = (await call('POST', '/reports', { token: rep.token, body: report({ accident_location: 'Second location' }) })).body.data.report_id;
+      const rej = await call('PATCH', `/admin/reports/${r2}/status`, { token: admin.token, body: { status: 'Rejected', rejection_reason: 'Duplicate of #1' } });
+      assert.equal(rej.body.data.report_status, 'Rejected');
+      assert.match(rej.body.data.official_remarks, /Duplicate of #1/);
+      assert.equal(rej.body.data.record_type, 'public_submission');
+      const tracked = await call('GET', `/reports/${r2}`, { token: rep.token });
+      assert.equal(tracked.body.data.statusHistory.length, 2);
+      assert.equal((await call('PATCH', `/admin/reports/${r2}/assign`, { token: admin.token, body: { officer_id: officer.id } })).status, 400);
+    });
+
+    await t.test('deactivation blocks login and existing tokens; admin cannot deactivate self; reactivation works', async () => {
+      assert.equal((await call('PATCH', `/users/${admin.user.user_id}/active`, { token: admin.token, body: { is_active: false } })).status, 400);
+      assert.equal((await call('PATCH', `/users/${officer.id2}/active`, { token: admin.token, body: { is_active: false } })).status, 200);
+      assert.equal((await call('GET', '/officer/reports', { token: officer.token2 })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw } })).status, 401);
+      assert.equal((await call('PATCH', `/admin/reports/${reportId}/assign`, { token: admin.token, body: { officer_id: officer.id2 } })).status, 400);
+      assert.equal((await call('PATCH', `/users/${officer.id2}/active`, { token: admin.token, body: { is_active: true } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw } })).status, 200);
+      assert.ok(await AuditLog.findOne({ where: { action_taken: 'user.deactivated' } }));
+      assert.equal((await call('PATCH', `/users/${officer.id2}/role`, { token: admin.token, body: { role: 'Reporter' } })).status, 200);
+    });
+
+    await t.test('notifications list and mark read', async () => {
+      const n = await call('GET', '/notifications', { token: rep.token });
+      assert.ok(n.body.data.length >= 2);
+      const id = n.body.data[0].notification_id;
+      assert.equal((await call('PATCH', `/notifications/${id}/read`, { token: rep.token })).status, 200);
+      assert.equal((await call('PATCH', `/notifications/${id}/read`, { token: rep2.token })).status, 404);
+    });
+
+    await t.test('dashboard, period summary, CSV and PDF exports (admin only)', async () => {
+      const s = await call('GET', '/dashboard/stats', { token: admin.token });
+      assert.ok(s.body.data.cards.total >= 2);
+      assert.ok(Array.isArray(s.body.data.hotspots));
+      assert.equal((await call('GET', '/dashboard/stats', { token: officer.token })).status, 403);
+      const sum = await call('GET', '/exports/summary?period=monthly&date=2026-10-20', { token: admin.token });
+      assert.equal(sum.body.data.from, '2026-10-01');
+      assert.equal(sum.body.data.to, '2026-10-31');
+      assert.ok(sum.body.data.total >= 2);
+      const wk = await call('GET', '/exports/summary?period=weekly&date=2026-10-15', { token: admin.token });
+      assert.equal(wk.body.data.from, '2026-10-12');
+      assert.equal(wk.body.data.to, '2026-10-18');
+      const csv = await call('GET', '/exports/reports.csv?status=Rejected', { token: admin.token });
+      assert.equal(csv.status, 200);
+      assert.match(csv.type, /text\/csv/);
+      assert.match(csv.body.toString(), /report_id/);
+      const pdf = await call('GET', '/exports/reports.pdf', { token: admin.token });
+      assert.equal(pdf.body.subarray(0, 4).toString(), '%PDF');
+      assert.equal((await call('GET', '/exports/reports.csv', { token: rep.token })).status, 403);
+    });
+
+    await t.test('photo upload validates input (Cloudinary itself is not called)', async () => {
+      const none = await fetch(`${base}/reports/${reportId}/photos`, { method: 'POST', headers: { Authorization: `Bearer ${rep.token}` }, body: new FormData() });
+      assert.equal(none.status, 400);
+      const form = new FormData();
+      form.append('photos', new Blob(['hello'], { type: 'text/plain' }), 'x.txt');
+      const bad = await fetch(`${base}/reports/${reportId}/photos`, { method: 'POST', headers: { Authorization: `Bearer ${rep.token}` }, body: form });
+      assert.equal(bad.status, 400);
+      const form2 = new FormData();
+      form2.append('photos', new Blob(['x'], { type: 'image/png' }), 'x.png');
+      const other = await fetch(`${base}/reports/${reportId}/photos`, { method: 'POST', headers: { Authorization: `Bearer ${rep2.token}` }, body: form2 });
+      assert.equal(other.status, 404);
+    });
+  } finally {
+    server.close();
+    await sequelize.close();
+  }
+});

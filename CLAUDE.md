@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 16, 2026 (starter v2: is_active, check-db, *.pem ignore, Gmail defaults applied).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 16, 2026 (starter v2 + Carl's backend merged into api/).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Claude Code has not inspected the user's repo while this file was written. Always inspect the real files before relying on any path or detail here.
 
@@ -98,7 +98,7 @@ Clients ─► OpenStreetMap tiles and Nominatim directly
 - The demo video is uploaded to Cloudinary. Both clients read its URL from `GET /api/app-info` (`DEMO_VIDEO_URL` env var on Render). Do not bundle the video into `web/public` or Flutter assets.
 - Render's free tier sleeps when idle. Warm the API before demos, recordings and grading.
 
-**Planned API groups (only `/api/health` and `/api/app-info` exist in the starter):**
+**API groups (implemented Oct 16 from Carl's backend; contract in `docs/API.md`):**
 `/api/auth` (register is public and always creates a Reporter, ignoring any client role; login rejects inactive users), `/api/reports` (create, my reports, track), `/api/admin/reports` (filter, verify, assign, status), `/api/officer/reports` (assigned, remarks, status), `POST /api/users` (admin only, creates Traffic Officers), user role change and deactivate or reactivate (admin only), `/api/dashboard/stats`, `/api/exports`, `/api/app-info`.
 
 ---
@@ -262,7 +262,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 ## 15. Testing and Quality Assurance
 
-- Existing automated tests: 2 API tests (app exports an Express app; `/api/health` and `/api/app-info` respond). They passed in a clean Node 22 install of the starter during planning. Not re-verified in the user's repo.
+- Automated API tests: 16 (JWT guard, health/app-info, and a 12-step database flow covering register, roles, report lifecycle, officer scoping, deactivation, notifications, dashboard, exports, upload validation). The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
 - Pauline owns a manual test plan: one test case per FR-01 to FR-15 (steps, expected, actual, pass/fail), executed on the deployed system around Oct 29. Add accessibility checks for the WCAG AA target (keyboard-only pass, contrast check, screen-reader labels, phone-width layout).
 - CI runs lint, test and build per folder on PRs and pushes to `dev` and `main`.
 - `seed-admin.js`, `mailer.js` and `dbConfig.js` were syntax-checked only. They have **not** been run against a real database or SMTP service.
@@ -276,7 +276,9 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 **Starter code that exists (inside the zip only):** Express app with `/api/health` and `/api/app-info`; `dbConfig.js`; `mailer.js`; `seed-admin.js`; `schema.sql`; `seed.sql`; CI workflows; `commit-as.sh`. Starter v2 also adds `local-init.sql`, `check-db.js`, `create-issues.sh` and `docs/SETUP-GUIDE.md`.
 
-**Not started (treat as unimplemented):** auth endpoints, report endpoints, Sequelize models, Cloudinary upload code, admin and officer endpoints, user deactivation, notifications, exports, dashboard, web app, mobile app, deployment.
+**Implemented in `api/` (Oct 16, merged from Carl's `roadwatch_backend`, aligned to the approved schema):** auth (register/login/me, JWT, role middleware), Sequelize models, reporter endpoints (submit, my reports, tracking, photo upload code), admin and officer endpoints, user management (create officer, role, deactivate/reactivate), notifications (in-app + email code), dashboard stats, period summaries, CSV/PDF export, rate limiting, input validation. 16 automated tests pass on a local MariaDB 10.11 database.
+**Verified only locally:** everything above ran against local MariaDB, including TLS (`DB_SSL=true` with a CA file) and `seed:admin`. **Not verified:** Aiven itself, Cloudinary upload, Gmail SMTP, Render deployment.
+**Not started (treat as unimplemented):** web app, mobile app, deployment.
 
 **Setup status (Confirmed by the user, Oct 15, 22:35):**
 - GitHub repo: **not created yet**, so the starter zip has not been pushed and `members.conf` is not filled.
@@ -289,8 +291,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 ## 17. Known Issues and Technical Debt (remaining items are to-do)
 
 - Fixed in starter v2 (Oct 16): `*.pem` ignored, `api/scripts/check-db.js` added (`npm run check:db`), `is_active` added to schema and ERD, Gmail SMTP defaults in `.env.example` and `mailer.js`. Verified locally only; confirm they exist in the real repo.
-- No Sequelize models yet, so `src/config/db.js` holds only commented stubs.
-- `express-rate-limit` is planned but not installed.
+- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotate them. Carl's `JWT_SECRET` was the placeholder.
 - Render's free tier sleeps when idle. The Aiven free plan limits were not verified in the conversation.
 - Git LFS: the user relies on 1 GB free storage. Bandwidth limits and "Download ZIP" behavior (LFS pointers only) are unverified. Submit the MP4 as a separate file too.
 - An earlier starter had `npm test` set to `node --test tests/`, which fails on Node 22. It was fixed to `node --test`. If an old copy exists, update it.
@@ -377,7 +378,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 - Do not run `git commit` or `git push` unless the user asks. If asked to commit work for a teammate, use `scripts/commit-as.sh`.
 - Update `docs/DECISIONS.md` and this file when a decision or requirement changes. Update `docs/contributions/handoff-log.csv` only through `commit-as.sh`.
 
-**Suggested nested files (do not exist yet):** `api/CLAUDE.md` (API conventions, endpoint contracts, env vars), `web/CLAUDE.md` (routes, components, Tailwind tokens, accessibility checklist), `mobile/CLAUDE.md` (feature folders, packages), `database/CLAUDE.md` (schema rules, migration policy). Keep the root file as the single source for project-wide decisions. Create them only once real code exists in those folders.
+**Nested files:** `api/CLAUDE.md` exists now. Suggested, not yet created: `web/CLAUDE.md` (routes, components, Tailwind tokens, accessibility checklist), `mobile/CLAUDE.md` (feature folders, packages), `database/CLAUDE.md` (schema rules, migration policy). Keep the root file as the single source for project-wide decisions. Create them only once real code exists in those folders.
 
 ---
 
