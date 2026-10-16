@@ -1,12 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const { allowedOrigins } = require('./config/env');
+const routes = require('./routes');
+const notFound = require('./middleware/notFound');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
-
+app.disable('x-powered-by');
+app.set('trust proxy', 1); // Render sits behind a proxy; needed for correct client IPs in rate limiting
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || '*' }));
-app.use(express.json());
+// Mobile apps send no Origin header and are allowed; browsers must come from CLIENT_ORIGIN.
+app.use(cors({
+  origin(origin, cb) {
+    if (!origin || allowedOrigins().includes(origin)) return cb(null, true);
+    return cb(null, false);
+  },
+}));
+app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'roadwatch-api' });
@@ -17,12 +28,8 @@ app.get('/api/app-info', (req, res) => {
   res.json({ demoVideoUrl: process.env.DEMO_VIDEO_URL || null });
 });
 
-// TODO (Carl): mount routes here
-// Rules: POST /api/auth/register is public and always creates a Reporter (ignore any role from the client).
-//        POST /api/users (admin only) creates Traffic Officers and other accounts.
-// app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/reports', require('./routes/reports'));
-// app.use('/api/admin', require('./routes/admin'));
-// app.use('/api/officer', require('./routes/officer'));
+app.use('/api', routes);
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;

@@ -13,6 +13,16 @@ jobs:
     defaults:
       run:
         working-directory: api
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci_root_pw
+          MYSQL_DATABASE: roadwatch
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci_root_pw"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +37,19 @@ jobs:
       - name: Lint
         if: steps.check.outputs.ready == 'true'
         run: npm run lint --if-present
+      - name: Load schema and seed into the throwaway CI database
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          mysql -h 127.0.0.1 -uroot -pci_root_pw roadwatch < ../database/schema.sql
+          mysql -h 127.0.0.1 -uroot -pci_root_pw roadwatch < ../database/seed.sql
       - name: Test
         if: steps.check.outputs.ready == 'true'
+        env:
+          RUN_DB_TESTS: 'true'
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_USER: root
+          DB_PASSWORD: ci_root_pw
+          DB_NAME: roadwatch
+          JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-123456
         run: npm test --if-present
