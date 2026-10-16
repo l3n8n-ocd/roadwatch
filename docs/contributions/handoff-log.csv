@@ -1,1 +1,4 @@
 date,member,message,paths,commit
+2026-10-16,"Carl Ernest Santos","feat(api): merge backend with auth, reports, admin, officer, exports and tests","api/ .github/workflows/api-ci.yml",2692f59
+2026-10-16,"Lenon Adriano","docs: add API contract and update decisions, setup guide and CLAUDE.md for the backend merge","CLAUDE.md docs/API.md docs/DECISIONS.md docs/SETUP-GUIDE.md",5bf4aad
+2026-10-16,"Carl Ernest Santos","chore(api): add import-schema helper to load schema.sql and seed.sql","api/scripts/import-schema.js",f9de362
