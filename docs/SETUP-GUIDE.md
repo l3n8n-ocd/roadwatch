@@ -18,6 +18,21 @@ Parts A and B can run at the same time. Part C needs the Aiven connection detail
 2. Lenon is the only person who commits. Teammates send files. Lenon commits them with `scripts/commit-as.sh` so the teammate stays the author.
 3. Work on `dev`. Merge `dev` into `main` only at milestones, always with a **merge commit** (never squash).
 
+> **Update (Oct 16, afternoon): Carl already built his own backend, so Parts B and C are replaced by this.**
+> His code was reviewed and merged into `api/`, aligned to the approved schema (see `docs/DECISIONS.md` 18 to 22 and `docs/API.md`). Do this instead:
+> 1. **Carl rotates every credential that was in his zipped `.env`:** reset the Aiven database password, create a new Cloudinary API secret, and generate a new `JWT_SECRET` (`node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`). The old values were shared outside the team, so treat them as exposed.
+> 2. **Carl resets his Aiven database.** It still has the OLD tables from his migration (wrong status and role values). In his MySQL client, connected to `defaultdb`, run this once (it deletes everything in that database, which only holds his test data):
+>    ```sql
+>    SET FOREIGN_KEY_CHECKS = 0;
+>    DROP TABLE IF EXISTS audit_logs, notifications, report_status_history, report_photos, reports, accident_types, users, roles, SequelizeMeta;
+>    SET FOREIGN_KEY_CHECKS = 1;
+>    ```
+>    Then run `database/schema.sql` and `database/seed.sql` against `defaultdb`, in that order.
+> 3. **Carl's `.env`** (never committed): use the variable names in `api/.env.example`. Set `DB_SSL=true` and `DB_SSL_CA_PATH` to his downloaded `ca.pem` (or paste it into `DB_SSL_CA`). Photos use ONE variable, `CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME`, not three. Add `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+> 4. In `api/`: `npm install`, `npm run check:db` (expect 8 tables, TLS on), `npm run seed:admin`, `npm run dev`, then open `http://localhost:5000/api/health`.
+> 5. Run the tests: `npm test`. Without a database it runs 3 tests and skips the database flow. To run all 16, use a **local** throwaway database (not Aiven): `RUN_DB_TESTS=true npm test` with `DB_HOST=127.0.0.1` and local credentials. CI runs them automatically on every pull request.
+> Parts A, D and E below still apply. Ignore B and C unless something fails.
+
 ---
 
 # PART A: Lenon creates the GitHub monorepo
@@ -402,6 +417,8 @@ Today's date is the Oct 16 milestone. If these are not done tonight, shift the O
 ---
 
 # What was verified, and what was not
+
+**Added Oct 16 (backend merge):** on local MariaDB 10.11 with Node 22 the merged API passed 16 automated tests (the 12-step database flow plus health, app-info and the JWT guard), the TLS connection path (`DB_SSL=true` with a CA file, using a throwaway certificate), `seed:admin` and the startup refusal for a placeholder `JWT_SECRET`. Not verified: Aiven, Cloudinary uploads, Gmail SMTP, MySQL 8 (CI will exercise it), Render.
 
 **Verified by running it (Oct 16):** on a local **MariaDB 10.11** test server, `schema.sql`, `seed.sql` and `local-init.sql` load cleanly in both the local flow and an Aiven-style flow (database named `defaultdb`); re-running is safe; foreign keys and defaults work. On Node 22: `npm test` passes (2 tests), `npm run check:db` and `npm run seed:admin` work against that local database, and `/api/health` and `/api/app-info` return the JSON shown above. `scripts/commit-as.sh` was tested in throwaway repos, including Windows line endings, unknown members, co-author trailers and the author test flow.
 
