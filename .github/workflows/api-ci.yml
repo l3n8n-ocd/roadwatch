@@ -1,0 +1,32 @@
+name: api-ci
+
+on:
+  pull_request:
+    paths: ['api/**', '.github/workflows/api-ci.yml']
+  push:
+    branches: [dev, main]
+    paths: ['api/**', '.github/workflows/api-ci.yml']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check project is scaffolded
+        id: check
+        run: if [ -f package.json ]; then echo "ready=true" >> "$GITHUB_OUTPUT"; else echo "No package.json yet, skipping."; fi
+      - name: Install
+        if: steps.check.outputs.ready == 'true'
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Lint
+        if: steps.check.outputs.ready == 'true'
+        run: npm run lint --if-present
+      - name: Test
+        if: steps.check.outputs.ready == 'true'
+        run: npm test --if-present

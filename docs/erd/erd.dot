@@ -1,0 +1,104 @@
+digraph ERD_DOT {
+  graph [rankdir=LR, splines=true, nodesep=0.5, ranksep=1.1, pad=0.4, fontname="Helvetica",
+         label="Road Accident Reporting System - ERD v1.1 (crow's foot notation)", labelloc=t, fontsize=18];
+  node  [shape=plain, fontname="Helvetica", fontsize=11];
+  edge  [dir=both, color="#0B2545", fontname="Helvetica", fontsize=9, fontcolor="#4A7FB5", arrowsize=1.1];
+
+  ROLES [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>ROLES</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">role_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">role_name</TD><TD ALIGN="LEFT">VARCHAR(30)</TD><TD></TD></TR>
+  </TABLE>>];
+
+  USERS [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>USERS</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">user_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">role_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD COLSPAN="4" BGCOLOR="#F4F6F9" ALIGN="LEFT"><I>Profile</I></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">full_name</TD><TD ALIGN="LEFT">VARCHAR(100)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">contact_email</TD><TD ALIGN="LEFT">VARCHAR(120)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">contact_phone</TD><TD ALIGN="LEFT">VARCHAR(20)</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD COLSPAN="4" BGCOLOR="#F4F6F9" ALIGN="LEFT"><I>Security / audit</I></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">password_hash</TD><TD ALIGN="LEFT">VARCHAR(255)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">TINYINT(1)</TD><TD ALIGN="LEFT">DEFAULT 1</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD><TD></TD></TR>
+  </TABLE>>];
+
+  ACCIDENT_TYPES [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>ACCIDENT_TYPES</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">type_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">type_name</TD><TD ALIGN="LEFT">VARCHAR(60)</TD><TD></TD></TR>
+  </TABLE>>];
+
+  REPORTS [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>REPORTS</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">report_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">reporter_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">assigned_officer_id</TD><TD ALIGN="LEFT">INT</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">accident_type_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD COLSPAN="4" BGCOLOR="#F4F6F9" ALIGN="LEFT"><I>Incident details</I></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">accident_date</TD><TD ALIGN="LEFT">DATE</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">accident_time</TD><TD ALIGN="LEFT">TIME</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">vehicles_involved</TD><TD ALIGN="LEFT">VARCHAR(255)</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">injury_information</TD><TD ALIGN="LEFT">ENUM</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">accident_description</TD><TD ALIGN="LEFT">TEXT</TD><TD></TD></TR>
+    <TR><TD COLSPAN="4" BGCOLOR="#F4F6F9" ALIGN="LEFT"><I>Location</I></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">accident_location</TD><TD ALIGN="LEFT">VARCHAR(255)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">latitude</TD><TD ALIGN="LEFT">DECIMAL(10,7)</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">longitude</TD><TD ALIGN="LEFT">DECIMAL(10,7)</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD COLSPAN="4" BGCOLOR="#F4F6F9" ALIGN="LEFT"><I>Workflow</I></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">record_type</TD><TD ALIGN="LEFT">ENUM</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">report_status</TD><TD ALIGN="LEFT">ENUM</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">official_remarks</TD><TD ALIGN="LEFT">TEXT</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">date_submitted</TD><TD ALIGN="LEFT">TIMESTAMP</TD><TD></TD></TR>
+  </TABLE>>];
+
+  REPORT_PHOTOS [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>REPORT_PHOTOS</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">photo_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">report_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">cloudinary_url</TD><TD ALIGN="LEFT">VARCHAR(500)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">uploaded_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD><TD></TD></TR>
+  </TABLE>>];
+
+  REPORT_STATUS_HISTORY [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>REPORT_STATUS_HISTORY</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">history_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">report_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">changed_by_user_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">previous_status</TD><TD ALIGN="LEFT">VARCHAR(40)</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">new_status</TD><TD ALIGN="LEFT">VARCHAR(40)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">changed_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD><TD></TD></TR>
+  </TABLE>>];
+
+  NOTIFICATIONS [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>NOTIFICATIONS</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">notification_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">user_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">report_id</TD><TD ALIGN="LEFT">INT</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">message</TD><TD ALIGN="LEFT">VARCHAR(255)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">is_read</TD><TD ALIGN="LEFT">TINYINT(1)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD><TD></TD></TR>
+  </TABLE>>];
+
+  AUDIT_LOGS [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#0B2545">
+    <TR><TD COLSPAN="4" BGCOLOR="#0B2545"><FONT COLOR="white"><B>AUDIT_LOGS</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">log_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B></TD><TD ALIGN="LEFT">user_id</TD><TD ALIGN="LEFT">INT</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">action_taken</TD><TD ALIGN="LEFT">VARCHAR(100)</TD><TD></TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">action_details</TD><TD ALIGN="LEFT">TEXT</TD><TD ALIGN="LEFT">NULL</TD></TR>
+    <TR><TD></TD><TD ALIGN="LEFT">timestamp</TD><TD ALIGN="LEFT">TIMESTAMP</TD><TD></TD></TR>
+  </TABLE>>];
+
+  /* parent (exactly one) -> child (many): tail = parent side, head = child side */
+  ROLES          -> USERS                  [arrowtail=teetee, arrowhead=crowodot, label="has"];
+  USERS          -> REPORTS                [arrowtail=teetee, arrowhead=crowodot, label="submits (reporter_id)"];
+  USERS          -> REPORTS                [arrowtail=teeodot, arrowhead=crowodot, label="assigned to (assigned_officer_id)", style=dashed];
+  ACCIDENT_TYPES -> REPORTS                [arrowtail=teetee, arrowhead=crowodot, label="classifies"];
+  REPORTS        -> REPORT_PHOTOS          [arrowtail=teetee, arrowhead=crowodot, label="has"];
+  REPORTS        -> REPORT_STATUS_HISTORY  [arrowtail=teetee, arrowhead=crowodot, label="logs"];
+  USERS          -> REPORT_STATUS_HISTORY  [arrowtail=teetee, arrowhead=crowodot, label="changes (changed_by_user_id)"];
+  USERS          -> NOTIFICATIONS          [arrowtail=teetee, arrowhead=crowodot, label="receives"];
+  REPORTS        -> NOTIFICATIONS          [arrowtail=teeodot, arrowhead=crowodot, label="triggers"];
+  USERS          -> AUDIT_LOGS             [arrowtail=teetee, arrowhead=crowodot, label="performs"];
+}

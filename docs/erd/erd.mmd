@@ -1,0 +1,77 @@
+erDiagram
+    ROLES ||--o{ USERS : "has"
+    USERS ||--o{ REPORTS : "submits (reporter_id)"
+    USERS |o--o{ REPORTS : "assigned to (assigned_officer_id)"
+    ACCIDENT_TYPES ||--o{ REPORTS : "classifies"
+    REPORTS ||--o{ REPORT_PHOTOS : "has"
+    REPORTS ||--o{ REPORT_STATUS_HISTORY : "logs"
+    USERS ||--o{ REPORT_STATUS_HISTORY : "changes (changed_by_user_id)"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    REPORTS |o--o{ NOTIFICATIONS : "triggers"
+    USERS ||--o{ AUDIT_LOGS : "performs"
+
+    ROLES {
+        INT role_id PK
+        VARCHAR role_name
+    }
+    USERS {
+        INT user_id PK
+        INT role_id FK
+        VARCHAR full_name
+        VARCHAR contact_email
+        VARCHAR contact_phone "nullable"
+        VARCHAR password_hash
+        TINYINT is_active "default 1"
+        TIMESTAMP created_at
+    }
+    ACCIDENT_TYPES {
+        INT type_id PK
+        VARCHAR type_name
+    }
+    REPORTS {
+        INT report_id PK
+        INT reporter_id FK
+        INT assigned_officer_id FK "nullable"
+        INT accident_type_id FK
+        ENUM record_type
+        DATE accident_date
+        TIME accident_time
+        VARCHAR accident_location
+        DECIMAL latitude "nullable"
+        DECIMAL longitude "nullable"
+        VARCHAR vehicles_involved "nullable"
+        ENUM injury_information
+        TEXT accident_description
+        ENUM report_status
+        TEXT official_remarks "nullable"
+        TIMESTAMP date_submitted
+    }
+    REPORT_PHOTOS {
+        INT photo_id PK
+        INT report_id FK
+        VARCHAR cloudinary_url
+        TIMESTAMP uploaded_at
+    }
+    REPORT_STATUS_HISTORY {
+        INT history_id PK
+        INT report_id FK
+        INT changed_by_user_id FK
+        VARCHAR previous_status "nullable"
+        VARCHAR new_status
+        TIMESTAMP changed_at
+    }
+    NOTIFICATIONS {
+        INT notification_id PK
+        INT user_id FK
+        INT report_id FK "nullable"
+        VARCHAR message
+        TINYINT is_read
+        TIMESTAMP created_at
+    }
+    AUDIT_LOGS {
+        INT log_id PK
+        INT user_id FK
+        VARCHAR action_taken
+        TEXT action_details "nullable"
+        TIMESTAMP timestamp
+    }

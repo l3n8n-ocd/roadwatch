@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.apk binary
+# Demo video is stored with Git LFS (run `git lfs install` once before committing it)
+*.mp4 filter=lfs diff=lfs merge=lfs -text

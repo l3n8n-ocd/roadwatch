@@ -1,0 +1,410 @@
+# RoadWatch Setup Guide: GitHub Monorepo, Carl's Database, API Skeleton and /api/health
+
+Written Oct 16, 2026. Follow the parts in order. Every command assumes **Git Bash on Windows** unless noted.
+Menu names on GitHub and Aiven change over time. If a label differs slightly, look for the closest match.
+
+| Part | Who | What | Time |
+|---|---|---|---|
+| A | Lenon | Create the public GitHub monorepo, branches, protection, CI check, author test | 45-60 min |
+| B | Carl | Create the Aiven MySQL service, load `schema.sql` and `seed.sql`, verify | 30-45 min |
+| C | Carl | Run the API skeleton, `npm test`, `npm run check:db`, `/api/health` | 20-30 min |
+| D | Lenon | Verify Carl's evidence and commit his work under his name | 15 min |
+| E | Both | Troubleshooting | as needed |
+
+Parts A and B can run at the same time. Part C needs the Aiven connection details from Part B. Part D needs Parts A and C.
+
+**Golden rules (the repo is public)**
+1. Never put passwords, API keys, `.env` files or `ca.pem` into the repo, a screenshot, or a chat. `.gitignore` blocks `.env`, `*.pem`, `*.key` and `*.crt`, but you are the last line of defense.
+2. Lenon is the only person who commits. Teammates send files. Lenon commits them with `scripts/commit-as.sh` so the teammate stays the author.
+3. Work on `dev`. Merge `dev` into `main` only at milestones, always with a **merge commit** (never squash).
+
+---
+
+# PART A: Lenon creates the GitHub monorepo
+
+## A1. Install the tools
+1. **Git for Windows** from git-scm.com. In the installer keep "Git Bash" and "Git LFS" selected. Accept the other defaults.
+2. **Node.js 22 LTS** from nodejs.org (needed later for the API).
+3. **VS Code** (optional, but easiest for editing files with the right line endings).
+4. **GitHub CLI** from cli.github.com (needed once, to create the issues).
+
+Open **Git Bash** and confirm:
+```bash
+git --version
+git lfs version
+node -v
+gh --version
+```
+`node -v` must print `v22` or higher.
+
+## A2. Protect your email on GitHub (public repo)
+1. GitHub, then your avatar, then **Settings**, then **Emails**.
+2. Tick **Keep my email addresses private**.
+3. Tick **Block command line pushes that expose my email**.
+4. Copy your no-reply address shown on that page. It looks like `12345678+yourusername@users.noreply.github.com`.
+
+## A3. Set your Git identity
+```bash
+git config --global user.name "Lenon Adriano"
+git config --global user.email "12345678+yourusername@users.noreply.github.com"
+git config --global user.name
+git config --global user.email
+```
+Use your real no-reply address from A2. The last two commands print what you set.
+
+## A4. Build each teammate's no-reply email
+Your teammates' real emails must not appear in a public repo. Use their GitHub no-reply addresses.
+
+For each of Carl, Pauline and Princess:
+1. Get their GitHub username.
+2. Open `https://api.github.com/users/THEIR_USERNAME` in a browser.
+3. Find the line `"id": 12345678`.
+4. Their email is `12345678+THEIR_USERNAME@users.noreply.github.com`.
+
+Very old accounts (created before July 2017) may use `THEIR_USERNAME@users.noreply.github.com` instead. If a commit does not show their avatar in A14, try that form.
+
+## A5. Create the empty repo on GitHub
+1. GitHub, then **+**, then **New repository**.
+2. Repository name: `roadwatch`.
+3. Choose **Public**.
+4. **Leave every "Initialize this repository" box unticked** (no README, no .gitignore, no license). The starter already has them, and ticking them causes a history conflict.
+5. Click **Create repository**.
+6. Copy the HTTPS URL, for example `https://github.com/YOURUSERNAME/roadwatch.git`.
+
+## A6. Unzip the starter
+1. Unzip `roadwatch-starter.zip`. You get a folder named `roadwatch`.
+2. Right-click inside that folder and choose **Open Git Bash here**.
+3. Check the hidden files are there:
+```bash
+pwd
+ls -a
+```
+You must see `.github`, `.gitignore`, `.gitattributes`, `.editorconfig`, `CLAUDE.md`, `README.md`, and folders `api`, `database`, `docs`, `mobile`, `scripts`, `web`.
+
+## A7. Fill `scripts/members.conf`
+Open `scripts/members.conf` in VS Code. Replace each `REPLACE_ME` with that member's no-reply email from A4 (Lenon's from A2). Keep the format `key|Full Name|email|default folders`:
+```
+lenon|Lenon Adriano|12345678+lenonname@users.noreply.github.com|mobile/
+pauline|Pauline Lapuz|23456789+paulinename@users.noreply.github.com|web/
+carl|Carl Ernest Santos|34567890+carlname@users.noreply.github.com|api/ database/
+princess|Princess Lorellyn Isip|45678901+princessname@users.noreply.github.com|docs/user-guide/
+```
+(The numbers and usernames above are examples. Use the real ones.)
+
+Line endings: the starter script now tolerates Windows line endings, but it is still best to save with LF. In VS Code click **CRLF** at the bottom right and choose **LF**, then save.
+
+## A8. First commit
+```bash
+git init -b main
+git lfs install
+git add .
+git status --short
+```
+Read the `git status` list. It must **not** contain `.env`, `ca.pem`, or `node_modules`. Then:
+```bash
+git commit -m "chore: scaffold monorepo"
+```
+Git may print CRLF warnings. They are harmless.
+
+## A9. Push `main`
+```bash
+git remote add origin https://github.com/YOURUSERNAME/roadwatch.git
+git push -u origin main
+```
+A browser window asks you to sign in to GitHub the first time. Approve it.
+
+## A10. Create and push `dev`
+```bash
+git switch -c dev
+git push -u origin dev
+```
+From now on you work on `dev`.
+
+## A11. Repo settings on GitHub
+**Block squash merges (keeps each member's credit):**
+1. Repo, then **Settings**, then **General**, scroll to **Pull Requests**.
+2. Keep **Allow merge commits** ticked.
+3. Untick **Allow squash merging** and **Allow rebase merging**.
+
+**Protect `main`:**
+1. **Settings**, then **Rules**, then **Rulesets**, then **New ruleset**, then **New branch ruleset**.
+2. Name: `protect-main`. Enforcement status: **Active**.
+3. Target branches: add **Include default branch**.
+4. Tick **Restrict deletions** and **Block force pushes**.
+5. Do **not** tick "Require a pull request" or approvals. You are the only committer and approvals would lock you out.
+6. Click **Create**.
+
+## A12. Check the automatic tests (CI)
+1. Repo, then the **Actions** tab.
+2. You should see runs for `api-ci`. It should turn **green** (a tick). It installs the API and runs the 2 tests.
+3. `web-ci` and `mobile-ci` skip themselves because those projects do not exist yet. A skipped or quickly green run is correct.
+4. If `api-ci` is red, click it, open the failing step, and use Part E.
+
+## A13. Create the GitHub issues (once only)
+```bash
+gh auth login
+bash scripts/create-issues.sh
+```
+Choose GitHub.com, HTTPS, and log in with the browser. The script creates labels, 6 milestones and 30 issues. **Run it once.** A second run creates duplicates. The same text is in `docs/github-issues.md` if you would rather paste issues by hand.
+
+## A14. Test the author trick before using it for real
+This proves a teammate gets credit while you push. It uses a throwaway branch.
+```bash
+git switch -c test-author
+echo "test" >> docs/contributions/author-test.txt
+bash scripts/commit-as.sh carl "chore: author test" docs/contributions/author-test.txt
+git log -1 --format='author: %an <%ae>%ncommitter: %cn <%ce>'
+git push -u origin test-author
+```
+Expected: `author` shows Carl and `committer` shows you. On GitHub, open that commit. It should say **Carl authored and Lenon committed**, with Carl's avatar.
+- If Carl's avatar does not appear, the email in `members.conf` does not match his GitHub account. Fix the email (see A4).
+
+Clean up (all of these lines, in order):
+```bash
+git switch dev
+git restore docs/contributions/handoff-log.csv
+git push origin --delete test-author
+git branch -D test-author
+git status --short
+```
+`git status --short` should print nothing. If `author-test.txt` is listed, delete that file.
+
+Part A is done when: `main` and `dev` exist on GitHub, `api-ci` is green, the 30 issues exist, and the author test showed Carl as author.
+
+---
+
+# PART B: Carl creates the Aiven MySQL database and loads the schema
+
+## B1. Get the code and tools
+1. Install **Node.js 22 LTS** (nodejs.org) and **MySQL Workbench** (or DBeaver Community).
+2. Get the code from Lenon's public repo. Easiest without Git: open the repo on GitHub, change the branch dropdown from `main` to **`dev`**, click **Code**, then **Download ZIP**, then unzip it (for example to `C:\roadwatch`).
+3. Do not edit the SQL files. They are final for today.
+
+## B2. Create the Aiven account and service
+1. Go to aiven.io and sign up (free account).
+2. In the console choose **Create service**, then **MySQL**.
+3. Choose the **Free** plan if it is offered. Read the plan's limits on the page and note them (storage, idle behavior). Free plans can have restrictions.
+4. Choose a cloud region close to the Philippines.
+5. Name it `roadwatch-mysql` and create it.
+6. Wait until the status says **Running** (a few minutes).
+
+## B3. Copy the connection details (keep them private)
+On the service **Overview** page, under **Connection information**, find:
+
+| Field | Note |
+|---|---|
+| Host | long name ending in `aivencloud.com` |
+| Port | usually **not** 3306, copy the real one |
+| User | usually `avnadmin` |
+| Password | click to reveal |
+| Database name | usually `defaultdb` |
+| SSL mode | `REQUIRED` |
+| CA certificate | click **Download** and save as `ca.pem` |
+
+Save the password in a password manager or a private note. **Never** paste it in the group chat, in the repo, or in a screenshot.
+
+Put the downloaded file at `roadwatch/api/ca.pem` (create the file by moving it there). It is git-ignored.
+
+If a connection later times out, check the service's **Allowed IP addresses** setting. It is normally open to all by default.
+
+## B4. Connect with MySQL Workbench
+1. Click **+** next to MySQL Connections.
+2. Connection Name: `RoadWatch Aiven`.
+3. Hostname: your Host. Port: your Port. Username: `avnadmin`.
+4. Click **Store in Vault** and enter the password.
+5. Open the **SSL** tab. Set **Use SSL** to **Require and Verify CA**. Set **SSL CA File** to your `ca.pem`.
+6. Click **Test Connection**. It must say it succeeded. Then click **OK** and open the connection.
+
+(Command-line alternative: `mysql --host HOST --port PORT --user avnadmin --password --ssl-ca=ca.pem --ssl-mode=VERIFY_CA defaultdb`.)
+
+## B5. Load the schema and the seed
+In the Workbench query tab:
+1. Run `USE defaultdb;` (use your database name if it differs).
+2. **File, Open SQL Script**, choose `database/schema.sql`, and run it (lightning bolt button, "execute all").
+3. Open `database/seed.sql` and run it.
+
+The files have no `CREATE DATABASE` or `USE` line. That is deliberate: they load into the database you selected. They are safe to run again if something fails halfway.
+
+## B6. Verify the database
+Run these and compare:
+```sql
+SHOW TABLES;
+SELECT * FROM roles;
+SELECT * FROM accident_types;
+SHOW COLUMNS FROM users;
+```
+Expected:
+- **8 tables:** `accident_types`, `audit_logs`, `notifications`, `report_photos`, `report_status_history`, `reports`, `roles`, `users`.
+- **3 roles:** Reporter, Administrator, Traffic Officer.
+- **5 accident types:** Collision, Hit-and-run, Vehicle rollover, Pedestrian accident, Other.
+- `users` has an **`is_active`** column (`tinyint(1)`, default 1).
+
+Take a screenshot of the `SHOW TABLES` result. Do not include any password.
+
+If something is off, drop nothing by hand. Tell Lenon what you see.
+
+---
+
+# PART C: Carl runs the API skeleton and checks /api/health
+
+## C1. Open a terminal in the `api` folder
+In VS Code open the `roadwatch` folder and use **Terminal, New Terminal**, then:
+```bash
+cd api
+node -v
+```
+`node -v` must print `v22` or higher.
+
+## C2. Create your `.env`
+```bash
+cp .env.example .env
+```
+(In Windows Command Prompt use `copy .env.example .env`.) Open `.env` and set only these lines, using the values from B3:
+```
+DB_HOST=your-host.aivencloud.com
+DB_PORT=your-port
+DB_USER=avnadmin
+DB_PASSWORD=your-password
+DB_NAME=defaultdb
+DB_SSL=true
+DB_SSL_CA_PATH=./ca.pem
+```
+Leave everything else as it is for now. Notes:
+- If your password contains `#`, `$` or spaces, wrap it in double quotes: `DB_PASSWORD="pa#ss"`.
+- The file must be named exactly `.env` (not `.env.txt`).
+- Never send `.env` to anyone.
+
+## C3. Install the packages
+```bash
+npm install
+```
+Wait for it to finish. A `package-lock.json` file appears. That is normal.
+
+## C4. Run the automated tests
+```bash
+npm test
+```
+Expected: `# tests 2`, `# pass 2`, `# fail 0`.
+
+## C5. Prove the API can reach Aiven
+```bash
+npm run check:db
+```
+Expected output (host and numbers will match your service):
+```
+Connecting to your-host.aivencloud.com:PORT as avnadmin, database "defaultdb", TLS on
+Connected. 8 tables found.
+roles rows: 3 (expected 3)
+accident_types rows: 5 (expected 5)
+users.is_active column: present
+```
+This is the real database proof. The health check below does **not** touch the database.
+
+## C6. Start the API and check /api/health
+```bash
+npm run dev
+```
+The terminal shows: `RoadWatch API running on port 5000`.
+
+In a browser open:
+- `http://localhost:5000/api/health` must show exactly `{"status":"ok","service":"roadwatch-api"}`
+- `http://localhost:5000/api/app-info` must show `{"demoVideoUrl":null}`
+
+Take a screenshot of the health page. Stop the server with **Ctrl+C**.
+
+If port 5000 is busy, change `PORT=5001` in `.env` and use that port in the URLs.
+
+## C7. (Optional, 2 minutes) Create the first administrator
+Add to `.env`:
+```
+ADMIN_NAME=System Administrator
+ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=choose-at-least-8-characters
+```
+Then run `npm run seed:admin`. Expected: `Administrator created: your-admin-email@example.com`. Running it again says the account already exists. The password is stored hashed (bcrypt) in the database. Do not share the password in chat.
+
+## C8. Send Lenon the evidence
+Send these three things (and nothing else):
+1. Screenshot of `SHOW TABLES` from B6.
+2. Screenshot or text of the `npm run check:db` output from C5.
+3. Screenshot of `http://localhost:5000/api/health` from C6, plus the new `package-lock.json` file.
+
+**Never send:** `.env`, `ca.pem`, the Aiven password.
+
+Part C is done when: tests pass, `check:db` shows 8 tables with TLS on, and `/api/health` returns the exact JSON.
+
+---
+
+# PART D: Lenon verifies Carl's work and commits it under Carl's name
+
+## D1. Verify the evidence
+Check each item against Carl's screenshots:
+- [ ] 8 table names exactly as listed in B6.
+- [ ] 3 roles and 5 accident types.
+- [ ] `users.is_active` present.
+- [ ] `check:db` says `TLS on` (confirms the Aiven TLS settings work).
+- [ ] Health JSON is exactly `{"status":"ok","service":"roadwatch-api"}`.
+- [ ] No password, `.env` or `ca.pem` visible in any screenshot.
+
+If Carl changed any file (for example the schema), ask him to send that file and compare it before committing.
+
+## D2. Commit Carl's file under his name
+Copy `package-lock.json` into your `api/` folder, then:
+```bash
+git switch dev
+git pull
+git status --short
+```
+Make sure no `.env` or `ca.pem` is listed. Then:
+```bash
+bash scripts/commit-as.sh carl "chore(api): add package-lock after Aiven DB verification" api/package-lock.json
+git add docs/contributions/handoff-log.csv
+git commit -m "docs: log Carl handoff"
+git push
+```
+The first commit is authored by Carl. The second is your own log entry.
+
+## D3. Close the matching issues
+On GitHub, Issues tab, close **Create the Aiven MySQL service and load the schema** and **Run the API skeleton**. Paste a short note and Carl's screenshots (no secrets) as proof.
+
+## D4. Check what is left in milestone M1
+- Draw wireframes in Figma (Pauline, Lenon)
+- Generate the Vite and Flutter projects (Pauline, Lenon)
+- Ask the professor about anonymous reporting (Princess, today)
+
+Today's date is the Oct 16 milestone. If these are not done tonight, shift the Oct 21 core-flow target by a day rather than rushing them.
+
+---
+
+# PART E: Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `git push` asks for a password and fails | GitHub no longer accepts account passwords | Complete the browser sign-in, or create a personal access token and use it as the password |
+| Push rejected: `GH007 ... email privacy` | Your Git email is a real email | Use your no-reply address (A2, A3), then amend nothing and just retry after fixing `git config` |
+| `refusing to merge unrelated histories` | The GitHub repo was created with a README or .gitignore | Create a new empty repo (A5) or ask for help before forcing anything |
+| Author test shows no avatar for Carl | Email in `members.conf` does not match his GitHub account | Rebuild it from A4 |
+| `commit-as.sh`: `Set carl's email in scripts/members.conf first` | `REPLACE_ME` still there | Do A7 |
+| `commit-as.sh`: `Nothing staged` | The files were not copied in first | Copy the member's files into the repo, then rerun |
+| `commit-as.sh`: `Unknown member` | Typo in the key | Use `lenon`, `pauline`, `carl` or `princess` |
+| Workbench: `SSL connection error` | CA file not set | Set SSL to Require and Verify CA with `ca.pem` (B4) |
+| Workbench or `check:db`: timeout | Wrong host or port, or IP not allowed | Recopy host and port from Aiven; check Allowed IP addresses |
+| `Access denied for user` | Wrong password or user | Recopy from the Aiven Overview page; quote the password in `.env` if it has special characters |
+| `No database selected` when running the SQL | Skipped `USE defaultdb;` | Run it, or double-click the database in Workbench to make it the default |
+| `Table already exists` | Ran the schema twice | Harmless, the file uses IF NOT EXISTS. Verify with B6 |
+| `check:db` prints `Missing tables` | Schema did not finish | Rerun `schema.sql` (safe to repeat), then `seed.sql` |
+| `users.is_active column: MISSING` | An older schema was loaded | Get the latest `dev` branch ZIP and rerun `schema.sql`. For an existing `users` table ask Lenon before altering anything |
+| `npm install` errors about Node | Node older than 22 | Install Node 22 LTS (C1) |
+| `EADDRINUSE` on `npm run dev` | Port 5000 busy | Change `PORT` in `.env` |
+| `api-ci` is red on GitHub | Dependency or test failure | Open the failing step in the Actions log and send it to the team |
+| `.env` shows up in `git status` | It is not being ignored | Stop. Do not commit. Check `.gitignore` still has `.env`, and that the file is named exactly `.env` |
+
+---
+
+# What was verified, and what was not
+
+**Verified by running it (Oct 16):** on a local **MariaDB 10.11** test server, `schema.sql`, `seed.sql` and `local-init.sql` load cleanly in both the local flow and an Aiven-style flow (database named `defaultdb`); re-running is safe; foreign keys and defaults work. On Node 22: `npm test` passes (2 tests), `npm run check:db` and `npm run seed:admin` work against that local database, and `/api/health` and `/api/app-info` return the JSON shown above. `scripts/commit-as.sh` was tested in throwaway repos, including Windows line endings, unknown members, co-author trailers and the author test flow.
+
+**Not verified:** anything on **Aiven itself** (account, free plan limits, the TLS connection path `DB_SSL=true` with `DB_SSL_CA_PATH`), **MySQL 8** specifically (the test server was MariaDB), Windows paths and Workbench menus, real GitHub behavior (rulesets, Actions, avatars), and `scripts/create-issues.sh` against a real repo (syntax checked only).
+
+Carl should treat the `check:db` result against Aiven as the first real test of the TLS settings.
