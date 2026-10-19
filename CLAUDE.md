@@ -100,6 +100,7 @@ Clients ─► OpenStreetMap tiles and Nominatim directly
 
 **API groups (implemented Oct 16 from Carl's backend; contract in `docs/API.md`):**
 `/api/auth` (register is public and always creates a Reporter, ignoring any client role; login rejects inactive users), `/api/reports` (create, my reports, track), `/api/admin/reports` (filter, verify, assign, status), `/api/officer/reports` (assigned, remarks, status), `POST /api/users` (admin only, creates Traffic Officers), user role change and deactivate or reactivate (admin only), `/api/dashboard/stats`, `/api/exports`, `/api/app-info`.
+**Approved Oct 17, not implemented yet:** update own profile (e.g. `PATCH /api/auth/me`) and change own password, for mobile Settings (`docs/DECISIONS.md` #25); `GET /api/public/updates` (public, read-only, verified records only, no reporter fields; see `docs/DECISIONS.md` #23). It feeds the "Public road updates" section of the public web landing page (#24).
 
 ---
 
@@ -145,7 +146,7 @@ CI workflows skip themselves until `package.json` or `pubspec.yaml` exists in th
 
 **Report fields:** Report ID (system generated), reporter name and contact, accident date and time (required), location text (required), GPS lat/long (optional), accident type (required), vehicles involved (where applicable), injury information (required, includes an Unknown option), description (required), photos (optional), status, date submitted (automatic), assigned officer (if assigned), official remarks (optional).
 
-**Statuses (all 8 confirmed):** Submitted, Under Review, Additional Information Required, Verified, Assigned, In Progress, Resolved/Closed, Rejected (with a recorded reason).
+**Statuses (all 8 confirmed):** Submitted, Under Review, Additional Information Required, Verified, Assigned, In Progress, Resolved/Closed, Rejected (with a recorded reason). **Order (Confirmed Oct 19, course workflow):** the administrator verifies before assigning an officer; officers set In Progress, Additional Information Required and Resolved/Closed (`docs/DECISIONS.md` #30; API change pending for Carl).
 
 **Hard rule from the course:** the system must clearly distinguish a public-submitted report from an officially verified accident record (`reports.record_type`: `public_submission` vs `verified_record`).
 
@@ -196,11 +197,12 @@ Rules: every status change writes a `report_status_history` row; important admin
 
 - **Responsive and accessibility target (Confirmed): fully responsive web and WCAG 2.1 AA.** This means labels on all form fields, visible keyboard focus, full keyboard navigation, alt text on images, status never shown by color alone (chips need text), minimum touch targets, and sufficient color contrast. Plan extra testing time (Pauline). On mobile, follow Flutter semantics labels and sufficient text scaling.
 - Palette (Confirmed, navy and white): navy `#0B2545`, accent blue `#4A7FB5`, amber `#F2A900` (warnings, pending), success `#2E9E6B`, danger `#D64545`, light gray `#F4F6F9`, white.
-- **Contrast caution (Unverified, check with a contrast tool):** amber `#F2A900` and accent blue `#4A7FB5` as text on white are likely below the 4.5:1 AA ratio. Use navy for body text, use amber only as a fill with navy text on it, and darken the blue for text or links if the checker says it fails. Update this section with the final values.
+- **Contrast (Confirmed Oct 17, WCAG formula):** amber on white 2.0:1, accent blue on white 4.2:1, danger on white 4.4:1 and success on white 3.4:1 all fail for normal text. Rules: body text is navy (15.4:1 on white); amber is a fill with navy text on it (7.7:1), or text on navy only; no normal-size text on accent blue or danger fills. Approved text-only variants (Pauline, Oct 17): `text/blue #2F6296` (6.35:1), `text/success #1F6F4A` (6.12:1), `text/danger #B42B2B` (6.32:1). Brand colors stay for fills, icons and large shapes. Full pair table: Figma → Foundations → Contrast checks (`docs/ui-design/figma-index.md`).
+- **Themes (Confirmed Oct 17):** Light and Dark on web and mobile, default follows the system (`docs/DECISIONS.md` #26). Dark values and their contrast table are in Figma → Foundations. Mobile bottom nav: Home, My reports, Notifications, Settings; the Demo Video screen opens from Settings (#25). The web opens on a public landing page (#24). Staff web top bar: a Light/Dark switch, then the user menu, which opens a dropdown (account, Edit profile, Change password, Action log, Contact support, About); Log out is a separate button beside it (#27). The Action log endpoints (own actions; admin-only all staff) are approved in design, not built.
 - Type: Poppins Bold headings, Inter body. 8-pt spacing grid, 16 px radius, soft shadows.
 - Status chips are colored per status and always include the status text. Keep one consistent title, status-chip position and navigation across screens.
 - **Mobile screens (course spec plus plan):** M0 login/register; M1 home with prominent "Report an Accident"; M2 accident details form; M3 GPS and map location; M4 camera/photo upload; M5 submission confirmation with Report ID; M6 report tracking and history; notifications; Demo Video screen.
-- **Web screens:** W1 login (role-based redirect); W2 admin dashboard (summary cards: total, pending, verified, closed; trend chart; type chart; map; recent reports); W3 report management (search, filters, table); W4 report details (info, map, photo viewer, restricted reporter info, assign officer, status and remarks, Verified/Public badge); W5 officer queue; W6 users and settings (create officer, change role, deactivate or reactivate); W7 reports and export; Demo Video page.
+- **Web screens:** W1 sign-in: choose role first (Administrator or Traffic Officer, each with its own form; wrong-role message), plus a separate reporter path (#28); R0-R6 public reporter screens: sign-in/register, 3-step report, confirmation, My reports, tracking (#29); W2 admin dashboard (summary cards: total, pending, verified, closed; trend chart; type chart; map; recent reports); W3 report management (search, filters, table); W4 report details (info, map, photo viewer, restricted reporter info, assign officer, status and remarks, Verified/Public badge); W5 officer queue; W6 users and settings (create officer, change role, deactivate or reactivate); W7 reports and export; Demo Video page; W8 Action log and W9 About (from the user menu, #27).
 - Charts and the map need text alternatives or data tables to meet AA.
 
 ---
@@ -295,7 +297,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 - Render's free tier sleeps when idle. The Aiven free plan limits were not verified in the conversation.
 - Git LFS: the user relies on 1 GB free storage. Bandwidth limits and "Download ZIP" behavior (LFS pointers only) are unverified. Submit the MP4 as a separate file too.
 - An earlier starter had `npm test` set to `node --test tests/`, which fails on Node 22. It was fixed to `node --test`. If an old copy exists, update it.
-- WCAG AA contrast of the palette is unchecked (see section 10).
+- WCAG AA contrast of the palette was checked on Oct 17 (see section 10); the approved text variants must also be used in code.
 - Course document inconsistencies: duplicated section numbers ("5"), section listed as 3H/3I/3J vs 3I G1/G2 (resolved: BSIT 3I-G1).
 
 ---
@@ -323,7 +325,6 @@ Do not do the following without the user's approval:
 
 **Open decisions (only these remain)**
 - **Anonymous reporting:** login required for now. Princess asks the professor on **Oct 16**. If yes: nullable `reporter_id`, add a tracking code, optional contact fields, and tell Carl before Oct 20.
-- **Palette contrast:** confirm final text colors with a contrast checker.
 - **Column types and ENUM values:** proposed during planning. Carl may finalize them when loading the schema; tell Lenon so the ERD stays in sync.
 - **Aiven free-plan limits:** not verified.
 
@@ -387,7 +388,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 | Item | State |
 |---|---|
 | Anonymous vs login reporting | Login required now; professor to answer Oct 16 |
-| Palette contrast for WCAG AA | Unchecked |
+| Palette contrast for WCAG AA | Checked Oct 17; text variants approved (section 10) |
 | Column types, ENUM values, nullable choices | Proposed during planning, not course-mandated |
 | Aiven free-plan limits | Not verified |
 | Git LFS bandwidth and ZIP behavior | Not verified |
