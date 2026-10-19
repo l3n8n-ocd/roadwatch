@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 16, 2026 (starter v2 + Carl's backend merged into api/).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 19, 2026 (web and mobile apps generated from the Figma high-fidelity prototype).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Claude Code has not inspected the user's repo while this file was written. Always inspect the real files before relying on any path or detail here.
 
@@ -280,7 +280,11 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 **Implemented in `api/` (Oct 16, merged from Carl's `roadwatch_backend`, aligned to the approved schema):** auth (register/login/me, JWT, role middleware), Sequelize models, reporter endpoints (submit, my reports, tracking, photo upload code), admin and officer endpoints, user management (create officer, role, deactivate/reactivate), notifications (in-app + email code), dashboard stats, period summaries, CSV/PDF export, rate limiting, input validation. 16 automated tests pass on a local MariaDB 10.11 database.
 **Verified only locally:** everything above ran against local MariaDB, including TLS (`DB_SSL=true` with a CA file) and `seed:admin`. **Not verified:** Aiven itself, Cloudinary upload, Gmail SMTP, Render deployment.
-**Not started (treat as unimplemented):** web app, mobile app, deployment.
+**Implemented Oct 19 from the Figma high-fidelity prototype (Foundations, Components, Mobile, Web, Flows; DECISIONS #33):**
+- `web/`: React + Vite + Tailwind 4 app with every Web frame (W0-W9, R0-R6, Demo video), light/dark tokens generated from Figma, component library, role-guarded routes. `npm run lint` and `npm run build` pass; every route was smoke-tested in Chromium at 1440 and 390 px with a **mocked** API.
+- `mobile/`: Flutter (Android) app with every Mobile frame (M0-M6, Notifications, Settings and its sub-screens). Reporters only. `flutter analyze` clean, `flutter test` passes (widget tests with a fake API).
+**Not verified:** either app against the real API, map tiles and Nominatim (blocked in the build environment), camera/GPS on a device, the release APK (no Android SDK in the build environment).
+**Not started:** deployment. Endpoints the UI already calls but the API lacks: `GET /public/updates`, `PATCH /auth/me`, change password, `GET /auth/me/activity`, `GET /admin/audit-logs` (screens show their designed unavailable state).
 
 **Setup status (Confirmed by the user, Oct 15, 22:35):**
 - GitHub repo: **not created yet**, so the starter zip has not been pushed and `members.conf` is not filled.
@@ -379,7 +383,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 - Do not run `git commit` or `git push` unless the user asks. If asked to commit work for a teammate, use `scripts/commit-as.sh`.
 - Update `docs/DECISIONS.md` and this file when a decision or requirement changes. Update `docs/contributions/handoff-log.csv` only through `commit-as.sh`.
 
-**Nested files:** `api/CLAUDE.md` exists now. Suggested, not yet created: `web/CLAUDE.md` (routes, components, Tailwind tokens, accessibility checklist), `mobile/CLAUDE.md` (feature folders, packages), `database/CLAUDE.md` (schema rules, migration policy). Keep the root file as the single source for project-wide decisions. Create them only once real code exists in those folders.
+**Nested files:** `api/CLAUDE.md`, `web/CLAUDE.md` and `mobile/CLAUDE.md` exist. Suggested, not yet created: `database/CLAUDE.md` (schema rules, migration policy). Keep the root file as the single source for project-wide decisions. Create them only once real code exists in those folders.
 
 ---
 
