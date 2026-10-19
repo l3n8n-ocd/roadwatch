@@ -3,3 +3,4 @@ date,member,message,paths,commit
 2026-10-16,"Lenon Adriano","docs: add API contract and update decisions, setup guide and CLAUDE.md for the backend merge","CLAUDE.md docs/API.md docs/DECISIONS.md docs/SETUP-GUIDE.md",5bf4aad
 2026-10-16,"Carl Ernest Santos","chore(api): add import-schema helper to load schema.sql and seed.sql","api/scripts/import-schema.js",f9de362
 2026-10-19,"Pauline Lapuz","feat(web): add UI component library and staff/reporter layouts from Figma","web/src/components web/src/layouts web/src/index.css",391dbbd
+2026-10-19,"Lenon Adriano","feat(mobile): create Flutter app foundation from the Figma prototype","mobile/",0b798a0
