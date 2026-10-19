@@ -2,24 +2,35 @@
 
 Owner: Pauline. Repo manager: Lenon.
 
-The Vite project is NOT generated yet, so run this once from the repo root:
+The Vite project is generated (React 19, Vite 6, Tailwind CSS 4 through `@tailwindcss/vite`).
+Code conventions, tokens and folder layout: `web/CLAUDE.md`.
+
+## Run it
 
 ```bash
 cd web
-npm create vite@latest . -- --template react
+cp .env.example .env      # VITE_API_URL=http://localhost:5000/api
 npm install
-npm install react-router-dom axios recharts leaflet react-leaflet
-npm install tailwindcss @tailwindcss/vite
+npm run dev               # http://localhost:5173
 ```
 
-Then follow the current Tailwind + Vite guide at tailwindcss.com to enable the plugin.
+Checks (the same ones CI runs): `npm run lint` and `npm run build`.
 
-Create `.env` from `.env.example`, then run `npm run dev`.
+The API must be running (`cd api && npm run dev`) for sign-in and data. Without it, the public
+landing page still opens and the other screens show their error states.
 
-Suggested folders under `src/`: `api/`, `components/`, `context/`, `pages/`, `routes/`.
-Pages: Login, Dashboard, Reports, ReportDetails, OfficerQueue, Users, Exports.
+## Design source
+
+Screens and components are built from the Figma high-fidelity prototype (Foundations, Components,
+Web and Flows pages). Frame IDs: `docs/ui-design/figma-index.md`. Colors and type come from
+`src/styles/tokens.css`, generated from the Figma variables, so light and dark mode match the design.
 
 ## Demo video page
 
-Add a "Demo Video" page that reads `GET /api/app-info` and plays `demoVideoUrl` in a `<video controls>` tag.
-If `demoVideoUrl` is null, show "Video coming soon". Build this before the Oct 30 freeze.
+`/demo-video` reads `GET /api/app-info` and plays `demoVideoUrl` in a `<video controls>` tag.
+If `demoVideoUrl` is null it shows the "Video coming soon" empty state.
+
+## Deploy (Vercel)
+
+Root directory `web`, build command `npm run build`, output `dist`, env `VITE_API_URL` set to the
+Render API URL plus `/api`. Add a rewrite of all paths to `/index.html` so deep links work.

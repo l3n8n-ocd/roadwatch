@@ -7,7 +7,7 @@ How to read this file:
 - **Mobile** and **Web** pages hold the source screens. **Flows** holds copies wired for the prototype; if a screen changes, update the source page and re-copy it to Flows.
 - Every color, spacing and radius is a variable (collections Primitives, Color with Light and Dark modes, Layout). Web code syntax is `var(--rw-*)`.
 - Open the prototype: Flows page → Present (▶) → choose a flow from the flow list.
-- Pauline's original draft is untouched on the page "Pauline draft (original)".
+- Pauline's original draft is untouched on the page "Pauline draft (original)" and now serves as the **low-fidelity prototype**. The high-fidelity prototype (and the source for the React and Flutter code) is the five pages below: Foundations, Components, Mobile, Web, Flows (DECISIONS #33).
 
 ## Pages
 
@@ -18,7 +18,7 @@ How to read this file:
 | Mobile | `90:4` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=90-4) |
 | Web | `90:5` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=90-5) |
 | Flows | `90:6` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=90-6) |
-| Pauline draft (original, untouched) | `0:1` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=0-1) |
+| Pauline draft (original, untouched; low-fidelity prototype) | `0:1` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=0-1) |
 
 ## Foundations
 

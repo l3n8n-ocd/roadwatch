@@ -1,6 +1,6 @@
 # Decisions Log
 
-Last updated: Oct 19, 2026 (role-based sign-in, web reporter path, verify-then-assign workflow)
+Last updated: Oct 19, 2026 (role-based sign-in, web reporter path, verify-then-assign workflow, Figma pages used for code)
 
 | # | Topic | Decision | Status |
 |---|---|---|---|
@@ -36,6 +36,7 @@ Last updated: Oct 19, 2026 (role-based sign-in, web reporter path, verify-then-a
 | 30 | Workflow order | Follows the course workflow: Submitted → Under Review → (Additional Information Required or Rejected) → Verified → Assigned → In Progress → Resolved/Closed. The administrator verifies (sets `record_type = verified_record`) before assigning an officer; assigning is locked until Verified. Officers set In Progress, Additional Information Required and Resolved/Closed and add official remarks; they no longer set Verified. **API change needed (Carl, not done):** `PATCH /api/admin/reports/:id/assign` should require status Verified, and `OFFICER_STATUSES` in `api/src/config/constants.js` should drop Under Review and Verified. | Final (design Oct 19); API change open |
 | 31 | Emergency hotlines | The app keeps 911 (Philippine National Emergency Hotline) as the main emergency number. Settings → Emergency hotlines (mobile) lists 911, PNP (117, (02) 8722-0650, (02) 8723-0401 to 0420) and BFP ((02) 8426-0219, (02) 8426-0246) with their official seals; the web landing emergency card also names PNP 117 and BFP (02) 8426-0219. A Bulacan-only list was tried on Oct 19 and dropped. Numbers in `docs/ui-design/hotlines.md`. | Final (design Oct 19) |
 | 32 | Coverage wording | RoadWatch is not limited to Bulacan: product copy says "everywhere" instead of "across/in Bulacan", and sample addresses drop the province. "Bulacan State University" stays only where it names the school in course credits. | Final (design Oct 19) |
+| 33 | Figma pages and code | Pauline's draft page is kept as the low-fidelity prototype. The high-fidelity prototype is the five pages Foundations, Components, Mobile, Web and Flows; the React web app and the Flutter app are generated from those five pages only (tokens from Foundations, components from Components, screens from Mobile/Web, navigation from Flows). | Final (Oct 19) |
 
 ## If the professor says anonymous reporting is required
 Make `reporter_id` nullable, add a tracking code to `reports`, allow contact fields to be optional, and tell Carl before step 11 (Oct 20).
