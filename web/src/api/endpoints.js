@@ -30,6 +30,7 @@ export const notifications = {
 export const reports = {
   create: (body) => api.post('/reports', body),
   mine: (params) => api.get('/reports', { params }),
+  minePage: (params) => api.get('/reports', { params, withPagination: true }), // { data, pagination }
   get: (id) => api.get(`/reports/${id}`),
   uploadPhotos: (id, files) => {
     const form = new FormData();
@@ -40,12 +41,14 @@ export const reports = {
 
 export const officer = {
   list: (params) => api.get('/officer/reports', { params }),
+  listPage: (params) => api.get('/officer/reports', { params, withPagination: true }), // { data, pagination }
   get: (id) => api.get(`/officer/reports/${id}`),
   update: (id, body) => api.patch(`/officer/reports/${id}`, body),
 };
 
 export const admin = {
   list: (params) => api.get('/admin/reports', { params }),
+  listPage: (params) => api.get('/admin/reports', { params, withPagination: true }), // { data, pagination }
   get: (id) => api.get(`/admin/reports/${id}`),
   setStatus: (id, body) => api.patch(`/admin/reports/${id}/status`, body),
   assign: (id, body) => api.patch(`/admin/reports/${id}/assign`, body),

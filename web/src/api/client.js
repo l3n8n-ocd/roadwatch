@@ -31,9 +31,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Unwrap { success, data } so callers get the data directly.
+// Unwrap { success, data } so callers get the data directly. Paged lists also carry
+// `pagination`; request them with { withPagination: true } to get { data, pagination }.
 api.interceptors.response.use(
-  (res) => (res.data && Object.prototype.hasOwnProperty.call(res.data, 'data') ? res.data.data : res.data),
+  (res) => {
+    const body = res.data;
+    if (!body || !Object.prototype.hasOwnProperty.call(body, 'data')) return body;
+    if (res.config.withPagination) return { data: body.data, pagination: body.pagination };
+    return body.data;
+  },
   (err) => {
     const body = err.response?.data;
     const e = new Error(
