@@ -58,10 +58,14 @@ export default function MapView({
   const editable = Boolean(onChange);
   const hasPin = Boolean(position);
 
-  // Keep the pin in view when the position changes from outside (e.g. GPS).
+  // Keep the pin in view when the position changes from outside (e.g. GPS). Moves are instant:
+  // an animated zoom still running when the page changes makes Leaflet throw "_leaflet_pos".
   useEffect(() => {
-    if (map && position) map.setView([position.lat, position.lng], Math.max(map.getZoom(), 15));
+    if (map && position) map.setView([position.lat, position.lng], Math.max(map.getZoom(), 15), { animate: false });
   }, [map, position]);
+
+  // Stop any pan/zoom animation the user started before the map is removed.
+  useEffect(() => () => map?.stop(), [map]);
 
   const locate = () => {
     if (!navigator.geolocation) {
@@ -75,7 +79,7 @@ export default function MapView({
         setLocating(false);
         const next = { lat: result.coords.latitude, lng: result.coords.longitude };
         if (editable) onChange(next);
-        else map?.setView([next.lat, next.lng], 15);
+        else map?.setView([next.lat, next.lng], 15, { animate: false });
       },
       () => {
         setLocating(false);

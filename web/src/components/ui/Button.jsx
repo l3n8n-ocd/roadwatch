@@ -43,8 +43,12 @@ export default function Button({
   children,
   ...rest
 }) {
+  // A display class passed in (e.g. "hidden sm:inline-flex") replaces the default inline-flex;
+  // two display utilities on one element would otherwise fight and `hidden` could lose.
+  const ownDisplay = /(^|\s)(hidden|flex|block|grid|inline-block|inline-flex)(\s|$)/.test(className);
   const classes = cx(
-    'inline-flex shrink-0 items-center justify-center gap-2 rounded-rw-md px-6 type-button whitespace-nowrap no-underline transition-colors',
+    !ownDisplay && 'inline-flex',
+    'shrink-0 items-center justify-center gap-2 rounded-rw-md px-6 type-button whitespace-nowrap no-underline transition-colors',
     SIZES[size],
     VARIANTS[variant],
     DISABLED,
