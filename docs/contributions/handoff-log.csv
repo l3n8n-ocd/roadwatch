@@ -6,3 +6,4 @@ date,member,message,paths,commit
 2026-10-19,"Lenon Adriano","feat(mobile): create Flutter app foundation from the Figma prototype","mobile/",0b798a0
 2026-10-19,"Pauline Lapuz","feat(web): add admin dashboard, report management and officer queue","web/src/pages/admin/Dashboard.jsx web/src/pages/admin/ReportManagement.jsx web/src/pages/officer/OfficerQueue.jsx web/src/api/client.js web/src/api/endpoints.js",570e27e
 2026-10-19,"Pauline Lapuz","feat(web): add public landing page and sign-in screens","web/.env.example web/src/pages/public/Landing.jsx web/src/pages/auth",dff18b9
+2026-10-19,"Pauline Lapuz","feat(web): add report details, users and summaries screens","web/src/pages/admin/ReportDetails.jsx web/src/pages/admin/Users.jsx web/src/pages/admin/Summaries.jsx",508ce11
