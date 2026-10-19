@@ -4,3 +4,4 @@ date,member,message,paths,commit
 2026-10-16,"Carl Ernest Santos","chore(api): add import-schema helper to load schema.sql and seed.sql","api/scripts/import-schema.js",f9de362
 2026-10-19,"Pauline Lapuz","feat(web): add UI component library and staff/reporter layouts from Figma","web/src/components web/src/layouts web/src/index.css",391dbbd
 2026-10-19,"Lenon Adriano","feat(mobile): create Flutter app foundation from the Figma prototype","mobile/",0b798a0
+2026-10-19,"Pauline Lapuz","feat(web): add admin dashboard, report management and officer queue","web/src/pages/admin/Dashboard.jsx web/src/pages/admin/ReportManagement.jsx web/src/pages/officer/OfficerQueue.jsx web/src/api/client.js web/src/api/endpoints.js",570e27e
