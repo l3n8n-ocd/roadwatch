@@ -126,7 +126,10 @@ class RwRecordBadge extends StatelessWidget {
             color: verified ? c.textAccent : c.textPrimary,
           ),
           const SizedBox(width: RwSpace.s8),
-          Text(label, style: RwType.label.copyWith(color: verified ? c.textInverse : c.textPrimary)),
+          // Flexible lets the label wrap at large text sizes instead of overflowing.
+          Flexible(
+            child: Text(label, style: RwType.label.copyWith(color: verified ? c.textInverse : c.textPrimary)),
+          ),
         ],
       ),
     );

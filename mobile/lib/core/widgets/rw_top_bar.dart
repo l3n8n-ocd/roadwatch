@@ -56,7 +56,10 @@ class RwTopBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.only(left: RwSpace.s16, right: RwSpace.s8),
         child: Row(
           children: [
-            const RwLogo(),
+            // The bar height is fixed, so the logo scales down at large text sizes instead of overflowing.
+            const Flexible(
+              child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: RwLogo()),
+            ),
             const Spacer(),
             if (onNotifications != null)
               RwIconButton(

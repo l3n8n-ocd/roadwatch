@@ -90,7 +90,13 @@ class RwPhotoTile extends StatelessWidget {
                 children: [
                   RwIcon(RwIcons.camera, size: RwSize.iconLg, color: c.textPrimary),
                   const SizedBox(height: RwSpace.s4),
-                  Text('Add photo', style: RwType.label.copyWith(color: c.textPrimary)),
+                  // The tile is a fixed square, so the label shrinks at large text sizes instead of overflowing.
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Add photo', style: RwType.label.copyWith(color: c.textPrimary)),
+                    ),
+                  ),
                 ],
               ),
             ),

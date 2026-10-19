@@ -130,20 +130,26 @@ class _RwMapState extends State<RwMap> {
             Positioned(
               left: 11,
               top: 11,
-              child: _Floating(
-                radius: RwRadius.smAll,
-                shadow: RwShadow.sm,
-                padding: const EdgeInsets.symmetric(horizontal: RwSpace.s12, vertical: RwSpace.s8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RwIcon(RwIcons.mapPin, size: RwSize.iconSm, color: c.textPrimary),
-                    const SizedBox(width: RwSpace.s8),
-                    Text(
-                      '${pin.latitude.toStringAsFixed(4)}, ${pin.longitude.toStringAsFixed(4)}',
-                      style: RwType.label.copyWith(color: c.textPrimary),
-                    ),
-                  ],
+              right: 11,
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: _Floating(
+                  radius: RwRadius.smAll,
+                  shadow: RwShadow.sm,
+                  padding: const EdgeInsets.symmetric(horizontal: RwSpace.s12, vertical: RwSpace.s8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RwIcon(RwIcons.mapPin, size: RwSize.iconSm, color: c.textPrimary),
+                      const SizedBox(width: RwSpace.s8),
+                      Flexible(
+                        child: Text(
+                          '${pin.latitude.toStringAsFixed(4)}, ${pin.longitude.toStringAsFixed(4)}',
+                          style: RwType.label.copyWith(color: c.textPrimary),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -163,9 +169,11 @@ class _RwMapState extends State<RwMap> {
                       children: [
                         RwIcon(RwIcons.mapPin, size: RwSize.iconSm, color: c.textInverse),
                         const SizedBox(width: RwSpace.s8),
-                        Text(
-                          'Tap the map to place a pin',
-                          style: RwType.label.copyWith(color: c.textInverse),
+                        Flexible(
+                          child: Text(
+                            'Tap the map to place a pin',
+                            style: RwType.label.copyWith(color: c.textInverse),
+                          ),
                         ),
                       ],
                     ),

@@ -10,6 +10,7 @@ import 'package:roadwatch_mobile/core/constants.dart';
 import 'package:roadwatch_mobile/core/format.dart';
 import 'package:roadwatch_mobile/core/state/auth_provider.dart';
 import 'package:roadwatch_mobile/core/state/notifications_provider.dart';
+import 'package:roadwatch_mobile/core/state/settings_provider.dart';
 import 'package:roadwatch_mobile/core/theme/app_theme.dart';
 import 'package:roadwatch_mobile/core/widgets/widgets.dart';
 import 'package:roadwatch_mobile/features/home/home_shell.dart';
@@ -136,9 +137,16 @@ void main() {
 
   testWidgets('HomeShell switches tabs from the bottom nav', (tester) async {
     final api = FakeApi();
+    final auth = AuthProvider(api);
+    await auth.login(email: 'juan@example.com', password: 'secret123');
     await tester.pumpWidget(
       MultiProvider(
-        providers: [ChangeNotifierProvider(create: (_) => NotificationsProvider(api))],
+        providers: [
+          Provider<RoadWatchApi>.value(value: api),
+          ChangeNotifierProvider<AuthProvider>.value(value: auth),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => NotificationsProvider(api)),
+        ],
         child: MaterialApp(theme: AppTheme.light(), home: const HomeShell()),
       ),
     );
@@ -149,6 +157,7 @@ void main() {
 
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Settings, tab 4 of 4')));
     await tester.pumpAndSettle();
-    expect(find.text('Settings: not built yet'), findsOneWidget);
+    // The Settings tab shows the signed-in profile (GET /auth/me data from login).
+    expect(find.text('Juan Dela Cruz'), findsOneWidget);
   });
 }
