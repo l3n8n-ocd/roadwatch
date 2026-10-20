@@ -10,6 +10,7 @@ Menu names on GitHub and Aiven change over time. If a label differs slightly, lo
 | C | Carl | Run the API skeleton, `npm test`, `npm run check:db`, `/api/health` | 20-30 min |
 | D | Lenon | Verify Carl's evidence and commit his work under his name | 15 min |
 | E | Both | Troubleshooting | as needed |
+| F | Lenon + Carl | Deploy the API to Render with the Blueprint (`render.yaml`), added Oct 20 | 30-45 min |
 
 Parts A and B can run at the same time. Part C needs the Aiven connection details from Part B. Part D needs Parts A and C.
 
@@ -416,7 +417,75 @@ Today's date is the Oct 16 milestone. If these are not done tonight, shift the O
 
 ---
 
+# PART F: Deploy the API to Render (Blueprint, added Oct 20)
+
+The repo has a Render Blueprint, `render.yaml` at the root. It describes one free web service, `roadwatch-api`: Node 22, region Singapore, folder `api/`, `npm ci` then `npm start`, health check `/api/health`, auto-deploy from `main`. It holds setting **names** only. Every secret is typed into the Render dashboard (`sync: false`), and Render makes `JWT_SECRET` itself. Decisions #8 and #39.
+
+## F0. Before you start
+1. **Aiven is ready:** `npm run check:db` on Carl's laptop (with `.env` pointing at Aiven) shows 8 tables, 3 roles, 5 accident types.
+2. **The first administrator exists in Aiven.** Render's free plan has no shell, so run `npm run seed:admin` once **from Carl's laptop** with `ADMIN_EMAIL` and `ADMIN_PASSWORD` in that `.env` (C7).
+3. **`main` has the code.** Lenon opens a pull request on GitHub from `dev` into `main` and merges it with **Create a merge commit** (never squash). Render deploys `main`, so `render.yaml` and the latest `api/` must be there.
+4. **Have these ready (never in chat):** Aiven host, port, user, password and database name; the Aiven `ca.pem` file; `CLOUDINARY_URL`; the web address that will call the API (`http://localhost:5173` for now, plus the Vercel address later).
+
+## F1. Give Render access to the repo
+Render needs its GitHub app on the repo, and the repo lives on **Lenon's** personal GitHub account. GitHub only lets the account owner install apps there, so:
+1. **Lenon** signs in at render.com with GitHub. Free plan, no card needed.
+2. New, then Blueprint, then Connect GitHub. Choose **Only select repositories**, pick `l3n8n-ocd/roadwatch` and install.
+3. Do F2 together on a call. **Carl types the database and Cloudinary values himself**, so the secrets never pass through chat.
+
+## F2. Create the Blueprint
+1. New, then Blueprint, then pick `l3n8n-ocd/roadwatch`, branch `main`. Blueprint name: `roadwatch`.
+2. Render reads `render.yaml` and lists `roadwatch-api` (Web Service, Free, Singapore). It asks for the values marked `sync: false`:
+
+| Key | What to enter |
+|---|---|
+| `CLIENT_ORIGIN` | `http://localhost:5173` for now. Later add the Vercel address, comma separated, no spaces needed. |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | From Aiven, service Overview, Connection information. `DB_NAME` is the database you loaded in B5 (usually `defaultdb`). |
+| `DB_SSL_CA` | Open `ca.pem` in a text editor and paste **all** of it, including the `BEGIN` and `END` lines. |
+| `CLOUDINARY_URL` | `cloudinary://API_KEY:API_SECRET@CLOUD_NAME` |
+
+3. Click **Apply**. If Render rejects a field in `render.yaml`, copy the exact error and send it to Lenon. The file was written without access to Render's live validator.
+
+## F3. Watch the first deploy
+Open the service, then **Events** and **Logs**. A good deploy shows, in order: `npm ci` finishing, `Connected to MySQL.`, `RoadWatch API running on port 10000` (Render chooses the port), and a passing health check. The first build takes a few minutes.
+
+## F4. Check it from a browser
+Use the address Render shows at the top of the service (for example `https://roadwatch-api.onrender.com`; Render adds a suffix if the name is taken):
+- `https://<your-address>/api/health` shows `{"status":"ok","service":"roadwatch-api"}`
+- `https://<your-address>/api/app-info` shows `{"demoVideoUrl":null}`
+
+Then sign in for real. In `web/`, create `.env.local` with `VITE_API_URL=https://<your-address>/api`, run `npm run dev`, open `http://localhost:5173/staff/sign-in` and log in with the administrator from F0. The dashboard should load with the real (empty) data.
+
+## F5. Point the phone at it
+```bash
+flutter run --dart-define=API_URL=https://<your-address>/api
+```
+Register a reporter on the phone, submit a report with a photo, then refresh the web dashboard. That is the Phase 2 "done when": **a reporter submits on mobile and an admin sees it on the web.**
+
+## F6. Free plan notes
+- The service **sleeps after about 15 minutes idle**. The next request wakes it in about a minute; the mobile app already waits long enough and shows a "server may be waking up" message. Open `/api/health` a few minutes before demos, recordings and grading.
+- **Email is off on purpose.** Render's free plan blocks SMTP, and Brevo arrives in Phase 3 (#37). With no mail settings the API skips emails; in-app notifications still work.
+- If Aiven ever restricts **Allowed IP addresses**, add Render's outbound addresses (service, Connect, Outbound) or the API cannot reach the database.
+- Later additions in the dashboard (Environment), not in the repo: `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` and `MAIL_FROM` (Phase 3), `DEMO_VIDEO_URL` (Oct 30), and the custom domain `api.roadwatch-ph.me` under Settings, Custom Domains, with a CNAME at Namecheap (#38).
+
+## F7. Troubleshooting
+
+| Symptom in the Render logs | Likely cause | Fix |
+|---|---|---|
+| `Unable to start RoadWatch API: JWT_SECRET must be ...` | `JWT_SECRET` missing or short | Environment: add it again with **Generate**, or paste a 64-character random hex value |
+| `Unable to start ...: connect ETIMEDOUT` or `ECONNREFUSED` | Wrong `DB_HOST` or `DB_PORT`, or an Aiven IP allowlist | Recopy them from Aiven; see the allowlist note in F6 |
+| `self-signed certificate` or `unable to get local issuer certificate` | `DB_SSL_CA` incomplete | Paste the whole `ca.pem` again, including the `BEGIN` and `END` lines |
+| `Access denied for user` | Wrong `DB_USER` or `DB_PASSWORD` | Recopy them from Aiven |
+| Health check failing but no error | The service is still starting or asleep | Wait two minutes and reload `/api/health` |
+| Browser console: `CORS` error | The web address is not in `CLIENT_ORIGIN` | Add it exactly (scheme, host, port), comma separated, then let Render redeploy |
+| Login answers 400 `platform must be 'web' or 'mobile'` | An old web or mobile build | Rebuild from the latest `dev` |
+| Login answers 403 "sign in on the RoadWatch Android app" on the web | A reporter or officer account on the web | Expected (#36): only administrators use the web |
+
+---
+
 # What was verified, and what was not
+
+**Added Oct 20 (Render Blueprint, Part F):** `render.yaml` parses as YAML, and the API was started the way Render will run it (`npm start`, `NODE_ENV=production`, a 44-character generated-style `JWT_SECRET`, `PORT=10000`) against a local MariaDB: `/api/health` answered, an administrator signed in with `platform: "web"` and was refused on `"mobile"`, CORS allowed only `CLIENT_ORIGIN`, and SIGTERM shut it down cleanly. Not verified: the Blueprint on Render itself (Render's validator and docs were not reachable from the build environment), Aiven, Cloudinary, the real deploy.
 
 **Added Oct 16 (backend merge):** on local MariaDB 10.11 with Node 22 the merged API passed 16 automated tests (the 12-step database flow plus health, app-info and the JWT guard), the TLS connection path (`DB_SSL=true` with a CA file, using a throwaway certificate), `seed:admin` and the startup refusal for a placeholder `JWT_SECRET`. Not verified: Aiven, Cloudinary uploads, Gmail SMTP, MySQL 8 (CI will exercise it), Render.
 

@@ -1,0 +1,50 @@
+# Render Blueprint for the RoadWatch API (docs/DECISIONS.md #8, #39; steps in docs/SETUP-GUIDE.md Part F).
+# Only setting NAMES live here. Values marked `sync: false` are typed into the Render dashboard when the
+# Blueprint is created and never go into this public repo.
+services:
+  - type: web
+    name: roadwatch-api
+    runtime: node
+    plan: free # sleeps after ~15 min idle; the first request then takes about a minute
+    region: singapore # closest Render region to the Philippines
+    branch: main # auto-deploys from main, like Vercel (CLAUDE.md section 4)
+    rootDir: api # only changes inside api/ trigger a new deploy
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health # answers without touching the database
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Browser origins allowed by CORS, comma separated: the deployed web app and the local dev server,
+      # e.g. https://roadwatch-ph.vercel.app,http://localhost:5173 (the mobile app sends no Origin).
+      - key: CLIENT_ORIGIN
+        sync: false
+      # Aiven MySQL (TLS). Copy them from Aiven -> service -> Overview -> Connection information.
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      # The Aiven CA certificate: paste the whole ca.pem text (line breaks or \n both work).
+      - key: DB_SSL_CA
+        sync: false
+      # Random 256-bit secret made by Render. Changing it later signs everyone out.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+      - key: CLOUDINARY_URL
+        sync: false
+      # Email is added in Phase 3 with Brevo (#37): MAIL_PROVIDER=brevo, BREVO_API_KEY, MAIL_FROM.
+      # Until then no mail settings are set, so the API skips emails (in-app notifications still work).
+      # DEMO_VIDEO_URL is added in the dashboard after the video is uploaded (Oct 30).
