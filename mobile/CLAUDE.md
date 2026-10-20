@@ -1,7 +1,10 @@
 # mobile/CLAUDE.md: RoadWatch mobile (Flutter, Android)
 
 Project-wide rules live in the root `CLAUDE.md`. This file covers the Flutter app only.
-The app is for **Reporters** only; staff use the web app (login rejects other roles).
+One app for **Reporters** and (from Phase 3) **Traffic Officers**; Administrators use the web (#36).
+Login sends `platform: "mobile"`: the API answers 403 `WRONG_PLATFORM` for Administrators (shown as
+"Use the RoadWatch website"). Officers pass the API check but the app keeps no token for them until the
+officer screens (Figma O1-O6, Flow C) are built; see `AuthFailure.officerAccount`.
 
 ## Source of design
 - Figma file `psx52NYL69RkycK7Z44EAb`: Foundations (90:2), Components (90:3), **Mobile (90:4)**, Flows (90:6).

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -97,14 +98,36 @@ void main() {
       expect(await api.client.tokens.readToken(), 'test-token');
     });
 
-    test('rejects staff accounts on mobile and keeps no token', () async {
+    test('keeps no token for Traffic Officers until the officer screens ship (Phase 3)', () async {
       final api = FakeApi(loginRole: Roles.officer);
       final auth = AuthProvider(api);
       await expectLater(
         auth.login(email: 'officer@example.com', password: 'secret123'),
-        throwsA(isA<AuthFailure>().having((f) => f.kind, 'kind', AuthFailureKind.staffAccount)),
+        throwsA(isA<AuthFailure>().having((f) => f.kind, 'kind', AuthFailureKind.officerAccount)),
       );
       expect(auth.isSignedIn, isFalse);
+      expect(await api.client.tokens.readToken(), isNull);
+    });
+
+    test('maps the API WRONG_PLATFORM answer to "Use the RoadWatch website" (#36)', () async {
+      final wrong = ApiException.fromResponse(
+        Response(
+          requestOptions: RequestOptions(path: '/auth/login'),
+          statusCode: 403,
+          data: {
+            'success': false,
+            'error': 'Administrators sign in on the RoadWatch web dashboard.',
+            'details': {'code': 'WRONG_PLATFORM', 'platform': 'web'},
+          },
+        ),
+      );
+      expect(wrong.isWrongPlatform, isTrue);
+      final api = FakeApi(loginError: wrong);
+      final auth = AuthProvider(api);
+      await expectLater(
+        auth.login(email: 'admin@example.com', password: 'secret123'),
+        throwsA(isA<AuthFailure>().having((f) => f.kind, 'kind', AuthFailureKind.adminAccount)),
+      );
       expect(await api.client.tokens.readToken(), isNull);
     });
 
@@ -123,6 +146,40 @@ void main() {
         throwsA(isA<AuthFailure>().having((f) => f.title, 'title', "Couldn't log in")),
       );
     });
+  });
+
+  test('RoadWatchApi.login sends platform "mobile" (#36)', () async {
+    Object? sent;
+    final dio = Dio(BaseOptions(baseUrl: 'http://roadwatch.test/api'));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          sent = options.data;
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'success': true,
+                'data': {
+                  'token': 't',
+                  'user': {
+                    'user_id': 7,
+                    'full_name': 'Juan Dela Cruz',
+                    'contact_email': 'juan@example.com',
+                    'role': Roles.reporter,
+                  },
+                },
+              },
+            ),
+          );
+        },
+      ),
+    );
+    final api = RoadWatchApi(ApiClient(tokenStorage: MemoryTokens(), dio: dio));
+    final session = await api.login(email: ' juan@example.com ', password: 'secret123');
+    expect(sent, {'contact_email': 'juan@example.com', 'password': 'secret123', 'platform': 'mobile'});
+    expect(session.user.isReporter, isTrue);
   });
 
   testWidgets('StatusChip shows the text for all 8 statuses', (tester) async {

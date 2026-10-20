@@ -43,11 +43,11 @@ class RoadWatchApi {
     return AuthSession.fromJson(body.dataMap);
   }
 
-  /// POST /auth/login.
+  /// POST /auth/login. The app always signs in as `mobile`; the API refuses Administrators here (#36).
   Future<AuthSession> login({required String email, required String password}) async {
     final body = await client.post(
       '/auth/login',
-      body: {'contact_email': email.trim(), 'password': password},
+      body: {'contact_email': email.trim(), 'password': password, 'platform': 'mobile'},
     );
     return AuthSession.fromJson(body.dataMap);
   }

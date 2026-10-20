@@ -21,6 +21,7 @@ class ApiException implements Exception {
     this.statusCode,
     this.serverMessage,
     this.fieldErrors = const {},
+    this.code,
   });
 
   final ApiErrorKind kind;
@@ -34,6 +35,12 @@ class ApiException implements Exception {
 
   /// `details` from a 400 validation error: field name -> messages.
   final Map<String, List<String>> fieldErrors;
+
+  /// `details.code` when the API sends one, e.g. 'WRONG_PLATFORM'.
+  final String? code;
+
+  /// 403 from POST /auth/login: the account signs in on the web dashboard, not here (#36).
+  bool get isWrongPlatform => code == 'WRONG_PLATFORM';
 
   /// First validation message for a field (e.g. 'contact_email'), if any.
   String? fieldError(String field) {
@@ -75,12 +82,14 @@ class ApiException implements Exception {
     final status = response?.statusCode;
     final body = response?.data;
     String? server;
+    String? code;
     final fields = <String, List<String>>{};
     if (body is Map) {
       final err = body['error'];
       if (err is String && err.isNotEmpty) server = err;
       final details = body['details'];
       if (details is Map) {
+        if (details['code'] is String) code = details['code'] as String;
         details.forEach((k, v) {
           if (v is List) fields['$k'] = v.map((m) => '$m').toList();
           if (v is String) fields['$k'] = [v];
@@ -118,6 +127,7 @@ class ApiException implements Exception {
       statusCode: status,
       serverMessage: server,
       fieldErrors: fields,
+      code: code,
     );
   }
 }

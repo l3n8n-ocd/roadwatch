@@ -6,10 +6,20 @@ import 'package:flutter/foundation.dart';
 import '../api/api_exception.dart';
 import '../api/models.dart';
 import '../api/roadwatch_api.dart';
+import '../constants.dart';
 
 enum AuthStatus { unknown, signedOut, signedIn }
 
-enum AuthFailureKind { invalidCredentials, deactivated, staffAccount, emailTaken, validation, network, other }
+enum AuthFailureKind {
+  invalidCredentials,
+  deactivated,
+  adminAccount,
+  officerAccount,
+  emailTaken,
+  validation,
+  network,
+  other,
+}
 
 /// A sign-in or registration problem with the Figma M0 wording (title + message for the
 /// error banner, frames 109:79 and 109:164).
@@ -38,13 +48,24 @@ class AuthFailure implements Exception {
     'This account can no longer log in. Contact the RoadWatch admin.',
   );
 
-  /// The mobile app is for reporters only. Not drawn in Figma; follows the web wrong-role
-  /// pattern (#28): the token is discarded and the user is pointed to the right place.
-  static const staffAccount = AuthFailure(
-    AuthFailureKind.staffAccount,
+  /// Administrators use the web dashboard (#36). The API answers 403 WRONG_PLATFORM when an
+  /// Administrator signs in with platform "mobile"; no token is kept.
+  static const adminAccount = AuthFailure(
+    AuthFailureKind.adminAccount,
     'Use the RoadWatch website',
-    'This app is for reporters. Administrators and traffic officers sign in on the RoadWatch website.',
+    'Administrator accounts sign in on the RoadWatch web dashboard.',
   );
+
+  /// Traffic Officers belong in this app (#36), but their screens (Figma O1-O6) ship in Phase 3.
+  /// Until then the app keeps no token for them. Remove this when the officer home is built.
+  static const officerAccount = AuthFailure(
+    AuthFailureKind.officerAccount,
+    'Officer screens are coming',
+    'Traffic Officer accounts can use the next release of the RoadWatch app. Ask your administrator when it is ready.',
+  );
+
+  /// Failure for a signed-in account this version of the app does not serve.
+  static AuthFailure forRole(String role) => role == Roles.officer ? officerAccount : adminAccount;
 
   static const sessionExpired = AuthFailure(
     AuthFailureKind.other,
@@ -92,7 +113,7 @@ class AuthProvider extends ChangeNotifier {
       final me = await api.me();
       if (!me.isReporter) {
         await api.client.tokens.clear();
-        _setSignedOut(notice: AuthFailure.staffAccount);
+        _setSignedOut(notice: AuthFailure.forRole(me.role));
         return;
       }
       await _saveUser(me);
@@ -121,9 +142,10 @@ class AuthProvider extends ChangeNotifier {
   Future<void> login({required String email, required String password}) async {
     try {
       final session = await api.login(email: email, password: password);
-      if (!session.user.isReporter) throw AuthFailure.staffAccount;
+      if (!session.user.isReporter) throw AuthFailure.forRole(session.user.role);
       await _startSession(session);
     } on ApiException catch (e) {
+      if (e.isWrongPlatform) throw AuthFailure.adminAccount;
       if (e.kind == ApiErrorKind.unauthorized) {
         // The API uses one message for wrong password and deactivated accounts on purpose.
         throw AuthFailure.invalidCredentials;
