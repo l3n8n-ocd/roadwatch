@@ -21,12 +21,23 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, error: 'Too many attempts. Try again later.' },
 });
+// Public read-only data (no token): generous, but stops a script from hammering the database.
+const publicLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: Number(process.env.PUBLIC_RATE_LIMIT || 60),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests. Try again later.' },
+});
 const id = validate(s.idParam, 'params');
 
 // ----- auth (public) -----
 router.post('/auth/register', authLimiter, validate(s.register), wrap(auth.register));
 router.post('/auth/login', authLimiter, validate(s.login), wrap(auth.login));
 router.get('/auth/me', authenticate, wrap(auth.me));
+
+// ----- public data (no token) -----
+router.get('/public/stats', publicLimiter, wrap(misc.publicStats));
 
 // Everything below needs a valid token.
 router.use(authenticate);

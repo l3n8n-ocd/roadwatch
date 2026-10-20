@@ -1,5 +1,6 @@
 const { fn, col, Op, literal } = require('sequelize');
-const { Report, AccidentType, User } = require('../models');
+const { Report, AccidentType, User, Role } = require('../models');
+const { ROLES } = require('../config/constants');
 
 const count = () => [fn('COUNT', col('reports.report_id')), 'count'];
 
@@ -46,6 +47,22 @@ async function dashboardStats() {
   };
 }
 
+// Public totals for the landing stats bar (#40). Counts only: no names, places or contact details.
+async function publicStats() {
+  const [reportsReceived, verifiedRecords, casesResolved, activeOfficers] = await Promise.all([
+    Report.count(),
+    Report.count({ where: { record_type: 'verified_record' } }),
+    Report.count({ where: { report_status: 'Resolved/Closed' } }),
+    User.count({ where: { is_active: true }, include: [{ model: Role, as: 'role', where: { role_name: ROLES.OFFICER } }] }),
+  ]);
+  return {
+    reports_received: reportsReceived,
+    verified_records: verifiedRecords,
+    cases_resolved: casesResolved,
+    active_officers: activeOfficers,
+  };
+}
+
 // FR-12: daily, weekly, monthly or annual summary around a given date.
 function periodRange(period, dateStr) {
   const d = new Date(`${dateStr}T00:00:00Z`);
@@ -82,4 +99,4 @@ async function periodSummary(period, dateStr) {
   };
 }
 
-module.exports = { dashboardStats, periodSummary, periodRange };
+module.exports = { dashboardStats, publicStats, periodSummary, periodRange };

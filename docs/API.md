@@ -1,6 +1,6 @@
 # RoadWatch API contract
 
-Base URL: `http://localhost:5000/api` (deployed: your Render URL + `/api`). Send `Authorization: Bearer <token>` on everything except health, app-info, register and login.
+Base URL: `http://localhost:5000/api` (deployed: your Render URL + `/api`). Send `Authorization: Bearer <token>` on everything except health, app-info, public stats, register and login.
 
 Responses: success is `{ "success": true, "data": ... }` (lists add `"pagination": { page, limit, total, pages }`). Errors are `{ "success": false, "error": "message", "details"?: {field: [messages]} }` with status 400 validation, 401 not logged in or account inactive, 403 wrong role, 404 not found (also used when a record belongs to someone else), 409 duplicate, 413 photo too big.
 
@@ -17,6 +17,7 @@ Values that must match the database exactly:
 |---|---|---|
 | GET `/health` | | `{"status":"ok","service":"roadwatch-api"}` (no `success` field) |
 | GET `/app-info` | | `{"demoVideoUrl": string or null}` |
+| GET `/public/stats` | | Landing stats bar (#40): `{ reports_received, verified_records, cases_resolved, active_officers }`. Counts only, no personal data. Rate limited (60 a minute per IP, `PUBLIC_RATE_LIMIT`), `Cache-Control: max-age=60`. |
 | POST `/auth/register` | `full_name`, `contact_email`, `password` (8+), `contact_phone?` | Always a Reporter. Returns `{ user, token }`. |
 | POST `/auth/login` | `contact_email`, `password`, `platform` (`web` or `mobile`, required) | Returns `{ token, user: { user_id, full_name, contact_email, contact_phone, role } }`. Use `user.role` for the role-based redirect. Platforms (#36): Reporter and Traffic Officer sign in with `mobile`, Administrator with `web`. A correct password on the wrong platform returns **403** `{ success: false, error, details: { code: "WRONG_PLATFORM", platform } }`, where `details.platform` is the platform the account must use; it is written to the audit log as `auth.login_wrong_platform`. A wrong password always returns 401 first, so the platform message never reveals whether an email exists. A missing or unknown `platform` returns 400. |
 | GET `/auth/me` | | Current user |
