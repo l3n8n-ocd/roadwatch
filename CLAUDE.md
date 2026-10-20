@@ -95,7 +95,7 @@ React web (landing, Admin) ──────┘        ├─► Cloudinary (ph
 Clients ─► OpenStreetMap tiles and Nominatim directly
 ```
 
-- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36): `reporter` and `officer` sign in on mobile only, `admin` on web only; each app sends `platform` (`web` or `mobile`) at login and the API answers 403 `WRONG_PLATFORM` for the wrong one (API and web done Oct 20; the mobile app still to send it).
+- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36): `reporter` and `officer` sign in on mobile only, `admin` on web only; each app sends `platform` (`web` or `mobile`) at login and the API answers 403 `WRONG_PLATFORM` for the wrong one (API, web and mobile done Oct 20; the mobile app still turns officers away until the officer screens ship in Phase 3).
 - Photos are uploaded through the API (multer) to Cloudinary; only URLs go to MySQL.
 - The demo video is uploaded to Cloudinary. Both clients read its URL from `GET /api/app-info` (`DEMO_VIDEO_URL` env var on Render). Do not bundle the video into `web/public` or Flutter assets.
 - Render's free tier sleeps when idle. Warm the API before demos, recordings and grading.

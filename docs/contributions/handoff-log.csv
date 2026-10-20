@@ -11,3 +11,4 @@ date,member,message,paths,commit
 2026-10-19,"Lenon Adriano","feat(mobile): add all mobile screens from the Figma prototype","mobile/",8f4f8af
 2026-10-20,"Carl Ernest Santos","feat(api): refuse login on the wrong platform (#36)","api/ docs/API.md",46335d8
 2026-10-20,"Pauline Lapuz","feat(web): administrator-only web with platform sign-in (#36)","web/",bc64d7f
+2026-10-20,"Lenon Adriano","feat(mobile): sign in with platform mobile; admins sent to the web (#36)","mobile/",f5ec0c8
