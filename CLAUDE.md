@@ -68,11 +68,11 @@ Objectives (from the course description): web and mobile reporting; quick digita
 | Database | MySQL. Host: **Aiven managed MySQL (TLS)**. Local MySQL optional for dev | Confirmed |
 | API hosting | **Render** (free web service, sleeps when idle) | Confirmed |
 | Web hosting | Vercel (root folder `web`, env `VITE_API_URL`) | Recommended |
-| Domain | Namecheap `.me` from the GitHub Student Developer Pack, claimed by Lenon (DNS). Used for the email sender, the web app, `api.` on Render and the APK link. Name not chosen yet (#38) | Confirmed Oct 20 |
+| Domain | Namecheap `.me` from the GitHub Student Developer Pack, claimed by Lenon (DNS). Used for the email sender, the web app, `api.` on Render and the APK link. Name: `roadwatch-ph.me` (#38) | Confirmed Oct 20 |
 | Mobile delivery | Release APK built by GitHub Actions on tag `v*` | Recommended |
 | Photos | Cloudinary (store only the URL in `report_photos`) | Confirmed |
 | Maps | OpenStreetMap via Leaflet (web) and flutter_map (mobile); Nominatim for address lookup | Confirmed |
-| Email | **Brevo transactional email API over HTTPS** (`MAIL_PROVIDER=brevo`, `BREVO_API_KEY`), called with Node's built-in `fetch`. Render's free tier blocks SMTP ports, so Gmail SMTP cannot be used once deployed (#37). Sender on the project domain with SPF/DKIM/DMARC. Not implemented yet (Carl, Phase 2); `mailer.js` still has the old Nodemailer SMTP/Resend code | Confirmed Oct 20 |
+| Email | **Brevo transactional email API over HTTPS** (`MAIL_PROVIDER=brevo`, `BREVO_API_KEY`), called with Node's built-in `fetch`. Render's free tier blocks SMTP ports, so Gmail SMTP cannot be used once deployed (#37). Sender on the project domain with SPF/DKIM/DMARC. `MAIL_PROVIDER=log` for local dev and tests. Not implemented yet (Carl, Phase 3); `mailer.js` still has the old Nodemailer SMTP/Resend code, which will be removed | Confirmed Oct 20 |
 | Exports | pdfkit (PDF), json2csv (CSV) | Recommended |
 | Auth | Own JWT with role middleware | Confirmed |
 | CI/CD | GitHub Actions (`api-ci`, `web-ci`, `mobile-ci`); Render and Vercel auto-deploy from `main` | Confirmed |
@@ -301,7 +301,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 ## 17. Known Issues and Technical Debt (remaining items are to-do)
 
 - Fixed in starter v2 (Oct 16): `*.pem` ignored, `api/scripts/check-db.js` added (`npm run check:db`), `is_active` added to schema and ERD, Gmail SMTP defaults in `.env.example` and `mailer.js`. Verified locally only; confirm they exist in the real repo.
-- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotate them. Carl's `JWT_SECRET` was the placeholder.
+- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotated (confirmed Oct 20). Revoke the Gmail app password once Brevo works.
 - Render's free tier sleeps when idle. The Aiven free plan limits were not verified in the conversation.
 - Git LFS: the user relies on 1 GB free storage. Bandwidth limits and "Download ZIP" behavior (LFS pointers only) are unverified. Submit the MP4 as a separate file too.
 - An earlier starter had `npm test` set to `node --test tests/`, which fails on Node 22. It was fixed to `node --test`. If an old copy exists, update it.
@@ -332,12 +332,12 @@ Do not do the following without the user's approval:
 ## 19. Pending Tasks and Priorities
 
 **Open decisions (only these remain)**
-- **Domain name:** Namecheap `.me`, Lenon claims it (#38); name to pick.
+- **Domain:** `roadwatch-ph.me` (Namecheap `.me`, Lenon); availability not checked yet (#38).
 - **Column types and ENUM values:** proposed during planning. Carl may finalize them when loading the schema; tell Lenon so the ERD stays in sync.
 - **Aiven free-plan limits:** not verified.
 
 **Decided on Oct 15:** Sequelize, Render, `is_active` for deactivation, full responsive and WCAG AA target (Gmail SMTP was replaced by the Brevo API on Oct 20).
-**Decided on Oct 20:** anonymous reporting not required (#35); Reporter and Officer mobile-only, Administrator web-only (#36); Brevo email API (#37); Namecheap `.me` domain (#38); API deployed to Render in Phase 2, and Phase 2 API scope (#39).
+**Decided on Oct 20:** anonymous reporting not required (#35); Reporter and Officer mobile-only, Administrator web-only (#36); Brevo email API (#37); Namecheap `.me` domain (#38); Phase 2 (Oct 21) = core only: Render deploy (Blueprint), platform check, web admin-only, reporter on mobile seen by admin on web; officer app, Brevo and endpoints #23/#25/#27/#30 in Phase 3; Figma Archive and officer frames now (#39).
 
 **Immediate next steps (in order)**
 Follow `docs/SETUP-GUIDE.md` (Parts A to D, with troubleshooting).
