@@ -217,6 +217,7 @@ Widget _app(
       ChangeNotifierProvider<NotificationsProvider>.value(value: notifications ?? NotificationsProvider(api)),
     ],
     child: MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: mode,
