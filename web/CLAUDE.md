@@ -17,11 +17,11 @@ Project-wide rules live in the root `CLAUDE.md`. This file covers the web app on
 src/
   api/client.js        axios instance (unwraps { success, data }), token storage, downloadFile()
   api/endpoints.js     one function per docs/API.md endpoint ("not built yet" ones are marked)
-  context/             AuthContext (login with expected role, register, logout), ThemeContext
-  lib/constants.js     ROLES, STATUSES, workflow status lists, INJURY_OPTIONS, HOTLINES, homePathFor()
+  context/             AuthContext (Administrator login with platform "web", logout), ThemeContext
+  lib/constants.js     ROLES, STATUSES, ADMIN_STATUSES, INJURY_OPTIONS, HOTLINES, homePathFor(), APK_URL
   lib/format.js        formatDate, formatDateTime, reportCode (RW-000128)
   components/ui/       Figma Components page, one file per component (Button.jsx, StatusChip.jsx...)
-  layouts/             StaffLayout (sidebar + top bar + user menu), ReporterLayout (reporter top bar)
+  layouts/             StaffLayout (sidebar + top bar + user menu), AccountDialogs
   pages/<area>/        one file per screen; App.jsx holds every route
   assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png
   styles/tokens.css    generated from Figma variables (light + dark); styles/theme.css maps them to Tailwind
@@ -50,7 +50,12 @@ src/
 - Touch targets at least 44 px. Respect `prefers-reduced-motion`.
 
 ## Data and roles
-- Roles are enforced by the API; `RequireRole` only routes. Staff sign-in checks the chosen role (#28).
+- The web is for Administrators only (#36). Reporters and Traffic Officers use the Android app; their old
+  web screens (R0-R6, W5, officer W4) were removed on Oct 20 and live on the Figma Archive page.
+- Login sends `platform: "web"`. The API answers 403 `details.code = WRONG_PLATFORM` for other roles, shown
+  as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default: latest
+  GitHub release; switch to roadwatch-ph.me/app once the domain is live, #38).
+- Roles are enforced by the API; `RequireRole` only routes.
 - Reporter contact details only on screens the API returns them for (admin, assigned officer).
 - Endpoints not built yet (public updates, edit profile, change password, action log, admin audit logs):
   call them through `endpoints.js` and show the designed empty/error state when they fail.

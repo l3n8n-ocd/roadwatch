@@ -11,20 +11,13 @@ import { ChangePasswordDialog, ContactSupportDialog, EditProfileDialog } from '.
 
 // Breadcrumb for the current route ("Reports / RW-000128", "Help / About").
 function breadcrumbsFor(pathname) {
-  const detail = pathname.match(/^\/(admin|officer)\/reports\/(\d+)/);
-  if (detail) {
-    const admin = detail[1] === 'admin';
-    return [
-      { label: admin ? 'Reports' : 'Assigned to me', to: admin ? '/admin/reports' : '/officer' },
-      { label: reportCode(detail[2]) },
-    ];
-  }
+  const detail = pathname.match(/^\/admin\/reports\/(\d+)/);
+  if (detail) return [{ label: 'Reports', to: '/admin/reports' }, { label: reportCode(detail[1]) }];
   const pages = {
     '/admin': 'Dashboard',
     '/admin/reports': 'Reports',
     '/admin/users': 'Users & settings',
     '/admin/summaries': 'Summaries',
-    '/officer': 'Assigned to me',
     '/demo-video': 'Demo video',
   };
   if (pathname === '/action-log') return [{ label: 'Account' }, { label: 'Action log' }];

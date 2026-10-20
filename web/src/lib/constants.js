@@ -16,9 +16,8 @@ export const STATUSES = [
   'Rejected',
 ];
 
-// Workflow order (#30): admin verifies before assigning; officers do the rest.
+// Workflow order (#30): admin verifies before assigning; officers do the rest in the mobile app (#36).
 export const ADMIN_STATUSES = ['Under Review', 'Additional Information Required', 'Verified', 'Rejected'];
-export const OFFICER_STATUSES = ['In Progress', 'Additional Information Required', 'Resolved/Closed'];
 
 export const INJURY_OPTIONS = [
   { value: 'none', label: 'None' },
@@ -46,8 +45,10 @@ export const HOTLINES = {
   ],
 };
 
+// The web is for Administrators only (#36); Reporters and Traffic Officers use the Android app.
 export function homePathFor(role) {
-  if (role === ROLES.ADMIN) return '/admin';
-  if (role === ROLES.OFFICER) return '/officer';
-  return '/my-reports';
+  return role === ROLES.ADMIN ? '/admin' : '/';
 }
+
+// Release APK (GitHub Actions on tag v*). Switch VITE_APK_URL to roadwatch-ph.me/app once the domain is live (#38).
+export const APK_URL = import.meta.env.VITE_APK_URL || 'https://github.com/l3n8n-ocd/roadwatch/releases/latest';

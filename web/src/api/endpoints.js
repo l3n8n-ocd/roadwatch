@@ -3,8 +3,8 @@ import { api } from './client';
 // Thin wrappers over docs/API.md. Endpoints marked "not built yet" are approved in
 // design (docs/DECISIONS.md) but do not exist on the API; callers must handle errors.
 export const auth = {
-  login: (contact_email, password) => api.post('/auth/login', { contact_email, password }),
-  register: (body) => api.post('/auth/register', body),
+  // The web signs in Administrators only; the API refuses other roles on "web" (#36).
+  login: (contact_email, password) => api.post('/auth/login', { contact_email, password, platform: 'web' }),
   me: () => api.get('/auth/me'),
   updateMe: (body) => api.patch('/auth/me', body), // not built yet (#25)
   changePassword: (body) => api.patch('/auth/me/password', body), // not built yet (#25)
@@ -25,25 +25,6 @@ export const notifications = {
   list: () => api.get('/notifications'),
   read: (id) => api.patch(`/notifications/${id}/read`),
   readAll: () => api.patch('/notifications/read-all'),
-};
-
-export const reports = {
-  create: (body) => api.post('/reports', body),
-  mine: (params) => api.get('/reports', { params }),
-  minePage: (params) => api.get('/reports', { params, withPagination: true }), // { data, pagination }
-  get: (id) => api.get(`/reports/${id}`),
-  uploadPhotos: (id, files) => {
-    const form = new FormData();
-    files.forEach((f) => form.append('photos', f));
-    return api.post(`/reports/${id}/photos`, form);
-  },
-};
-
-export const officer = {
-  list: (params) => api.get('/officer/reports', { params }),
-  listPage: (params) => api.get('/officer/reports', { params, withPagination: true }), // { data, pagination }
-  get: (id) => api.get(`/officer/reports/${id}`),
-  update: (id, body) => api.patch(`/officer/reports/${id}`, body),
 };
 
 export const admin = {

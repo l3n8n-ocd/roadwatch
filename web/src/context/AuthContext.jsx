@@ -18,22 +18,9 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  // expectedRoles: the staff sign-in checks the chosen role (#28). On a mismatch the
-  // token is discarded and the caller shows the "wrong role" message.
-  const login = useCallback(async (email, password, expectedRoles) => {
+  // Administrators only (#36): the API answers 403 WRONG_PLATFORM for other roles on the web.
+  const login = useCallback(async (email, password) => {
     const res = await auth.login(email, password);
-    if (expectedRoles && !expectedRoles.includes(res.user.role)) {
-      const err = new Error('wrong-role');
-      err.actualRole = res.user.role;
-      throw err;
-    }
-    setToken(res.token);
-    setUser(res.user);
-    return res.user;
-  }, []);
-
-  const register = useCallback(async (body) => {
-    const res = await auth.register(body);
     setToken(res.token);
     setUser(res.user);
     return res.user;
@@ -45,7 +32,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

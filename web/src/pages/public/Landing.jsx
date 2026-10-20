@@ -18,17 +18,15 @@ import {
 } from '../../components/ui';
 import { publicApi } from '../../api/endpoints';
 import { useAuth } from '../../context/AuthContext';
-import { HOTLINES, ROLES, homePathFor } from '../../lib/constants';
+import { APK_URL, HOTLINES, homePathFor } from '../../lib/constants';
 import { formatDate } from '../../lib/format';
 import { cx } from '../../lib/cx';
 import heroStreet from '../../assets/images/hero-street.jpg';
 
-// W0 Public landing (Figma 137:4095, 390: 139:4275; #24). Browsing is public; reporting and
-// tracking need a reporter account (/report and /my-reports are guarded and send visitors to
-// /sign-in). "Staff sign-in" in the footer is a discreet link to the staff role chooser (#28).
+// W0 Public landing (Figma 137:4095, 390: 139:4275; #24, updated for #36). Browsing is public.
+// Reporters and Traffic Officers use the Android app, so the calls to action download the APK.
+// "Staff sign-in" in the footer is a discreet link to the Administrator sign-in.
 
-// Optional link to the release APK (GitHub Actions on tag v*). Hidden until it is set.
-const APK_URL = import.meta.env.VITE_APK_URL;
 
 const SECTIONS = [
   { id: 'how-it-works', label: 'How it works' },
@@ -79,7 +77,7 @@ const TIPS = [
 ];
 
 const SUPPORTS = [
-  'Accident reporting from the web and the Android app',
+  'Accident reporting from the Android app, with GPS location and photos',
   'GPS or manually selected accident location',
   'Photo evidence (up to 5 photos per upload)',
   'Status tracking with alerts at every change',
@@ -153,10 +151,6 @@ function LandingHeader({ user }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  // Signed-in visitors get a link back to their own area instead of "Log in".
-  const account = user
-    ? { to: homePathFor(user.role), label: user.role === ROLES.REPORTER ? 'My reports' : 'Open dashboard' }
-    : { to: '/sign-in', label: 'Log in' };
 
   return (
     <header className="relative border-b border-border-subtle bg-surface-white">
@@ -184,13 +178,16 @@ function LandingHeader({ user }) {
           </ul>
         </nav>
         <div className="flex-1 lg:hidden" />
-        <Button to={account.to} variant="secondary" className="max-lg:h-12 max-lg:px-4">
-          {account.label}
-        </Button>
+        {/* A signed-in administrator gets a link back to the dashboard. */}
+        {user && (
+          <Button to={homePathFor(user.role)} variant="secondary" className="max-lg:h-12 max-lg:px-4">
+            Open dashboard
+          </Button>
+        )}
         {/* Wrapper: Button always sets inline-flex, so hide the wrapper on small screens. */}
         <span className="hidden lg:flex">
-          <Button to="/report" icon="alert-triangle">
-            Report an accident
+          <Button href={APK_URL} icon="download">
+            Get the app
           </Button>
         </span>
       </div>
@@ -211,8 +208,8 @@ function LandingHeader({ user }) {
               ))}
             </ul>
           </nav>
-          <Button to="/report" icon="alert-triangle" fullWidth className="mt-3 h-12">
-            Report an accident
+          <Button href={APK_URL} icon="download" fullWidth className="mt-3 h-12">
+            Download the Android app
           </Button>
         </div>
       )}
@@ -240,24 +237,20 @@ function Hero() {
             <span className="max-sm:hidden"> until a traffic officer closes the case</span>.
           </p>
           <div className="flex w-full flex-col items-start gap-4 sm:w-auto sm:flex-row sm:items-center">
-            <Button to="/report" variant="secondary" icon="alert-triangle" className="max-sm:h-12 max-sm:w-full">
-              Report an accident
+            <Button href={APK_URL} variant="secondary" icon="download" className="max-sm:h-12 max-sm:w-full">
+              Download the Android app
             </Button>
-            <Link
-              to="/my-reports"
+            <a
+              href="#how-it-works"
               className={cx('flex h-11 items-center rounded-rw-sm px-2 type-button text-text-inverse underline underline-offset-2 max-sm:px-0', ON_DARK_FOCUS)}
             >
-              Track my report
-            </Link>
-          </div>
-          {APK_URL && (
-            <a
-              href={APK_URL}
-              className={cx('flex min-h-11 items-center rounded-rw-sm type-label text-text-inverse underline underline-offset-2', ON_DARK_FOCUS)}
-            >
-              Get the Android app (APK)
+              See how it works
             </a>
-          )}
+          </div>
+          <p className="type-body-sm text-text-inverse-muted max-sm:hidden">
+            Free Android app (APK). Reporters and traffic officers use the app; this website is for browsing and for
+            administrators.
+          </p>
           <p className="flex w-full items-center gap-3 rounded-rw-md bg-brand-amber px-4 py-3 type-label text-text-primary sm:w-auto">
             <Icon name="alert-triangle" size={20} />
             <span>
@@ -269,7 +262,7 @@ function Hero() {
             </span>
           </p>
           <p className="type-body-sm text-text-inverse-muted max-sm:hidden">
-            Browsing is open to everyone. Reporting and tracking need a free account, so you can follow your report.
+            Browsing is open to everyone. Reporting and tracking happen in the RoadWatch mobile app with a free account.
           </p>
         </div>
         <ProductPreview />
@@ -285,7 +278,7 @@ function ProductPreview() {
       aria-hidden="true"
       className="hidden w-[440px] shrink-0 flex-col gap-4 rounded-rw-md bg-surface-white p-6 shadow-rw-lg lg:flex"
     >
-      <p className="type-overline text-text-blue uppercase">What reporters see</p>
+      <p className="type-overline text-text-blue uppercase">What reporters see in the app</p>
       <div className="flex flex-col gap-3 rounded-rw-md border border-border-subtle bg-surface-white p-4 text-text-primary shadow-rw-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="type-label text-text-muted">RW-000128</span>
@@ -468,7 +461,7 @@ function PublicUpdates() {
           <EmptyState
             icon="map"
             title="Road updates are not available yet"
-            description="Verified accident records will appear here once they are published. You can still report an accident or track your reports."
+            description="Verified accident records will appear here once they are published. You can still report an accident in the RoadWatch Android app."
           />
         )}
 
@@ -630,17 +623,13 @@ function ClosingCta() {
             Need to report an accident?
           </h2>
           <p className="type-body max-sm:hidden">
-            Log in to open the report form and your report history. New here? Creating an account takes a minute.
+            Reporting and tracking happen in the RoadWatch Android app. Install it, create a free account, and send a
+            report in about two minutes.
           </p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:gap-8">
-          <Button to="/register" variant="secondary" className="max-sm:h-12">
-            Create an account
-          </Button>
-          <Button to="/report" className="max-sm:h-12">
-            Log in to report
-          </Button>
-        </div>
+        <Button href={APK_URL} icon="download" className="max-sm:h-12">
+          Download the Android app
+        </Button>
       </div>
     </section>
   );

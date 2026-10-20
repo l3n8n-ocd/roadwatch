@@ -17,14 +17,13 @@ import {
   TimelineItem,
   Toast,
 } from '../../components/ui';
-import { admin, officer, users } from '../../api/endpoints';
-import { ADMIN_STATUSES, INJURY_OPTIONS, OFFICER_STATUSES, ROLES } from '../../lib/constants';
+import { admin, users } from '../../api/endpoints';
+import { ADMIN_STATUSES, INJURY_OPTIONS, ROLES } from '../../lib/constants';
 import { formatDate, formatDateTime, reportCode } from '../../lib/format';
 import { cx } from '../../lib/cx';
 
-// W4 Report details (Figma 125:1372 admin, 126:2143 officer, 131:4011 at 390 px).
-// mode="admin": verify / reject, then assign an officer (assigning is locked until Verified, #30).
-// mode="officer": update investigation status and/or add official remarks.
+// W4 Report details (Figma 125:1372, 131:4011 at 390 px). Administrator only (#36): verify / reject,
+// then assign an officer (assigning is locked until Verified, #30). Officers update reports in the mobile app.
 // Below 1024 px the action panels move into dialogs opened from a bottom action bar.
 
 // ---------- small helpers ----------
@@ -113,7 +112,7 @@ function Detail({ label, children, className = '' }) {
 
 // ---------- sections ----------
 
-function HeaderCard({ report, mode }) {
+function HeaderCard({ report }) {
   const officerName = report.assignedOfficer?.full_name;
   let extra = '';
   if (officerName) extra = ` · Assigned to Officer ${shortName(officerName)}`;
@@ -124,9 +123,7 @@ function HeaderCard({ report, mode }) {
       aria-labelledby="report-title"
       className="flex flex-col gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-6"
     >
-      <p className="type-overline uppercase text-text-blue">
-        {mode === 'officer' ? 'Report · Assigned to you' : 'Report'}
-      </p>
+      <p className="type-overline uppercase text-text-blue">Report</p>
       <h1 id="report-title" className="type-h1 break-words text-text-primary">
         {reportCode(report.report_id)}
         {report.accidentType?.type_name ? ` · ${report.accidentType.type_name}` : ''}
@@ -265,7 +262,7 @@ function PhotoViewer({ report }) {
   );
 }
 
-function ReporterCard({ report, mode }) {
+function ReporterCard({ report }) {
   const [shown, setShown] = useState(false);
   const r = report.reporter;
   const rows = [
@@ -276,9 +273,7 @@ function ReporterCard({ report, mode }) {
   return (
     <Card title="Reporter" titleId="reporter-title" icon="lock">
       <p className="type-body-sm text-text-muted">
-        {mode === 'officer'
-          ? 'You can see this because the report is assigned to you.'
-          : 'Visible only to administrators and the officer assigned to this report.'}
+        Visible only to administrators and the officer assigned to this report.
       </p>
       <dl id="reporter-contact" className="flex flex-col gap-4">
         {rows.map((row) => (
@@ -581,108 +576,31 @@ function AdminStatusForm({ report, onSaved }) {
   );
 }
 
-function OfficerForm({ report, onSaved }) {
-  const current = report.report_status;
-  const [status, setStatus] = useState(OFFICER_STATUSES.includes(current) ? current : '');
-  const [remarks, setRemarks] = useState('');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const closed = current === 'Resolved/Closed' || current === 'Rejected';
-
-  const submit = async (event) => {
-    event.preventDefault();
-    const changed = status && status !== current;
-    if (!changed && !remarks.trim()) {
-      setError('Choose a new status or write remarks.');
-      return;
-    }
-    setBusy(true);
-    setError('');
-    try {
-      const body = {};
-      if (changed) body.status = status;
-      if (remarks.trim()) body.remarks = remarks.trim();
-      const updated = await officer.update(report.report_id, body);
-      setRemarks('');
-      onSaved(updated, {
-        title: 'Update saved',
-        body: changed
-          ? `Status is now ${status}. The reporter and the admin were notified.`
-          : 'Your remarks were saved to the report.',
-      });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-      <Select
-        label="Status"
-        value={status}
-        disabled={closed}
-        placeholder={`Keep current (${current})`}
-        onChange={(e) => {
-          setStatus(e.target.value);
-          setError('');
-        }}
-        options={OFFICER_STATUSES.map((s) => ({ value: s, label: s }))}
-        helper="Officers can set In Progress, Additional Information Required and Resolved/Closed. Only an administrator verifies, assigns or rejects."
-      />
-      <Textarea
-        label="Official remarks"
-        optional
-        rows={4}
-        disabled={closed}
-        placeholder="e.g. Spoke with both drivers on site."
-        value={remarks}
-        onChange={(e) => {
-          setRemarks(e.target.value);
-          setError('');
-        }}
-        error={error || undefined}
-      />
-      <Button type="submit" fullWidth disabled={busy || closed}>
-        {busy ? 'Saving…' : 'Save update'}
-      </Button>
-      <p className="type-body-sm text-text-muted">
-        {closed
-          ? `This report is ${current}; no further updates are needed.`
-          : 'Send a status, remarks, or both. Officers cannot verify, assign or reject.'}
-      </p>
-    </form>
-  );
-}
-
 // ---------- page ----------
 
-export default function ReportDetails({ mode = 'admin' }) {
+export default function ReportDetails() {
   const { id } = useParams();
-  const isAdmin = mode === 'admin';
   const [report, setReport] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [officers, setOfficers] = useState([]);
   const [officersError, setOfficersError] = useState('');
   const [toast, setToast] = useState(null);
-  const [sheet, setSheet] = useState(null); // mobile dialog: 'assign' | 'status' | 'officer'
+  const [sheet, setSheet] = useState(null); // mobile dialog: 'assign' | 'status'
 
   const load = useCallback(() => {
     setLoadError(null);
     setReport(null);
-    (isAdmin ? admin.get(id) : officer.get(id)).then(setReport).catch(setLoadError);
-  }, [id, isAdmin]);
+    admin.get(id).then(setReport).catch(setLoadError);
+  }, [id]);
 
   useEffect(load, [load]);
 
   useEffect(() => {
-    if (!isAdmin) return;
     users
       .list({ role: ROLES.OFFICER })
       .then((list) => setOfficers((list || []).filter((u) => u.is_active)))
       .catch(() => setOfficersError('Could not load the officer list. Reload the page to try again.'));
-  }, [isAdmin]);
+  }, []);
 
   const onSaved = (updated, message) => {
     setReport(updated);
@@ -691,8 +609,8 @@ export default function ReportDetails({ mode = 'admin' }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const backTo = isAdmin ? '/admin/reports' : '/officer';
-  const backLabel = isAdmin ? 'Reports' : 'Assigned to me';
+  const backTo = '/admin/reports';
+  const backLabel = 'Reports';
 
   const shell = (children) => (
     <div className="flex flex-col gap-6 px-4 py-6 pb-28 sm:px-6 lg:px-10 lg:py-8 lg:pb-8">
@@ -714,11 +632,7 @@ export default function ReportDetails({ mode = 'admin' }) {
         type={notFound ? 'no-results' : 'error'}
         title={notFound ? 'Report not found' : 'Could not load this report'}
         description={
-          notFound
-            ? isAdmin
-              ? 'It may have been removed, or the link is wrong.'
-              : 'It is not assigned to you, or the link is wrong.'
-            : loadError.message
+          notFound ? 'It may have been removed, or the link is wrong.' : loadError.message
         }
         action={
           notFound ? (
@@ -757,11 +671,6 @@ export default function ReportDetails({ mode = 'admin' }) {
       <AdminStatusForm key={report.report_status} report={report} onSaved={onSaved} />
     </Card>
   );
-  const officerCard = (
-    <Card title="Update investigation" titleId="officer-title">
-      <OfficerForm key={report.report_status} report={report} onSaved={onSaved} />
-    </Card>
-  );
 
   return shell(
     <>
@@ -774,7 +683,7 @@ export default function ReportDetails({ mode = 'admin' }) {
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         {/* Main column */}
         <div className="flex min-w-0 flex-col gap-6">
-          <HeaderCard report={report} mode={mode} />
+          <HeaderCard report={report} />
           <DetailsCard report={report} />
           <LocationCard report={report} />
           <PhotoViewer key={report.report_id} report={report} />
@@ -782,17 +691,11 @@ export default function ReportDetails({ mode = 'admin' }) {
 
         {/* Side column: restricted reporter info, actions, history */}
         <div className="flex min-w-0 flex-col gap-6">
-          {showReporter && <ReporterCard report={report} mode={mode} />}
+          {showReporter && <ReporterCard report={report} />}
           {/* Action panels inline from 1024 px; below that they open from the bottom bar. */}
           <div className="hidden flex-col gap-6 lg:flex">
-            {isAdmin ? (
-              <>
-                {assignCard}
-                {statusCard}
-              </>
-            ) : (
-              officerCard
-            )}
+            {assignCard}
+            {statusCard}
           </div>
           <HistoryCard report={report} />
         </div>
@@ -800,20 +703,12 @@ export default function ReportDetails({ mode = 'admin' }) {
 
       {/* Mobile action bar (Figma 131:4011) */}
       <div className="fixed inset-x-0 bottom-0 z-[1000] flex gap-3 border-t border-border-subtle bg-surface-white px-4 py-3 shadow-rw-lg lg:hidden">
-        {isAdmin ? (
-          <>
-            <Button variant="secondary" icon="user-check" className="min-w-0 flex-1 px-3" onClick={() => setSheet('assign')}>
-              Assign officer
-            </Button>
-            <Button icon="pencil" className="min-w-0 flex-1 px-3" onClick={() => setSheet('status')}>
-              Update status
-            </Button>
-          </>
-        ) : (
-          <Button icon="pencil" fullWidth onClick={() => setSheet('officer')}>
-            Update investigation
-          </Button>
-        )}
+        <Button variant="secondary" icon="user-check" className="min-w-0 flex-1 px-3" onClick={() => setSheet('assign')}>
+          Assign officer
+        </Button>
+        <Button icon="pencil" className="min-w-0 flex-1 px-3" onClick={() => setSheet('status')}>
+          Update status
+        </Button>
       </div>
 
       <Dialog open={sheet === 'assign'} onClose={() => setSheet(null)} title="Assign officer">
@@ -824,12 +719,6 @@ export default function ReportDetails({ mode = 'admin' }) {
       </Dialog>
       <Dialog open={sheet === 'status'} onClose={() => setSheet(null)} title="Update status">
         <AdminStatusForm key={report.report_status} report={report} onSaved={onSaved} />
-        <Button variant="secondary" fullWidth onClick={() => setSheet(null)}>
-          Close
-        </Button>
-      </Dialog>
-      <Dialog open={sheet === 'officer'} onClose={() => setSheet(null)} title="Update investigation">
-        <OfficerForm key={report.report_status} report={report} onSaved={onSaved} />
         <Button variant="secondary" fullWidth onClick={() => setSheet(null)}>
           Close
         </Button>
