@@ -60,7 +60,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Empty / error state | `101:760` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-760) |
 | Skeleton | `101:784` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-784) |
 | Top bar mobile | `105:501` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-501) |
-| Bottom nav (4 tabs: Home, My reports, Notifications, Settings) | `105:617` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-617) |
+| Bottom nav (Role=Reporter: Home, My reports, Notifications, Settings; Role=Officer: Assigned, Notifications, Settings; #36) | `105:617` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-617) |
 | Top bar web (Light/Dark switch, bell, user menu, Log out button) | `105:665` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-665) |
 | Top bar reporter (web; Active = Report an accident / My reports / Notifications) | `228:1396` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=228-1396) |
 | Sidebar item | `105:701` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-701) |
@@ -117,6 +117,14 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Settings/About | `164:2646` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=164-2646) |
 | Settings/Privacy | `177:2752` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=177-2752) |
 | Settings/Emergency hotlines (911, PNP, BFP; scrolls) | `252:2763` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=252-2763) |
+| Label/O · Traffic Officer (mobile, #36) | `323:2814` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-2814) |
+| O1/Assigned/Default (officer home; GET /officer/reports) | `323:2817` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-2817) |
+| O1/Assigned/Empty | `323:3010` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3010) |
+| O2/Report details/Assigned (full scroll: location + Open in Maps, reporter contact, details, photos, history, sticky Update status) | `324:3382` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=324-3382) |
+| O3/Update status (bottom sheet: status + official remarks) | `325:3328` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=325-3328) |
+| O4/Report details/Update saved (toast) | `325:3567` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=325-3567) |
+| O5/Notifications/Default (officer: assignment alerts) | `323:3085` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3085) |
+| O6/Settings/Main (Light) (officer) | `323:3198` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3198) |
 | Settings/Demo video/Playing | `119:1923` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1923) |
 | Settings/Demo video/Coming soon (demoVideoUrl = null) | `119:1991` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1991) |
 | Accessibility checklist/Mobile | `120:1977` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=120-1977) |
@@ -131,6 +139,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W1/Login/Administrator (1440) | `121:5` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-5) |
 | W1/Login/Administrator · Error (1440) | `121:57` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-57) |
 | W1/Login/Administrator · Responsive (390) | `121:126` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-126) |
+| W1/Login/Administrator · Mobile-only account (1440; reporter or officer account on the web, #36) | `321:15655` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=321-15655) |
 | Handoff note/Role-based redirect | `121:182` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-182) |
 | W2/Dashboard (1440) | `123:108` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=123-108) |
 | W2/Dashboard (1440) · Dark theme | `166:4256` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=166-4256) |
@@ -196,7 +205,7 @@ Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Ad
 
 Flow F (user menu pages) starts at B2 · W2 Dashboard (the same start as E2): open the user menu, then Action log or About.
 
-Landing page: "Log in" and the footer "Staff sign-in" go to B1 Administrator sign-in. "Report an accident", "Create an account", "Log in to report" and "Track my report" have no link since Oct 20; they become a "Download the app" (APK) button in the next design update (#36).
+Landing page (updated Oct 20, #36): the footer "Staff sign-in" goes to B1 Administrator sign-in. "Get the app" (header) and the two "Download the Android app" buttons open the latest GitHub release (APK). The reporter buttons and the header "Log in" were removed; "Track my report" became "See how it works".
 
 Log out: every signed-in web frame in Flows (B2 to B7, D1 to D5, E2, F1, F2) has a Log out button beside the user menu, wired to 0 · W0 Public landing.
 
@@ -241,6 +250,6 @@ Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69Rky
 ## Open items for the team
 
 - Endpoints approved in design but not built (Carl): `GET /api/public/updates` (#23), update own profile and change own password (#25). Proposed, needs approval: a read-only endpoint for the user's own Action log (#27), with `action_type` and period filters and pagination; W8 is designed against it. W9 About reads the server state from `GET /api/health`; the version is static in the web build.
-- Still to design after the Oct 20 ruling (#36): W0 landing with a "Download the app" button instead of the reporter buttons; W1 Administrator sign-in without "Choose a different role" and with the mobile-app message for other roles; the officer screens in the mobile app.
+- Officer mobile screens O1 to O6 (Oct 20, #36) are designed and waiting for the team's approval; they are not wired as a prototype flow on the Flows page yet.
 - The demo video needs a WebVTT caption file and a transcript (WCAG 1.2.2), as promised on the Demo video screens.
 - The draft emblem raster has a baked-in white haze; a transparent PNG or SVG export would render more cleanly.
