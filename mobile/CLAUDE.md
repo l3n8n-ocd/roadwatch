@@ -21,7 +21,7 @@ flutter pub get
 flutter analyze                          # must report no issues
 flutter test                             # test/smoke_test.dart
 flutter run --dart-define=API_URL=http://10.0.2.2:5000/api      # emulator -> local API (default)
-flutter build apk --release --dart-define=API_URL=https://<render-app>.onrender.com/api
+flutter build apk --release --dart-define=API_URL=https://roadwatch-api-gnky.onrender.com/api
 ```
 `dart format` uses `page_width: 110` (analysis_options.yaml).
 
