@@ -66,7 +66,7 @@ Objectives (from the course description): web and mobile reporting; quick digita
 | Validation and security libs | zod, helmet, cors, bcrypt, jsonwebtoken, multer | In starter `package.json` |
 | ORM | **Sequelize** (already in starter dependencies). Do not add Prisma | Confirmed |
 | Database | MySQL. Host: **Aiven managed MySQL (TLS)**. Local MySQL optional for dev | Confirmed |
-| API hosting | **Render** (free web service, sleeps when idle) | Confirmed |
+| API hosting | **Render** (free web service, sleeps when idle). Blueprint `render.yaml` at the repo root (Node 22, Singapore, `rootDir: api`, health `/api/health`, auto-deploy from `main`); service on Lenon's Render account, operated with Carl (#39); steps in `docs/SETUP-GUIDE.md` Part F | Confirmed |
 | Web hosting | Vercel (root folder `web`, env `VITE_API_URL`) | Recommended |
 | Domain | Namecheap `.me` from the GitHub Student Developer Pack, claimed by Lenon (DNS). Used for the email sender, the web app, `api.` on Render and the APK link. Name: `roadwatch-ph.me` (#38) | Confirmed Oct 20 |
 | Mobile delivery | Release APK built by GitHub Actions on tag `v*` | Recommended |
@@ -288,7 +288,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 - `web/`: React + Vite + Tailwind 4 app with every Web frame (W0-W9, Demo video), light/dark tokens generated from Figma, component library, role-guarded routes. `npm run lint` and `npm run build` pass; every route was smoke-tested in Chromium at 1440 and 390 px with a **mocked** API. **Oct 20 (#36):** Administrator only; the reporter screens (R0-R6), officer queue and officer view were removed, sign-in sends `platform: "web"` and shows the mobile-only-account state, and the landing calls to action download the APK (smoke-tested again with a mocked API, lint and build pass).
 - `mobile/`: Flutter (Android) app with every Mobile frame (M0-M6, Notifications, Settings and its sub-screens). Reporters only. `flutter analyze` clean, `flutter test` passes (widget tests with a fake API).
 **Not verified:** either app against the real API, map tiles and Nominatim (blocked in the build environment), camera/GPS on a device, the release APK (no Android SDK in the build environment).
-**Not started:** deployment. Endpoints the UI already calls but the API lacks: `GET /public/updates`, `PATCH /auth/me`, change password, `GET /auth/me/activity`, `GET /admin/audit-logs` (screens show their designed unavailable state).
+**Deployment:** `render.yaml` Blueprint and the Part F guide are ready (Oct 20; API boot checked locally the way Render runs it); not deployed yet. Web on Vercel not started. Endpoints the UI already calls but the API lacks: `GET /public/updates`, `PATCH /auth/me`, change password, `GET /auth/me/activity`, `GET /admin/audit-logs` (screens show their designed unavailable state).
 
 **Setup status (Confirmed by the user, Oct 15, 22:35):**
 - GitHub repo: **not created yet**, so the starter zip has not been pushed and `members.conf` is not filled.
