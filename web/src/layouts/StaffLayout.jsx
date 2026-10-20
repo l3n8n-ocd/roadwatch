@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu, useFocusTrap } from '../components/ui';
+import { Button, ConfirmDialog, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu, useFocusTrap } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, homePathFor } from '../lib/constants';
 import { reportCode } from '../lib/format';
@@ -21,7 +21,7 @@ function breadcrumbsFor(pathname) {
     '/demo-video': 'Demo video',
   };
   if (pathname === '/action-log') return [{ label: 'Account' }, { label: 'Action log' }];
-  if (pathname === '/about') return [{ label: 'Help' }, { label: 'About' }];
+  if (pathname === '/admin/about') return [{ label: 'Help' }, { label: 'About' }];
   return [{ label: pages[pathname] || 'RoadWatch' }];
 }
 
@@ -30,7 +30,7 @@ export default function StaffLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [dialog, setDialog] = useState(null); // 'profile' | 'password' | 'support'
+  const [dialog, setDialog] = useState(null); // 'profile' | 'password' | 'support' | 'logout'
   const [toast, setToast] = useState('');
   const drawerRef = useRef(null);
 
@@ -44,9 +44,19 @@ export default function StaffLayout() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // Log out asks first (#40, Figma 347:36709); the drawer closes so the dialog is on top.
+  const askLogout = () => {
+    setDrawerOpen(false);
+    setDialog('logout');
+  };
+  // One transition for both updates: the router navigates in a transition, so a separate sign-out
+  // would render first and the route guard would send the visitor to the sign-in page instead of home.
   const handleLogout = () => {
-    logout();
-    navigate('/', { replace: true });
+    setDialog(null);
+    startTransition(() => {
+      logout();
+      navigate('/', { replace: true });
+    });
   };
 
   const menuGroups = [
@@ -62,7 +72,7 @@ export default function StaffLayout() {
       label: 'Help',
       items: [
         { key: 'support', label: 'Contact support', icon: 'mail', onSelect: () => setDialog('support') },
-        { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate('/about') },
+        { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate('/admin/about') },
       ],
     },
   ];
@@ -99,7 +109,7 @@ export default function StaffLayout() {
               role={role}
               pathname={pathname}
               showLogOut
-              onLogout={handleLogout}
+              onLogout={askLogout}
               onNavigate={() => setDrawerOpen(false)}
             />
           </div>
@@ -120,7 +130,7 @@ export default function StaffLayout() {
           <UserMenu user={user} groups={menuGroups} compact className="lg:hidden" />
           <span aria-hidden="true" className="hidden h-8 w-px bg-border-subtle lg:block" />
           <span className="hidden lg:flex">
-            <Button variant="secondary" icon="log-out" onClick={handleLogout}>
+            <Button variant="secondary" icon="log-out" onClick={askLogout}>
               Log out
             </Button>
           </span>
@@ -138,6 +148,15 @@ export default function StaffLayout() {
         <ChangePasswordDialog open onClose={closeDialog} onSaved={setToast} />
       )}
       {dialog === 'support' && <ContactSupportDialog open onClose={closeDialog} />}
+      <ConfirmDialog
+        open={dialog === 'logout'}
+        onClose={closeDialog}
+        onConfirm={handleLogout}
+        title="Log out of RoadWatch?"
+        description="You will need your email and password to sign in again. Anything you have not saved on this page will be lost."
+        confirmLabel="Log out"
+        confirmIcon="log-out"
+      />
 
       {toast && (
         <div className="fixed right-4 bottom-4 z-[2500]">

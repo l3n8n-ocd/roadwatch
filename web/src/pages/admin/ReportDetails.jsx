@@ -18,6 +18,7 @@ import {
   Toast,
 } from '../../components/ui';
 import { admin, users } from '../../api/endpoints';
+import useServerError from '../../lib/useServerError';
 import { ADMIN_STATUSES, INJURY_OPTIONS, ROLES } from '../../lib/constants';
 import { formatDate, formatDateTime, reportCode } from '../../lib/format';
 import { cx } from '../../lib/cx';
@@ -586,12 +587,16 @@ export default function ReportDetails() {
   const [officersError, setOfficersError] = useState('');
   const [toast, setToast] = useState(null);
   const [sheet, setSheet] = useState(null); // mobile dialog: 'assign' | 'status'
+  const raiseServerError = useServerError();
 
   const load = useCallback(() => {
     setLoadError(null);
     setReport(null);
-    admin.get(id).then(setReport).catch(setLoadError);
-  }, [id]);
+    admin
+      .get(id)
+      .then(setReport)
+      .catch((err) => !raiseServerError(err) && setLoadError(err));
+  }, [id, raiseServerError]);
 
   useEffect(load, [load]);
 

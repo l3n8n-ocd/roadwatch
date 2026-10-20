@@ -12,6 +12,7 @@ import {
   Toast,
 } from '../../components/ui';
 import { admin, lookups, users } from '../../api/endpoints';
+import useServerError from '../../lib/useServerError';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../lib/constants';
 import { cx } from '../../lib/cx';
@@ -361,14 +362,15 @@ export default function Users() {
   const [deactivateTarget, setDeactivateTarget] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState('');
+  const raiseServerError = useServerError();
 
   const load = useCallback(() => {
     setLoadError(null);
     users
       .list(roleFilter ? { role: roleFilter } : undefined)
       .then((rows) => setList(rows || []))
-      .catch(setLoadError);
-  }, [roleFilter]);
+      .catch((err) => !raiseServerError(err) && setLoadError(err));
+  }, [roleFilter, raiseServerError]);
 
   useEffect(load, [load]);
 

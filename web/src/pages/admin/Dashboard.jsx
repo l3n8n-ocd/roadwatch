@@ -13,6 +13,7 @@ import {
   StatusChip,
 } from '../../components/ui';
 import { dashboard } from '../../api/endpoints';
+import useServerError from '../../lib/useServerError';
 import { formatDateTime, reportCode } from '../../lib/format';
 
 // W2 Administrator dashboard (Figma 123:108, dark 166:4256).
@@ -385,6 +386,7 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState(null);
+  const raiseServerError = useServerError();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -395,9 +397,9 @@ export default function Dashboard() {
         setStats(data);
         setUpdatedAt(new Date());
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => !raiseServerError(err) && setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [raiseServerError]);
 
   useEffect(() => {
     load();

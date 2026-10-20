@@ -15,6 +15,7 @@ export const publicApi = {
   health: () => api.get('/health'),
   appInfo: () => api.get('/app-info'),
   updates: () => api.get('/public/updates'), // not built yet (#23)
+  stats: () => api.get('/public/stats'), // landing stats bar (#40)
 };
 
 export const lookups = {

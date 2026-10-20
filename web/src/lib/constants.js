@@ -52,3 +52,7 @@ export function homePathFor(role) {
 
 // Release APK (GitHub Actions on tag v*). Switch VITE_APK_URL to roadwatch-ph.me/app once the domain is live (#38).
 export const APK_URL = import.meta.env.VITE_APK_URL || 'https://github.com/l3n8n-ocd/roadwatch/releases/latest';
+
+// Project support address (#40). It works once the domain and its email forwarding exist (#38).
+export const SUPPORT_EMAIL = 'support@roadwatch-ph.me';
+export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
