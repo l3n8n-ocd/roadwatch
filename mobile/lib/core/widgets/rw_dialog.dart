@@ -13,6 +13,7 @@ class RwDialog extends StatelessWidget {
     required this.confirmLabel,
     this.cancelLabel = 'Cancel',
     this.destructive = false,
+    this.confirmIcon,
     this.content,
     this.onConfirm,
   });
@@ -22,6 +23,9 @@ class RwDialog extends StatelessWidget {
   final String confirmLabel;
   final String cancelLabel;
   final bool destructive;
+
+  /// Optional icon on the confirm button (Log out uses RwIcons.logOut, #40).
+  final String? confirmIcon;
   final Widget? content;
 
   /// Defaults to closing the dialog with `true`.
@@ -34,6 +38,7 @@ class RwDialog extends StatelessWidget {
     final confirm = RwButton(
       label: confirmLabel,
       variant: destructive ? RwButtonVariant.destructive : RwButtonVariant.primary,
+      icon: confirmIcon,
       onPressed: onConfirm ?? () => Navigator.of(context).pop(true),
     );
     return Dialog(
@@ -90,6 +95,7 @@ Future<bool> showRwConfirmDialog(
   required String confirmLabel,
   String cancelLabel = 'Cancel',
   bool destructive = false,
+  String? confirmIcon,
 }) async {
   final result = await showDialog<bool>(
     context: context,
@@ -99,6 +105,7 @@ Future<bool> showRwConfirmDialog(
       confirmLabel: confirmLabel,
       cancelLabel: cancelLabel,
       destructive: destructive,
+      confirmIcon: confirmIcon,
     ),
   );
   return result ?? false;

@@ -40,10 +40,12 @@ class _SettingsTabState extends State<SettingsTab> {
   Future<void> _logout() async {
     final ok = await showRwConfirmDialog(
       context,
-      title: 'Log out of RoadWatch?',
-      message: 'Your reports stay saved. Log in again with your email and password to follow them.',
+      // Figma Settings/Log out (347:36744, #40): primary Log out on top, Cancel below.
+      title: 'Log out?',
+      message:
+          "You'll need your email and password to log in again. Your reports stay saved in your account.",
       confirmLabel: 'Log out',
-      destructive: true,
+      confirmIcon: RwIcons.logOut,
     );
     if (ok && mounted) await context.read<AuthProvider>().logout();
   }
