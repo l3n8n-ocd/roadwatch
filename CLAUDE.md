@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 20, 2026 (demo and promotional video moved to Oct 30, Phase 4).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 20, 2026 (professor's rulings: no anonymous reporting, Reporter and Officer mobile-only, Admin web-only; Brevo email API; project domain; API deploy moved to Phase 2).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Claude Code has not inspected the user's repo while this file was written. Always inspect the real files before relying on any path or detail here.
 
@@ -19,7 +19,7 @@ Claude Code has not inspected the user's repo while this file was written. Alway
 | Submission | Nov 2, 2026 |
 | Repo | Public GitHub repo, monorepo, owned by Lenon's personal account (**not created yet as of Oct 15**; setup steps are in `docs/SETUP-GUIDE.md`) |
 
-**Problem:** road accident reporting is slow and disorganized. The system lets the public report accidents (details, GPS location, photos) from a website or mobile app and track status, while administrators and traffic officers verify, assign, manage and report on records.
+**Problem:** road accident reporting is slow and disorganized. The system lets the public report accidents (details, GPS location, photos) from the mobile app and track status, while administrators (web dashboard) and traffic officers (mobile app) verify, assign, manage and report on records. The course text says "website or mobile app" for reporters; the professor ruled Reporter and Traffic Officer mobile-only and Administrator web-only (`docs/DECISIONS.md` #36).
 
 **Team (all confirmed)**
 
@@ -40,8 +40,8 @@ Claude Code has not inspected the user's repo while this file was written. Alway
 
 Objectives (from the course description): web and mobile reporting; quick digital report form; GPS or manual map location; photo evidence; authority verification and management; report status tracking; centralized database; statistics to identify accident-prone areas; public-authority communication; secure authentication and access control.
 
-**In scope:** everything in section 7 (FR-01 to FR-15), the three roles, web dashboard, Flutter app, deployment, demo video inside the apps, user deactivation.
-**Out of scope (Confirmed):** SMS and push notifications, Firebase, anonymous reporting (pending the professor, see section 19), email verification, Play Store release (APK only).
+**In scope:** everything in section 7 (FR-01 to FR-15), the three roles, web dashboard (Administrator), Flutter app (Reporter and Traffic Officer), deployment, demo video inside the apps, user deactivation.
+**Out of scope (Confirmed):** SMS and push notifications, Firebase, anonymous reporting (professor: not required, #35), email verification, Play Store release (APK only), reporter or officer screens on the web, administrator screens on mobile (#36).
 
 ---
 
@@ -68,16 +68,17 @@ Objectives (from the course description): web and mobile reporting; quick digita
 | Database | MySQL. Host: **Aiven managed MySQL (TLS)**. Local MySQL optional for dev | Confirmed |
 | API hosting | **Render** (free web service, sleeps when idle) | Confirmed |
 | Web hosting | Vercel (root folder `web`, env `VITE_API_URL`) | Recommended |
+| Domain | Namecheap `.me` from the GitHub Student Developer Pack, claimed by Lenon (DNS). Used for the email sender, the web app, `api.` on Render and the APK link. Name not chosen yet (#38) | Confirmed Oct 20 |
 | Mobile delivery | Release APK built by GitHub Actions on tag `v*` | Recommended |
 | Photos | Cloudinary (store only the URL in `report_photos`) | Confirmed |
 | Maps | OpenStreetMap via Leaflet (web) and flutter_map (mobile); Nominatim for address lookup | Confirmed |
-| Email | Nodemailer. **Gmail SMTP (app password) is the sending method for the demo** (`MAIL_PROVIDER=smtp`). Resend SMTP stays in the code as an optional provider, usable only if a domain is verified | Confirmed |
+| Email | **Brevo transactional email API over HTTPS** (`MAIL_PROVIDER=brevo`, `BREVO_API_KEY`), called with Node's built-in `fetch`. Render's free tier blocks SMTP ports, so Gmail SMTP cannot be used once deployed (#37). Sender on the project domain with SPF/DKIM/DMARC. Not implemented yet (Carl, Phase 2); `mailer.js` still has the old Nodemailer SMTP/Resend code | Confirmed Oct 20 |
 | Exports | pdfkit (PDF), json2csv (CSV) | Recommended |
 | Auth | Own JWT with role middleware | Confirmed |
 | CI/CD | GitHub Actions (`api-ci`, `web-ci`, `mobile-ci`); Render and Vercel auto-deploy from `main` | Confirmed |
 | Design | Figma for UI/UX (course IT 304W) | Confirmed |
 
-**Rejected, do not reintroduce without approval:** Firebase (all services), Firestore or NoSQL, Prisma, Railway, Google Maps, Brevo, TiDB Cloud, React-Bootstrap (Tailwind chosen), SMS and push notifications.
+**Rejected, do not reintroduce without approval:** Firebase (all services), Firestore or NoSQL, Prisma, Railway, Google Maps, TiDB Cloud, Gmail SMTP on Render (blocked), React-Bootstrap (Tailwind chosen), SMS and push notifications.
 
 **Environment notes:** development machines include Windows (use Git Bash for `scripts/commit-as.sh`). Node 20 was initially suggested, then replaced by Node >= 22 because Node 20 is end of life.
 
@@ -86,15 +87,15 @@ Objectives (from the course description): web and mobile reporting; quick digita
 ## 5. System Architecture
 
 ```
-Flutter app ─┐
-             ├─► REST API (Express + Sequelize, JWT, role middleware) ─► MySQL (Aiven, TLS)
-React web  ──┘        ├─► Cloudinary (photos)
-                      ├─► Nodemailer ─► Gmail SMTP (optional: Resend SMTP)
-                      └─► PDF/CSV export
+Flutter app (Reporter, Officer) ─┐
+                                 ├─► REST API (Express + Sequelize, JWT, role middleware) ─► MySQL (Aiven, TLS)
+React web (landing, Admin) ──────┘        ├─► Cloudinary (photos)
+                                          ├─► Brevo email API (HTTPS)
+                                          └─► PDF/CSV export
 Clients ─► OpenStreetMap tiles and Nominatim directly
 ```
 
-- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`.
+- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36): `reporter` and `officer` sign in on mobile only, `admin` on web only; each app sends its platform at login and the API rejects the wrong one (planned, Carl, Phase 2).
 - Photos are uploaded through the API (multer) to Cloudinary; only URLs go to MySQL.
 - The demo video is uploaded to Cloudinary. Both clients read its URL from `GET /api/app-info` (`DEMO_VIDEO_URL` env var on Render). Do not bundle the video into `web/public` or Flutter assets.
 - Render's free tier sleeps when idle. Warm the API before demos, recordings and grading.
@@ -163,6 +164,8 @@ CI workflows skip themselves until `package.json` or `pubspec.yaml` exists in th
 | Administrator | Manage user accounts and roles (create officers, change roles, deactivate or reactivate), review and validate reports, assign reports to officers, manage accident categories and settings, monitor activity, generate and export reports, view dashboard |
 | Traffic Officer | View assigned reports, verify information, update investigation and response status, add official remarks, record actions taken |
 
+Platforms (Confirmed Oct 20, professor, #36): Reporter and Traffic Officer use the mobile app only; Administrator uses the web dashboard only. One Flutter app serves both mobile roles (home chosen by role).
+
 Account creation (Confirmed): the first Administrator is created with `npm run seed:admin` (reads `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` from `.env`). Administrators then create Traffic Officers inside the system (`POST /api/users`, admin only). Reporters self-register. Reporter personal information shown in the web UI must have access restrictions (course UI spec). An administrator must not be able to deactivate their own account.
 
 ---
@@ -202,8 +205,8 @@ Rules: every status change writes a `report_status_history` row; important admin
 - **Themes (Confirmed Oct 17):** Light and Dark on web and mobile, default follows the system (`docs/DECISIONS.md` #26). Dark values and their contrast table are in Figma → Foundations. Mobile bottom nav: Home, My reports, Notifications, Settings; the Demo Video screen opens from Settings (#25). The web opens on a public landing page (#24). Staff web top bar: a Light/Dark switch, then the user menu, which opens a dropdown (account, Edit profile, Change password, Action log, Contact support, About); Log out is a separate button beside it (#27). The Action log endpoints (own actions; admin-only all staff) are approved in design, not built.
 - Type: Poppins Bold headings, Inter body. 8-pt spacing grid, 16 px radius, soft shadows.
 - Status chips are colored per status and always include the status text. Keep one consistent title, status-chip position and navigation across screens.
-- **Mobile screens (course spec plus plan):** M0 login/register; M1 home with prominent "Report an Accident"; M2 accident details form; M3 GPS and map location; M4 camera/photo upload; M5 submission confirmation with Report ID; M6 report tracking and history; notifications; Demo Video screen.
-- **Web screens:** W1 sign-in: choose role first (Administrator or Traffic Officer, each with its own form; wrong-role message), plus a separate reporter path (#28); R0-R6 public reporter screens: sign-in/register, 3-step report, confirmation, My reports, tracking (#29); W2 admin dashboard (summary cards: total, pending, verified, closed; trend chart; type chart; map; recent reports); W3 report management (search, filters, table); W4 report details (info, map, photo viewer, restricted reporter info, assign officer, status and remarks, Verified/Public badge); W5 officer queue; W6 users and settings (create officer, change role, deactivate or reactivate); W7 reports and export; Demo Video page; W8 Action log and W9 About (from the user menu, #27).
+- **Mobile screens (course spec plus plan):** M0 login/register; M1 home with prominent "Report an Accident"; M2 accident details form; M3 GPS and map location; M4 camera/photo upload; M5 submission confirmation with Report ID; M6 report tracking and history; notifications; Demo Video screen. **Officer (added Oct 20, #36, to design in Figma first):** assigned reports list, report details with actions (In Progress, Additional Information Required, Resolved/Closed, remarks), Open in Maps, Notifications, Settings.
+- **Web screens (Administrator only, #36):** public landing page with road updates, hotlines and a Download the app (APK) button; W1 Administrator sign-in (the role chooser #28 and reporter screens R0-R6 #29 are superseded and move to a Figma "Archive" page; W5 officer queue too); W2 admin dashboard (summary cards: total, pending, verified, closed; trend chart; type chart; map; recent reports); W3 report management (search, filters, table); W4 report details (info, map, photo viewer, restricted reporter info, assign officer, status and remarks, Verified/Public badge); W5 officer queue; W6 users and settings (create officer, change role, deactivate or reactivate); W7 reports and export; Demo Video page; W8 Action log and W9 About (from the user menu, #27).
 - Charts and the map need text alternatives or data tables to meet AA.
 
 ---
@@ -237,7 +240,7 @@ Rules: every status change writes a `report_status_history` row; important admin
 - Tools: Git, Node >= 22, a MySQL client (Workbench, DBeaver or CLI), Flutter SDK, Android tooling for APK.
 - **API:** `cd api`, copy `.env.example` to `.env`, fill values, `npm install`, `npm run dev`.
 - **Aiven TLS:** set `DB_SSL=true` and either `DB_SSL_CA` (certificate text with `\n`) or `DB_SSL_CA_PATH`. `src/config/dbConfig.js` builds the connection settings.
-- **Email:** set `MAIL_PROVIDER=smtp`, `SMTP_USER` (Gmail address), `SMTP_PASS` (Gmail app password, requires 2-step verification on that account), and `MAIL_FROM`. Leave `RESEND_API_KEY` empty unless a domain gets verified.
+- **Email (target, #37):** `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` (Brevo → SMTP & API → API keys; Render env only), `MAIL_FROM` (an address on the project domain verified in Brevo). Until Carl's change lands, `mailer.js` still reads the old SMTP settings.
 - **Web:** not generated yet. Run once: `cd web && npm create vite@latest . -- --template react`, then install deps and Tailwind per `web/SETUP.md`. Env: `VITE_API_URL=http://localhost:5000/api`.
 - **Mobile:** not generated yet. Run once: `cd mobile && flutter create . --org com.roadwatch --project-name roadwatch_mobile`, then add packages per `mobile/SETUP.md`.
 - Env variable names live in `api/.env.example` (PORT, CLIENT_ORIGIN, DB_*, JWT_*, ADMIN_*, CLOUDINARY_URL, MAIL_PROVIDER, MAIL_FROM, RESEND_API_KEY, SMTP_*, DEMO_VIDEO_URL). Never put real values in the repo.
@@ -329,11 +332,12 @@ Do not do the following without the user's approval:
 ## 19. Pending Tasks and Priorities
 
 **Open decisions (only these remain)**
-- **Anonymous reporting:** login required for now. Princess asks the professor on **Oct 16**. If yes: nullable `reporter_id`, add a tracking code, optional contact fields, and tell Carl before Oct 20.
+- **Domain name:** Namecheap `.me`, Lenon claims it (#38); name to pick.
 - **Column types and ENUM values:** proposed during planning. Carl may finalize them when loading the schema; tell Lenon so the ERD stays in sync.
 - **Aiven free-plan limits:** not verified.
 
-**Decided on Oct 15:** Sequelize, Render, `is_active` for deactivation, Gmail SMTP for demo email, full responsive and WCAG AA target.
+**Decided on Oct 15:** Sequelize, Render, `is_active` for deactivation, full responsive and WCAG AA target (Gmail SMTP was replaced by the Brevo API on Oct 20).
+**Decided on Oct 20:** anonymous reporting not required (#35); Reporter and Officer mobile-only, Administrator web-only (#36); Brevo email API (#37); Namecheap `.me` domain (#38); API deployed to Render in Phase 2, and Phase 2 API scope (#39).
 
 **Immediate next steps (in order)**
 Follow `docs/SETUP-GUIDE.md` (Parts A to D, with troubleshooting).
@@ -392,7 +396,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 
 | Item | State |
 |---|---|
-| Anonymous vs login reporting | Login required now; professor to answer Oct 16 |
+| Anonymous vs login reporting | Closed Oct 20: not required, login stays (#35) |
 | Palette contrast for WCAG AA | Checked Oct 17; text variants approved (section 10) |
 | Column types, ENUM values, nullable choices | Proposed during planning, not course-mandated |
 | Aiven free-plan limits | Not verified |
