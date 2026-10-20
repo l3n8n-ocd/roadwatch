@@ -9,3 +9,4 @@ date,member,message,paths,commit
 2026-10-19,"Pauline Lapuz","feat(web): add report details, users and summaries screens","web/src/pages/admin/ReportDetails.jsx web/src/pages/admin/Users.jsx web/src/pages/admin/Summaries.jsx",508ce11
 2026-10-19,"Pauline Lapuz","feat(web): add reporter screens, demo video, action log and about","web/",2be6d2b
 2026-10-19,"Lenon Adriano","feat(mobile): add all mobile screens from the Figma prototype","mobile/",8f4f8af
+2026-10-20,"Carl Ernest Santos","feat(api): refuse login on the wrong platform (#36)","api/ docs/API.md",46335d8

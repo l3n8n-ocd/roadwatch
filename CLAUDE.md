@@ -95,7 +95,7 @@ React web (landing, Admin) ──────┘        ├─► Cloudinary (ph
 Clients ─► OpenStreetMap tiles and Nominatim directly
 ```
 
-- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36): `reporter` and `officer` sign in on mobile only, `admin` on web only; each app sends its platform at login and the API rejects the wrong one (planned, Carl, Phase 2).
+- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36): `reporter` and `officer` sign in on mobile only, `admin` on web only; each app sends `platform` (`web` or `mobile`) at login and the API answers 403 `WRONG_PLATFORM` for the wrong one (API done Oct 20; web and mobile clients still to send it).
 - Photos are uploaded through the API (multer) to Cloudinary; only URLs go to MySQL.
 - The demo video is uploaded to Cloudinary. Both clients read its URL from `GET /api/app-info` (`DEMO_VIDEO_URL` env var on Render). Do not bundle the video into `web/public` or Flutter assets.
 - Render's free tier sleeps when idle. Warm the API before demos, recordings and grading.
@@ -268,7 +268,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 ## 15. Testing and Quality Assurance
 
-- Automated API tests: 16 (JWT guard, health/app-info, and a 12-step database flow covering register, roles, report lifecycle, officer scoping, deactivation, notifications, dashboard, exports, upload validation). The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
+- Automated API tests: 18 (JWT guard, health/app-info, login platform validation, and a 13-step database flow covering register, roles, the login platform check, report lifecycle, officer scoping, deactivation, notifications, dashboard, exports, upload validation). All 18 passed on Oct 20 on Node 22 + local MariaDB 10.11. The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
 - Pauline owns a manual test plan: one test case per FR-01 to FR-15 (steps, expected, actual, pass/fail), executed on the deployed system around Oct 29. Add accessibility checks for the WCAG AA target (keyboard-only pass, contrast check, screen-reader labels, phone-width layout).
 - CI runs lint, test and build per folder on PRs and pushes to `dev` and `main`.
 - `seed-admin.js`, `mailer.js` and `dbConfig.js` were syntax-checked only. They have **not** been run against a real database or SMTP service.
