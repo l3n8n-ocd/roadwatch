@@ -18,7 +18,7 @@ Values that must match the database exactly:
 | GET `/health` | | `{"status":"ok","service":"roadwatch-api"}` (no `success` field) |
 | GET `/app-info` | | `{"demoVideoUrl": string or null}` |
 | POST `/auth/register` | `full_name`, `contact_email`, `password` (8+), `contact_phone?` | Always a Reporter. Returns `{ user, token }`. |
-| POST `/auth/login` | `contact_email`, `password` | Returns `{ token, user: { user_id, full_name, contact_email, contact_phone, role } }`. Use `user.role` for the role-based redirect. |
+| POST `/auth/login` | `contact_email`, `password`, `platform` (`web` or `mobile`, required) | Returns `{ token, user: { user_id, full_name, contact_email, contact_phone, role } }`. Use `user.role` for the role-based redirect. Platforms (#36): Reporter and Traffic Officer sign in with `mobile`, Administrator with `web`. A correct password on the wrong platform returns **403** `{ success: false, error, details: { code: "WRONG_PLATFORM", platform } }`, where `details.platform` is the platform the account must use; it is written to the audit log as `auth.login_wrong_platform`. A wrong password always returns 401 first, so the platform message never reveals whether an email exists. A missing or unknown `platform` returns 400. |
 | GET `/auth/me` | | Current user |
 
 ## Any logged-in user

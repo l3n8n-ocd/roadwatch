@@ -1,6 +1,6 @@
 // All request validation (zod) in one place. Unknown fields are stripped, so a client cannot sneak in extra data.
 const { z } = require('zod');
-const { STATUSES, OFFICER_STATUSES, INJURY_VALUES, ROLES } = require('../config/constants');
+const { STATUSES, OFFICER_STATUSES, INJURY_VALUES, ROLES, PLATFORMS } = require('../config/constants');
 
 const id = z.coerce.number().int().positive();
 const email = z.string().trim().toLowerCase().email().max(120);
@@ -14,7 +14,11 @@ const register = z.object({
   contact_phone: phone,
   password: z.string().min(8, 'Password must be at least 8 characters').max(128),
 });
-const login = z.object({ contact_email: email, password: z.string().min(1).max(128) });
+const login = z.object({
+  contact_email: email,
+  password: z.string().min(1).max(128),
+  platform: z.enum(PLATFORMS, { errorMap: () => ({ message: "platform must be 'web' or 'mobile'" }) }),
+});
 
 const createUser = register.extend({ role: z.enum(Object.values(ROLES)) });
 const setRole = z.object({ role: z.enum(Object.values(ROLES)) });

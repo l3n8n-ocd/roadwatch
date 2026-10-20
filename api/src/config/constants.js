@@ -21,4 +21,9 @@ const OFFICER_STATUSES = ['Under Review', 'Additional Information Required', 'Ve
 
 const INJURY_VALUES = ['none', 'injuries', 'fatalities', 'unknown'];
 
-module.exports = { ROLES, STATUSES, VERIFIED_STATUSES, OFFICER_STATUSES, INJURY_VALUES };
+// Which client each role signs in from (docs/DECISIONS.md #36): Reporters and Traffic Officers
+// use the mobile app, Administrators use the web dashboard. Each client sends its platform at login.
+const PLATFORMS = ['web', 'mobile'];
+const ROLE_PLATFORM = { [ROLES.REPORTER]: 'mobile', [ROLES.OFFICER]: 'mobile', [ROLES.ADMIN]: 'web' };
+
+module.exports = { ROLES, STATUSES, VERIFIED_STATUSES, OFFICER_STATUSES, INJURY_VALUES, PLATFORMS, ROLE_PLATFORM };

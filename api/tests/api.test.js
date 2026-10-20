@@ -44,7 +44,8 @@ test('database-backed API flow', { skip }, async (t) => {
     const role = await Role.findOne({ where: { role_name: roleName } });
     const email = `${label}.${run}@test.local`;
     const u = await User.create({ role_id: role.role_id, full_name: label, contact_email: email, password_hash: await bcrypt.hash(pw, 4) });
-    const login = await call('POST', '/auth/login', { body: { contact_email: email, password: pw } });
+    const platform = roleName === 'Administrator' ? 'web' : 'mobile';
+    const login = await call('POST', '/auth/login', { body: { contact_email: email, password: pw, platform } });
     return { user: u, token: login.body.data.token, email };
   };
   const report = (over = {}) => ({
@@ -59,26 +60,41 @@ test('database-backed API flow', { skip }, async (t) => {
       const r = await call('POST', '/auth/register', { body: { full_name: 'Rep One', contact_email: `rep.${run}@test.local`, password: pw, role: 'Administrator' } });
       assert.equal(r.status, 201);
       assert.equal(r.body.data.user.role, 'Reporter');
-      const dup = await call('POST', '/auth/register', { body: { full_name: 'Rep One', contact_email: `REP.${run}@test.local`, password: pw } });
+      const dup = await call('POST', '/auth/register', { body: { full_name: 'Rep One', contact_email: `REP.${run}@test.local`, password: pw, platform: 'mobile' } });
       assert.equal(dup.status, 409);
       const weak = await call('POST', '/auth/register', { body: { full_name: 'Weak', contact_email: `weak.${run}@test.local`, password: 'short' } });
       assert.equal(weak.status, 400);
     });
 
     const rep = { email: `rep.${run}@test.local` };
-    rep.token = (await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw } })).body.data.token;
+    rep.token = (await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw, platform: 'mobile' } })).body.data.token;
     const rep2 = await (async () => {
-      await call('POST', '/auth/register', { body: { full_name: 'Rep Two', contact_email: `rep2.${run}@test.local`, password: pw } });
-      return { token: (await call('POST', '/auth/login', { body: { contact_email: `rep2.${run}@test.local`, password: pw } })).body.data.token };
+      await call('POST', '/auth/register', { body: { full_name: 'Rep Two', contact_email: `rep2.${run}@test.local`, password: pw, platform: 'mobile' } });
+      return { token: (await call('POST', '/auth/login', { body: { contact_email: `rep2.${run}@test.local`, password: pw, platform: 'mobile' } })).body.data.token };
     })();
 
     await t.test('login rejects wrong password; endpoints need a token', async () => {
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'wrongpass1' } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'wrongpass1', platform: 'mobile' } })).status, 401);
       assert.equal((await call('GET', '/reports')).status, 401);
       assert.equal((await call('GET', '/reports', { token: 'garbage' })).status, 401);
     });
 
     let reportId;
+    await t.test('login is refused on the wrong platform (#36); the check comes after the password', async () => {
+      const onWeb = await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw, platform: 'web' } });
+      assert.equal(onWeb.status, 403);
+      assert.equal(onWeb.body.details.code, 'WRONG_PLATFORM');
+      assert.equal(onWeb.body.details.platform, 'mobile');
+      const adminOnMobile = await call('POST', '/auth/login', { body: { contact_email: admin.email, password: pw, platform: 'mobile' } });
+      assert.equal(adminOnMobile.status, 403);
+      assert.equal(adminOnMobile.body.details.platform, 'web');
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: admin.email, password: pw, platform: 'web' } })).status, 200);
+      // wrong password on the wrong platform still says only "invalid", so nothing leaks
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'wrongpass1', platform: 'web' } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw } })).status, 400);
+      assert.ok(await AuditLog.findOne({ where: { action_taken: 'auth.login_wrong_platform' } }));
+    });
+
     await t.test('reporter submits a report; history, audit and notification are written', async () => {
       assert.equal((await call('POST', '/reports', { token: rep.token, body: report({ accident_description: 'short' }) })).status, 400);
       assert.equal((await call('POST', '/reports', { token: rep.token, body: report({ injury_information: 'bogus' }) })).status, 400);
@@ -108,9 +124,9 @@ test('database-backed API flow', { skip }, async (t) => {
       const ok = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer One', contact_email: `off1.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
       assert.equal(ok.status, 201);
       officer.id = ok.body.data.user_id;
-      officer.token = (await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: pw } })).body.data.token;
+      officer.token = (await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: pw, platform: 'mobile' } })).body.data.token;
       const other = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer Two', contact_email: `off2.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
-      officer.token2 = (await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw } })).body.data.token;
+      officer.token2 = (await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).body.data.token;
       officer.id2 = other.body.data.user_id;
     });
 
@@ -161,10 +177,10 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.equal((await call('PATCH', `/users/${admin.user.user_id}/active`, { token: admin.token, body: { is_active: false } })).status, 400);
       assert.equal((await call('PATCH', `/users/${officer.id2}/active`, { token: admin.token, body: { is_active: false } })).status, 200);
       assert.equal((await call('GET', '/officer/reports', { token: officer.token2 })).status, 401);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).status, 401);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/assign`, { token: admin.token, body: { officer_id: officer.id2 } })).status, 400);
       assert.equal((await call('PATCH', `/users/${officer.id2}/active`, { token: admin.token, body: { is_active: true } })).status, 200);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).status, 200);
       assert.ok(await AuditLog.findOne({ where: { action_taken: 'user.deactivated' } }));
       assert.equal((await call('PATCH', `/users/${officer.id2}/role`, { token: admin.token, body: { role: 'Reporter' } })).status, 200);
     });
