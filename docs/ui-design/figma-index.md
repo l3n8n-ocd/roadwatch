@@ -169,7 +169,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 
 ## Flows (prototype)
 
-Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). Flows C (officer on web) and R (reporter on web) moved to the Archive page on Oct 20 (#36); the officer mobile flow is still to be designed.
+Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
 
 | Frame / asset | Node ID | Link |
 |---|---|---|
@@ -192,6 +192,13 @@ Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Ad
 | B2a · Overlay · User menu (from B2 user menu; Action log → F1, About → F2, outside click closes) | `198:4108` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=198-4108) |
 | F1 · W8 Action log (RW-000128 link → B4; sidebar Dashboard → B2) | `215:10763` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=215-10763) |
 | F2 · W9 About (sidebar Dashboard → B2) | `215:10845` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=215-10845) |
+| C1 · M0 Login (officer; C flow start) | `328:15597` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15597) |
+| C2 · O1 Assigned (RW-000128 card → C3; tabs → C6, C7) | `328:15614` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15614) |
+| C3 · O2 Report details (scrolls; Open in Maps opens Google Maps; Update status at the end → C4) | `328:15623` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15623) |
+| C4 · O3 Update status (Save → C5, Cancel → C3) | `328:15679` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15679) |
+| C5 · O4 Update saved (back → C2) | `328:15745` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15745) |
+| C6 · O5 Notifications (first alert → C3) | `328:15803` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15803) |
+| C7 · O6 Settings (Log out → C1) | `328:15814` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=328-15814) |
 | D1 · W6 Users & settings (flow start) | `134:926` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=134-926) |
 | D2 · Overlay · Deactivate user | `134:1031` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=134-1031) |
 | D3 · W6 After deactivation | `134:1057` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=134-1057) |
@@ -250,6 +257,7 @@ Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69Rky
 ## Open items for the team
 
 - Endpoints approved in design but not built (Carl): `GET /api/public/updates` (#23), update own profile and change own password (#25). Proposed, needs approval: a read-only endpoint for the user's own Action log (#27), with `action_type` and period filters and pagination; W8 is designed against it. W9 About reads the server state from `GET /api/health`; the version is static in the web build.
-- Officer mobile screens O1 to O6 (Oct 20, #36) are designed and waiting for the team's approval; they are not wired as a prototype flow on the Flows page yet.
+- Officer mobile screens O1 to O6 approved by the team on Oct 20 (#36), including "Call reporter" on O2 (opens the phone dialer). In the prototype, Update status sits at the end of the scrolling C3 screen because the plugin API cannot pin it; the app keeps it fixed at the bottom.
+- The APK download buttons open the latest GitHub release; switch them to `roadwatch-ph.me/app` once the domain is live (#38).
 - The demo video needs a WebVTT caption file and a transcript (WCAG 1.2.2), as promised on the Demo video screens.
 - The draft emblem raster has a baked-in white haze; a transparent PNG or SVG export would render more cleanly.
