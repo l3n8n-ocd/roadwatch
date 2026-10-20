@@ -1,5 +1,5 @@
 const { Notification, AccidentType } = require('../models');
-const { dashboardStats, periodSummary } = require('../services/statsService');
+const { dashboardStats, publicStats: countPublicStats, periodSummary } = require('../services/statsService');
 const { buildWhere } = require('../services/reportService');
 const { csvBuffer, pdfBuffer } = require('../services/exportService');
 const { recordAudit } = require('../services/auditService');
@@ -32,6 +32,13 @@ async function createType(req, res) {
   res.status(201).json({ success: true, data: row });
 }
 
+// ----- public (no token) -----
+// Landing stats bar (#40). Browsers and proxies may reuse the answer for a minute.
+async function publicStats(req, res) {
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json({ success: true, data: await countPublicStats() });
+}
+
 // ----- dashboard and exports (admin) -----
 async function stats(req, res) {
   res.json({ success: true, data: await dashboardStats() });
@@ -51,4 +58,4 @@ async function exportPdf(req, res) {
   res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="roadwatch-reports.pdf"' }).send(buf);
 }
 
-module.exports = { listNotifications, markRead, markAllRead, listTypes, createType, stats, summary, exportCsv, exportPdf };
+module.exports = { publicStats, listNotifications, markRead, markAllRead, listTypes, createType, stats, summary, exportCsv, exportPdf };

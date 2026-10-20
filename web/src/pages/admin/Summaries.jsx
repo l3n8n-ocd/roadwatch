@@ -12,6 +12,7 @@ import {
 } from '../../components/ui';
 import { downloadFile } from '../../api/client';
 import { exportsApi } from '../../api/endpoints';
+import useServerError from '../../lib/useServerError';
 import { STATUSES } from '../../lib/constants';
 
 // W7 Summaries & export (Figma 130:3413, export complete 130:3753).
@@ -87,6 +88,7 @@ export default function Summaries() {
   const [dateError, setDateError] = useState('');
   const [toast, setToast] = useState(null);
   const [exporting, setExporting] = useState(null); // 'csv' | 'pdf'
+  const raiseServerError = useServerError();
 
   const load = useCallback((p, d) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
@@ -102,9 +104,9 @@ export default function Summaries() {
         setSummary(data);
         setGeneratedAt(new Date());
       })
-      .catch(setError)
+      .catch((err) => !raiseServerError(err) && setError(err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [raiseServerError]);
 
   // First load. Later loads come from the period control and "Show summary".
   // eslint-disable-next-line react-hooks/exhaustive-deps

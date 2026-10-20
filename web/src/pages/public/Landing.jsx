@@ -1,14 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import L from 'leaflet';
 import { Marker, useMap } from 'react-leaflet';
 import {
   Button,
   EmptyState,
-  Emblem,
   Icon,
-  IconButton,
-  Logo,
   MapView,
   RecordBadge,
   Skeleton,
@@ -17,23 +14,18 @@ import {
   TimelineItem,
 } from '../../components/ui';
 import { publicApi } from '../../api/endpoints';
-import { useAuth } from '../../context/AuthContext';
-import { APK_URL, HOTLINES, homePathFor } from '../../lib/constants';
+import PublicLayout from '../../layouts/PublicLayout';
+import { APK_URL, HOTLINES, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../../lib/constants';
 import { formatDate } from '../../lib/format';
 import { cx } from '../../lib/cx';
+import { ON_DARK_FOCUS, SECTION, WRAP } from '../../lib/publicStyles';
 import heroStreet from '../../assets/images/hero-street.jpg';
+import pnpSeal from '../../assets/images/pnp-seal.png';
+import bfpSeal from '../../assets/images/bfp-seal.png';
 
-// W0 Public landing (Figma 137:4095, 390: 139:4275; #24, updated for #36). Browsing is public.
+// W0 Public landing (Figma 137:4095, 390: 139:4275; #24, updated for #36 and #40). Browsing is public.
 // Reporters and Traffic Officers use the Android app, so the calls to action download the APK.
-// "Staff sign-in" in the footer is a discreet link to the Administrator sign-in.
-
-
-const SECTIONS = [
-  { id: 'how-it-works', label: 'How it works' },
-  { id: 'public-updates', label: 'Public updates' },
-  { id: 'safety-tips', label: 'Safety tips' },
-  { id: 'about', label: 'About' },
-];
+// Header and footer live in PublicLayout; "Staff sign-in" in the footer leads to the Administrator sign-in.
 
 const STEPS = [
   {
@@ -85,135 +77,69 @@ const SUPPORTS = [
   'A clear line between public submissions and verified records',
 ];
 
-// Shared layout classes: full-bleed section, content capped at the 1440 frame's inner width.
-const SECTION = 'px-4 py-12 sm:px-8 lg:px-16 lg:py-20';
-const WRAP = 'mx-auto w-full max-w-[1312px]';
-// Links on navy use the amber focus ring (Figma Focus/ring on dark).
-const ON_DARK_FOCUS = 'focus-visible:shadow-(--rw-shadow-focus-on-dark)';
+// FAQ (#40), drafted from the real rules. Phones show the first FAQ_PREVIEW, then a "Show more" button.
+const FAQ = [
+  {
+    q: 'Do I need an account to report an accident?',
+    a: 'Yes. Reporting happens in the free RoadWatch Android app, where you create a reporter account. Browsing this website needs no account.',
+  },
+  {
+    q: 'Someone is hurt. What should I do first?',
+    a: 'Call 911 first. RoadWatch is not an emergency service, so report the accident once everyone is safe.',
+  },
+  {
+    q: 'What goes into a report?',
+    a: 'The date and time, the location (GPS or a pin on the map), the accident type, injury information and a short description. Photos are optional.',
+  },
+  {
+    q: 'How do I know what happened to my report?',
+    a: 'Open My reports in the app. Each report shows its status, from Submitted to Resolved/Closed, and you get a notification when it changes.',
+  },
+  {
+    q: 'Who can see my name and phone number?',
+    a: 'Only RoadWatch administrators and the traffic officer assigned to your report. Public road updates never show reporter details.',
+  },
+  {
+    q: 'Public report or verified record: what is the difference?',
+    a: 'Every new report starts as a public submission. It becomes a verified accident record only after an administrator checks it.',
+  },
+  {
+    q: 'How do traffic officers get an account?',
+    a: 'The RoadWatch administrator creates traffic officer accounts. Officers then sign in on the same Android app.',
+  },
+  { q: 'Is there an iPhone app?', a: 'Not yet. RoadWatch is a free Android app (APK) for now.' },
+];
+const FAQ_PREVIEW = 4;
+
+// Stats bar (#40): live totals from GET /public/stats.
+const STATS = [
+  { key: 'reports_received', label: 'Reports received', icon: 'file-text' },
+  { key: 'verified_records', label: 'Verified accident records', icon: 'shield-check' },
+  { key: 'cases_resolved', label: 'Cases resolved', icon: 'check-circle' },
+  { key: 'active_officers', label: 'Active traffic officers', icon: 'users' },
+];
 
 export default function Landing() {
-  const { user } = useAuth();
-  const [demoVideoUrl, setDemoVideoUrl] = useState(null);
+  const { hash, key } = useLocation();
 
-  // The demo video link in the footer appears once DEMO_VIDEO_URL is set on the API.
+  // Links such as "/#faq" (header, footer, other pages) scroll here once the section exists.
   useEffect(() => {
-    let cancelled = false;
-    publicApi
-      .appInfo()
-      .then((info) => {
-        if (!cancelled) setDemoVideoUrl(info?.demoVideoUrl || null);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (!hash) return;
+    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (target) target.scrollIntoView({ block: 'start' });
+  }, [hash, key]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-white">
-      <a
-        href="#main"
-        className="sr-only z-[3000] rounded-rw-sm bg-surface-white px-4 py-2 type-label text-text-primary focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
-      >
-        Skip to main content
-      </a>
-      <LandingHeader user={user} />
-      <main id="main" tabIndex={-1} className="flex-1 focus-visible:shadow-none">
-        <Hero />
-        <HowItWorks />
-        <PublicUpdates />
-        <SafetyTips />
-        <About />
-        <ClosingCta />
-      </main>
-      <LandingFooter demoVideoUrl={demoVideoUrl} />
-    </div>
-  );
-}
-
-/* ---------- Header ---------- */
-
-function sectionLinkClasses(extra = '') {
-  return cx(
-    'flex h-11 items-center rounded-rw-sm px-3 type-label whitespace-nowrap text-text-primary no-underline hover:bg-surface-light-gray',
-    extra,
-  );
-}
-
-function LandingHeader({ user }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  // Escape closes the small-screen menu.
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onKey = (event) => event.key === 'Escape' && setMenuOpen(false);
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [menuOpen]);
-
-
-  return (
-    <header className="relative border-b border-border-subtle bg-surface-white">
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-2 px-2 lg:h-20 lg:gap-8 lg:px-16">
-        <IconButton
-          icon={menuOpen ? 'x' : 'menu'}
-          label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          aria-controls="landing-menu"
-          onClick={() => setMenuOpen((open) => !open)}
-          className="size-12 lg:hidden"
-        />
-        <Link to="/" className="rounded-rw-md">
-          <Logo />
-        </Link>
-        <nav aria-label="Sections" className="hidden flex-1 justify-center lg:flex">
-          <ul className="flex gap-2">
-            {SECTIONS.map((section) => (
-              <li key={section.id}>
-                <a href={`#${section.id}`} className={sectionLinkClasses()}>
-                  {section.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className="flex-1 lg:hidden" />
-        {/* A signed-in administrator gets a link back to the dashboard. */}
-        {user && (
-          <Button to={homePathFor(user.role)} variant="secondary" className="max-lg:h-12 max-lg:px-4">
-            Open dashboard
-          </Button>
-        )}
-        {/* Wrapper: Button always sets inline-flex, so hide the wrapper on small screens. */}
-        <span className="hidden lg:flex">
-          <Button href={APK_URL} icon="download">
-            Get the app
-          </Button>
-        </span>
-      </div>
-
-      {menuOpen && (
-        <div
-          id="landing-menu"
-          className="absolute inset-x-0 top-full z-[1500] border-b border-border-subtle bg-surface-white px-4 pb-4 shadow-rw-md lg:hidden"
-        >
-          <nav aria-label="Sections">
-            <ul className="flex flex-col gap-1 pt-2">
-              {SECTIONS.map((section) => (
-                <li key={section.id}>
-                  <a href={`#${section.id}`} className={sectionLinkClasses()} onClick={() => setMenuOpen(false)}>
-                    {section.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <Button href={APK_URL} icon="download" fullWidth className="mt-3 h-12">
-            Download the Android app
-          </Button>
-        </div>
-      )}
-    </header>
+    <PublicLayout>
+      <Hero />
+      <StatsBar />
+      <HowItWorks />
+      <PublicUpdates />
+      <SafetyTips />
+      <About />
+      <Faq />
+      <ClosingCta />
+    </PublicLayout>
   );
 }
 
@@ -308,6 +234,59 @@ function ProductPreview() {
         <TimelineItem status="Submitted" meta="Today · 08:42 · You" last />
       </Timeline>
     </div>
+  );
+}
+
+/* ---------- Stats bar (GET /public/stats, #40) ---------- */
+
+const numberFormat = new Intl.NumberFormat('en-PH');
+
+function StatsBar() {
+  const [state, setState] = useState({ status: 'loading', data: null });
+
+  useEffect(() => {
+    let cancelled = false;
+    publicApi
+      .stats()
+      .then((data) => !cancelled && setState({ status: 'ready', data }))
+      .catch(() => !cancelled && setState({ status: 'error', data: null }));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const { status, data } = state;
+  return (
+    <section aria-labelledby="stats-title" className="bg-surface-white px-4 py-8 sm:px-8 lg:px-16 lg:py-12">
+      <div className={cx(WRAP, 'flex flex-col gap-3 lg:gap-4')}>
+        <h2 id="stats-title" className="sr-only">
+          RoadWatch in numbers
+        </h2>
+        <dl aria-busy={status === 'loading'} className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
+          {STATS.map((stat) => {
+            const value = data?.[stat.key];
+            return (
+              <div key={stat.key} className="flex flex-col gap-2 rounded-rw-md bg-surface-light-gray p-4 lg:p-6">
+                <Icon name={stat.icon} size={24} className="text-text-blue max-lg:size-5" />
+                {/* Label first for screen readers; the number shows above it. */}
+                <div className="flex flex-col-reverse gap-2">
+                  <dt className="type-body-sm text-text-muted lg:type-body">{stat.label}</dt>
+                  <dd className="type-display text-text-primary lg:type-stat">
+                    {status === 'ready' && value != null ? numberFormat.format(value) : '—'}
+                    {status === 'loading' && <span className="sr-only">Loading</span>}
+                  </dd>
+                </div>
+              </div>
+            );
+          })}
+        </dl>
+        <p className="type-body-sm text-text-muted">
+          {status === 'error'
+            ? 'Live totals are not available right now.'
+            : 'Live totals from the RoadWatch database, counted when the page loads. Verified records only; no personal details.'}
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -528,7 +507,6 @@ function PublicUpdates() {
 /* ---------- Safety tips + emergency card ---------- */
 
 function SafetyTips() {
-  const onDarkLink = cx('rounded-rw-sm text-text-inverse underline underline-offset-2', ON_DARK_FOCUS);
   return (
     <section id="safety-tips" aria-labelledby="tips-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-light-gray')}>
       <div className={cx(WRAP, 'grid items-start gap-8 lg:grid-cols-[1fr_420px] lg:gap-16')}>
@@ -554,27 +532,60 @@ function SafetyTips() {
           </ul>
         </div>
 
-        <aside aria-labelledby="emergency-title" className="flex flex-col gap-4 rounded-rw-md bg-brand-navy p-6 sm:p-10">
-          <p className="type-overline text-text-accent uppercase">In an emergency</p>
-          <h3 id="emergency-title" className="type-h1 text-text-inverse">
-            <a href={HOTLINES.emergency.tel} className={onDarkLink}>
-              Call 911
-            </a>
-          </h3>
-          <p className="type-body text-text-inverse-muted">
-            Philippine National Emergency Hotline, free from any phone. Police (PNP):{' '}
-            <a href={HOTLINES.pnp[0].tel} className={onDarkLink}>
-              {HOTLINES.pnp[0].number}
-            </a>{' '}
-            · Fire (BFP):{' '}
-            <a href={HOTLINES.bfp[0].tel} className={onDarkLink}>
-              {HOTLINES.bfp[0].number}
-            </a>
-            . Get help first, then report the accident here.
-          </p>
-        </aside>
+        <EmergencyCard />
       </div>
     </section>
+  );
+}
+
+// Emergency card (#31, #40): 911 first, then every PNP and BFP line with their seals, as on mobile.
+const AGENCIES = [
+  { code: 'PNP', name: 'Philippine National Police', seal: pnpSeal, lines: HOTLINES.pnp },
+  { code: 'BFP', name: 'Bureau of Fire Protection', seal: bfpSeal, lines: HOTLINES.bfp },
+];
+
+function EmergencyCard() {
+  const onDarkLink = cx('rounded-rw-sm text-text-inverse underline underline-offset-2', ON_DARK_FOCUS);
+  return (
+    <aside aria-labelledby="emergency-title" className="flex flex-col gap-3 rounded-rw-md bg-brand-navy p-6 sm:gap-4 sm:p-10">
+      <p className="type-overline text-text-accent uppercase">In an emergency</p>
+      <h3 id="emergency-title" className="type-h1 text-text-inverse">
+        <a href={HOTLINES.emergency.tel} className={onDarkLink}>
+          Call 911
+        </a>
+      </h3>
+      <p className="type-body text-text-inverse-muted">
+        Philippine National Emergency Hotline. Free from any phone, 24/7. Get help first, then report.
+      </p>
+      <hr className="border-0 border-t border-surface-navy-hover" />
+      {AGENCIES.map((agency) => (
+        <div key={agency.code} className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <img src={agency.seal} alt={`${agency.name} seal`} className="size-10 shrink-0 object-contain" />
+            <p className="flex flex-col">
+              <span className="type-label text-text-inverse">{agency.code}</span>
+              <span className="type-body-sm text-text-inverse-muted">{agency.name}</span>
+            </p>
+          </div>
+          <ul aria-label={`${agency.code} hotlines`}>
+            {agency.lines.map((line) => (
+              <li key={line.number}>
+                <a
+                  href={line.tel}
+                  className={cx('flex min-h-12 items-center gap-3 rounded-rw-sm text-text-inverse sm:min-h-11', ON_DARK_FOCUS)}
+                >
+                  <Icon name="phone" size={18} />
+                  <span className="type-body underline underline-offset-2">
+                    <span className="sr-only">Call {agency.code} </span>
+                    {line.number}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </aside>
   );
 }
 
@@ -595,6 +606,13 @@ function About() {
             place.
           </p>
           <p className="type-body-sm text-text-muted">A student project. It does not replace official emergency services.</p>
+          <Link
+            to="/about"
+            className="flex min-h-12 items-center gap-2 self-start rounded-rw-sm type-button text-text-blue underline underline-offset-2 sm:min-h-11"
+          >
+            Meet the team behind RoadWatch
+            <Icon name="chevron-right" size={20} />
+          </Link>
         </div>
         <div className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 sm:p-8">
           <h3 className="type-h3 text-text-primary">What RoadWatch supports</h3>
@@ -609,6 +627,90 @@ function About() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ---------- FAQ (#40): a chat-style list; semantically a <dl> of questions and answers ---------- */
+
+function Faq() {
+  const [expanded, setExpanded] = useState(false);
+  const listId = useId();
+  const hidden = FAQ.length - FAQ_PREVIEW;
+  return (
+    <section id="faq" aria-labelledby="faq-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-light-gray')}>
+      <div className={cx(WRAP, 'grid items-start gap-4 lg:grid-cols-[400px_1fr] lg:gap-16')}>
+        <div className="flex flex-col gap-4">
+          <p className="type-overline text-text-blue uppercase">FAQ</p>
+          <h2 id="faq-title" className="type-h2 text-text-primary sm:type-h1">
+            Questions, answered
+          </h2>
+          <p className="type-body text-text-muted sm:type-body-lg">
+            Quick answers about reporting, tracking and privacy.
+            <span className="max-lg:hidden"> Still stuck? Email the RoadWatch team.</span>
+          </p>
+          <SupportLink className="max-lg:hidden" />
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 rounded-rw-md bg-surface-white p-4 shadow-rw-sm sm:p-8">
+          <dl id={listId} className="flex flex-col gap-4">
+            {FAQ.map((item, index) => (
+              <div
+                key={item.q}
+                className={cx('flex flex-col gap-2', !expanded && index >= FAQ_PREVIEW && 'max-md:hidden')}
+              >
+                <dt className="flex justify-end">
+                  <span className="max-w-[488px] rounded-rw-md rounded-br-[4px] bg-brand-navy px-4 py-3 type-body text-text-inverse">
+                    {item.q}
+                  </span>
+                </dt>
+                <dd className="flex items-end gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-navy type-caption text-text-inverse"
+                  >
+                    RW
+                  </span>
+                  <span className="max-w-[600px] rounded-rw-md rounded-tl-[4px] bg-surface-light-gray px-4 py-3 type-body text-text-primary">
+                    {item.a}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+            {hidden > 0 && (
+              <div className="md:hidden">
+                <Button
+                  variant="secondary"
+                  size="mobile"
+                  fullWidth
+                  aria-expanded={expanded}
+                  aria-controls={listId}
+                  onClick={() => setExpanded((open) => !open)}
+                >
+                  {expanded ? 'Show fewer questions' : `Show ${hidden} more questions`}
+                </Button>
+              </div>
+            )}
+          </div>
+          <SupportLink className="lg:hidden" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SupportLink({ className = '' }) {
+  return (
+    <a
+      href={SUPPORT_MAILTO}
+      className={cx(
+        'flex min-h-12 items-center gap-2 self-start rounded-rw-sm type-button text-text-blue underline underline-offset-2 sm:min-h-11',
+        className,
+      )}
+    >
+      <Icon name="mail" size={20} />
+      {SUPPORT_EMAIL}
+    </a>
   );
 }
 
@@ -627,63 +729,23 @@ function ClosingCta() {
             report in about two minutes.
           </p>
         </div>
-        <Button href={APK_URL} icon="download" className="max-sm:h-12">
-          Download the Android app
-        </Button>
+        <div className="flex items-center gap-6">
+          <Button href={APK_URL} icon="download" className="max-sm:h-12 max-sm:w-full">
+            Download the Android app
+          </Button>
+          {/* QR placeholder (#40), wider screens only: a phone cannot scan its own screen. It is a
+              placeholder until the download address is final (#38), so it is hidden from screen readers. */}
+          <div aria-hidden="true" className="hidden items-center gap-6 md:flex">
+            <span className="type-body-sm text-text-muted">or</span>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex size-28 items-center justify-center rounded-rw-sm border-2 border-dashed border-border-control bg-surface-white type-caption text-text-muted">
+                QR code
+              </div>
+              <span className="type-caption text-text-primary">Scan to download</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
-  );
-}
-
-/* ---------- Footer ---------- */
-
-function LandingFooter({ demoVideoUrl }) {
-  const footerLink = cx('flex min-h-11 items-center rounded-rw-sm type-label text-text-inverse underline underline-offset-2', ON_DARK_FOCUS);
-  return (
-    <footer className="bg-brand-navy px-4 py-12 sm:px-8 lg:px-16">
-      <div className={cx(WRAP, 'flex flex-col gap-6')}>
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
-            <Emblem size={120} />
-            <p className="type-body text-text-inverse-muted">Safer roads through responsible reporting.</p>
-          </div>
-          <nav aria-label="Footer" className="max-md:hidden">
-            <ul className="flex flex-wrap gap-x-6">
-              {SECTIONS.map((section) => (
-                <li key={section.id}>
-                  <a href={`#${section.id}`} className={footerLink}>
-                    {section.label}
-                  </a>
-                </li>
-              ))}
-              {demoVideoUrl && (
-                <li>
-                  <a href={demoVideoUrl} target="_blank" rel="noreferrer" className={footerLink}>
-                    Demo video<span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                </li>
-              )}
-            </ul>
-          </nav>
-        </div>
-        <hr className="border-0 border-t border-surface-navy-hover" />
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-          <p className="min-w-0 flex-1 type-body-sm text-text-inverse-muted">
-            <span className="max-md:hidden">IT 305 · BSIT 3I-G1 · Bulacan State University · 2026 · </span>
-            Map data © OpenStreetMap contributors
-          </p>
-          <Link
-            to="/staff/sign-in"
-            className={cx(
-              'flex h-11 items-center gap-1.5 self-start rounded-rw-sm px-1 type-caption text-text-inverse-muted underline underline-offset-2',
-              ON_DARK_FOCUS,
-            )}
-          >
-            <Icon name="lock" size={14} />
-            Staff sign-in
-          </Link>
-        </div>
-      </div>
-    </footer>
   );
 }

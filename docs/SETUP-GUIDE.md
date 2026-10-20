@@ -419,6 +419,8 @@ Today's date is the Oct 16 milestone. If these are not done tonight, shift the O
 
 # PART F: Deploy the API to Render (Blueprint, added Oct 20)
 
+**Done Oct 20:** API `https://roadwatch-api-gnky.onrender.com`, web `https://roadwatch-theta.vercel.app` (Vercel: root `web`, `VITE_API_URL=https://roadwatch-api-gnky.onrender.com/api`; Render `CLIENT_ORIGIN=https://roadwatch-theta.vercel.app,http://localhost:5173`, applied with "Save and deploy").
+
 The repo has a Render Blueprint, `render.yaml` at the root. It describes one free web service, `roadwatch-api`: Node 22, region Singapore, folder `api/`, `npm ci` then `npm start`, health check `/api/health`, auto-deploy from `main`. It holds setting **names** only. Every secret is typed into the Render dashboard (`sync: false`), and Render makes `JWT_SECRET` itself. Decisions #8 and #39.
 
 ## F0. Before you start

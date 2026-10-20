@@ -198,6 +198,13 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.ok(s.body.data.cards.total >= 2);
       assert.ok(Array.isArray(s.body.data.hotspots));
       assert.equal((await call('GET', '/dashboard/stats', { token: officer.token })).status, 403);
+      // Public totals (#40): no token, counts only.
+      const pub = await call('GET', '/public/stats');
+      assert.equal(pub.status, 200);
+      assert.deepEqual(Object.keys(pub.body.data).sort(), ['active_officers', 'cases_resolved', 'reports_received', 'verified_records']);
+      assert.equal(pub.body.data.reports_received, s.body.data.cards.total);
+      assert.equal(pub.body.data.verified_records, s.body.data.cards.verified);
+      assert.ok(pub.body.data.active_officers >= 1);
       const sum = await call('GET', '/exports/summary?period=monthly&date=2026-10-20', { token: admin.token });
       assert.equal(sum.body.data.from, '2026-10-01');
       assert.equal(sum.body.data.to, '2026-10-31');

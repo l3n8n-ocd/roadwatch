@@ -18,6 +18,7 @@ import {
 } from '../../components/ui';
 import { downloadFile } from '../../api/client';
 import { admin, lookups } from '../../api/endpoints';
+import useServerError from '../../lib/useServerError';
 import { RECORD_TYPES, STATUSES } from '../../lib/constants';
 import { formatDate, formatDateTime, reportCode } from '../../lib/format';
 
@@ -218,7 +219,8 @@ export default function ReportManagement() {
       .catch(() => setTypes([]));
   }, []);
 
-  // Load the page of reports whenever the URL (filters or page) changes.
+  // Load the page of reports whenever the URL (filters or page) changes. A 5xx shows the 500 page.
+  const raiseServerError = useServerError();
   const queryString = searchParams.toString();
   useEffect(() => {
     let cancelled = false;
@@ -230,7 +232,7 @@ export default function ReportManagement() {
     });
     fetchReports(params)
       .then((data) => !cancelled && setResult(data))
-      .catch((err) => !cancelled && setError(err.message))
+      .catch((err) => !cancelled && !raiseServerError(err) && setError(err.message))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;

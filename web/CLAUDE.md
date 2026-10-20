@@ -21,7 +21,10 @@ src/
   lib/constants.js     ROLES, STATUSES, ADMIN_STATUSES, INJURY_OPTIONS, HOTLINES, homePathFor(), APK_URL
   lib/format.js        formatDate, formatDateTime, reportCode (RW-000128)
   components/ui/       Figma Components page, one file per component (Button.jsx, StatusChip.jsx...)
-  layouts/             StaffLayout (sidebar + top bar + user menu), AccountDialogs
+  layouts/             StaffLayout (sidebar + top bar + user menu, Log out confirm), AccountDialogs,
+                       PublicLayout (public header with Light/Dark switch + footer; landing, /about, 404, 500)
+  components/ErrorBoundary.jsx  shows the 500 page (W12) when a page crashes
+  lib/useServerError.js         a page's main request with a 5xx re-throws into the ErrorBoundary
   pages/<area>/        one file per screen; App.jsx holds every route
   assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png
   styles/tokens.css    generated from Figma variables (light + dark); styles/theme.css maps them to Tailwind
@@ -48,6 +51,12 @@ src/
   Body text navy; text-only colors `text-text-blue|success|danger`.
 - Charts and maps get a text alternative or a data table. Images have alt text (decorative: `alt=""`).
 - Touch targets at least 44 px. Respect `prefers-reduced-motion`.
+
+## Routes (#40)
+- Public: `/` landing, `/about` (W10, Meet our team), `/500` (W12), `/staff/sign-in`; any unknown path shows 404 (W11).
+- Administrator: `/admin...`, `/demo-video`, `/action-log`, `/admin/about` (W9, version and server status).
+- Landing section links are `/#how-it-works`, `/#public-updates`, `/#safety-tips`, `/#faq`; Landing scrolls to the hash.
+- Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.
 
 ## Data and roles
 - The web is for Administrators only (#36). Reporters and Traffic Officers use the Android app; their old

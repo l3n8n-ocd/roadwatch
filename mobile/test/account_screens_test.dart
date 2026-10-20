@@ -217,6 +217,7 @@ Widget _app(
       ChangeNotifierProvider<NotificationsProvider>.value(value: notifications ?? NotificationsProvider(api)),
     ],
     child: MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: mode,
@@ -316,7 +317,13 @@ void main() {
     await tester.scrollUntilVisible(find.text('Log out'), 200);
     await tester.tap(find.text('Log out'));
     await tester.pumpAndSettle();
-    expect(find.text('Log out of RoadWatch?'), findsOneWidget);
+    expect(find.text('Log out?'), findsOneWidget);
+    // Cancel keeps the session.
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(auth.isSignedIn, isTrue);
+    await tester.tap(find.text('Log out'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Log out').last);
     await tester.pumpAndSettle();
     expect(auth.isSignedIn, isFalse);

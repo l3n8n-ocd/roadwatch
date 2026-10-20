@@ -122,8 +122,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: RwSpace.s16, vertical: RwSpace.s24),
           children: [
             Text(
-              "You'll be registered as a Reporter. Officers and administrators are added by the "
-              'RoadWatch admin.',
+              // Sign-up is Reporter-only (#40): no role choice, by design (security rule).
+              "You'll be registered as a Reporter. Traffic Officer accounts are created by the "
+              'RoadWatch administrator.',
               style: RwType.body.copyWith(color: c.textMuted),
             ),
             if (_failure != null) ...[

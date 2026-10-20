@@ -52,6 +52,7 @@ export default function Dialog({ open, onClose, title, description, children, ac
 
 // Ready-made variants: tone="primary" (Confirm), tone="destructive" (Destructive), and
 // reason={{ label, placeholder, minLength }} for "Reject with reason" (onConfirm gets the text).
+// confirmIcon: optional icon name on the confirm button (Log out uses "log-out").
 export function ConfirmDialog({
   open,
   onClose,
@@ -59,6 +60,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  confirmIcon,
   cancelLabel = 'Cancel',
   tone = 'primary',
   reason,
@@ -99,6 +101,7 @@ export function ConfirmDialog({
           </Button>
           <Button
             variant={tone === 'destructive' ? 'destructive' : 'primary'}
+            icon={busy ? undefined : confirmIcon}
             onClick={confirm}
             disabled={busy}
             className="min-w-[184px] max-sm:flex-1 max-sm:min-w-0"
