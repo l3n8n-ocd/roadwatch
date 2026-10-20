@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 19, 2026 (web and mobile apps generated from the Figma high-fidelity prototype).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 20, 2026 (demo and promotional video moved to Oct 30, Phase 4).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Claude Code has not inspected the user's repo while this file was written. Always inspect the real files before relying on any path or detail here.
 
@@ -14,7 +14,8 @@ Claude Code has not inspected the user's repo while this file was written. Alway
 | Course | IT 305 Advance Web Development, BSIT 3I-G1, Bulacan State University (College of Information and Communications Technology) |
 | Type | Group project, 4 members, one functional web and mobile system |
 | Build window | Oct 12-30, 2026 (system finished Oct 30) |
-| Oct 31 - Nov 2 | Documentation and video |
+| Oct 30 | Demo and promotional video due (with the finished system) |
+| Oct 31 - Nov 2 | Documentation (PPT user guide, contribution report) and submission |
 | Submission | Nov 2, 2026 |
 | Repo | Public GitHub repo, monorepo, owned by Lenon's personal account (**not created yet as of Oct 15**; setup steps are in `docs/SETUP-GUIDE.md`) |
 
@@ -349,12 +350,12 @@ Follow `docs/SETUP-GUIDE.md` (Parts A to D, with troubleshooting).
 | 1 Foundation (by Oct 16, at risk) | Public repo, Aiven MySQL with schema and seed, API skeleton, Figma wireframes, generate Vite and Flutter projects, professor question | Lenon, Carl, Pauline, Princess |
 | 2 Core flow (by Oct 21) | Register/login/JWT/roles/admin seed, report submission and Cloudinary upload, mobile register/login/report form, web login/list/details, start test plan | Carl, Lenon, Pauline |
 | 3 Workflows (by Oct 26) | Admin/officer endpoints and user management (incl. deactivate), web admin pages, mobile tracking and notifications, email via Nodemailer + Gmail SMTP, dashboard and exports, demo video feature | Carl, Pauline, Lenon |
-| 4 Deploy and test (by Oct 30) | Deploy API to Render, Aiven and web to Vercel; APK from tag; full test plan including accessibility checks; bug fixes only; freeze and tag | Carl, Lenon, Pauline |
-| 5 Docs (Oct 31-Nov 2) | PPT guide, contribution report, record MP4 video, publish video (Cloudinary, Git LFS, `DEMO_VIDEO_URL`), final submission check | Princess, Lenon, Carl |
+| 4 Deploy and test (by Oct 30) | Deploy API to Render, Aiven and web to Vercel; record and publish the demo and promotional video (MP4, every member speaks; Cloudinary, Git LFS, `DEMO_VIDEO_URL`); APK from tag; full test plan including accessibility checks; bug fixes only; freeze and tag | Carl, All, Lenon, Pauline |
+| 5 Docs (Oct 31-Nov 2) | PPT guide, contribution report, final submission check | Princess, Lenon |
 
 Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a reporter submits on mobile and an admin sees it on web; Oct 26 the full lifecycle works and emails send.
 
-**Video (Confirmed):** MP4, any length (Documentation Lead decides), covering technologies, demo, database and architecture, and challenges; every member participates. Stored at `docs/video/roadwatch-demo.mp4` (Git LFS) and shown inside web and mobile via `/api/app-info`.
+**Video (Confirmed):** due **Oct 30** (Confirmed Oct 20: tracker step 20 in Phase 4, owner All; `docs/DECISIONS.md` #34). MP4, any length (Documentation Lead decides), covering technologies, demo, database and architecture, and challenges; every member participates. Stored at `docs/video/roadwatch-demo.mp4` (Git LFS) and shown inside web and mobile via `/api/app-info`.
 
 ---
 

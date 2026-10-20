@@ -1,11 +1,11 @@
 # Decisions Log
 
-Last updated: Oct 19, 2026 (role-based sign-in, web reporter path, verify-then-assign workflow, Figma pages used for code)
+Last updated: Oct 20, 2026 (demo and promotional video due Oct 30)
 
 | # | Topic | Decision | Status |
 |---|---|---|---|
 | 1 | Section | BSIT 3I-G1 | Final |
-| 2 | Timeline | System finished Oct 30. Oct 31 to Nov 2 for documentation and video. | Final |
+| 2 | Timeline | System finished Oct 30, together with the demo and promotional video (#34). Oct 31 to Nov 2 for documentation and submission. | Final (updated Oct 20) |
 | 3 | Sign-in | Login required for reporters. `reports.reporter_id` is NOT NULL. | **Open: ask professor about anonymous reporting on Oct 16** |
 | 4 | Registration fields | Full name, email (unique), password (min 8), optional phone. No email verification. Registration always creates a Reporter. | Final |
 | 5 | Admin and officer accounts | First admin created with `npm run seed:admin`. Admin creates Traffic Officers in the system. | Final |
@@ -37,6 +37,7 @@ Last updated: Oct 19, 2026 (role-based sign-in, web reporter path, verify-then-a
 | 31 | Emergency hotlines | The app keeps 911 (Philippine National Emergency Hotline) as the main emergency number. Settings → Emergency hotlines (mobile) lists 911, PNP (117, (02) 8722-0650, (02) 8723-0401 to 0420) and BFP ((02) 8426-0219, (02) 8426-0246) with their official seals; the web landing emergency card also names PNP 117 and BFP (02) 8426-0219. A Bulacan-only list was tried on Oct 19 and dropped. Numbers in `docs/ui-design/hotlines.md`. | Final (design Oct 19) |
 | 32 | Coverage wording | RoadWatch is not limited to Bulacan: product copy says "everywhere" instead of "across/in Bulacan", and sample addresses drop the province. "Bulacan State University" stays only where it names the school in course credits. | Final (design Oct 19) |
 | 33 | Figma pages and code | Pauline's draft page is kept as the low-fidelity prototype. The high-fidelity prototype is the five pages Foundations, Components, Mobile, Web and Flows; the React web app and the Flutter app are generated from those five pages only (tokens from Foundations, components from Components, screens from Mobile/Web, navigation from Flows). | Final (Oct 19) |
+| 34 | Video deadline | The demo and promotional video is due Oct 30, not Nov 1. In the Build Tracker it moved from Phase 5 (old step 26) to Phase 4 as step 20 (owner All); the later steps were renumbered: 21 APK, 22 test plan, 23 bug fixes, 24 freeze and final tag, 25 PPT user guide, 26 contribution report, 27 final submission check. | Final (Oct 20) |
 
 ## If the professor says anonymous reporting is required
 Make `reporter_id` nullable, add a tracking code to `reports`, allow contact fields to be optional, and tell Carl before step 11 (Oct 20).
