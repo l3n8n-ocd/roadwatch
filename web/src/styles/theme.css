@@ -1,0 +1,36 @@
+@theme inline {
+  --font-heading: "Poppins", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --color-brand-navy: var(--rw-brand-navy);
+  --color-brand-blue: var(--rw-brand-blue);
+  --color-brand-amber: var(--rw-brand-amber);
+  --color-brand-success: var(--rw-brand-success);
+  --color-brand-danger: var(--rw-brand-danger);
+  --color-surface-white: var(--rw-surface-white);
+  --color-surface-light-gray: var(--rw-surface-light-gray);
+  --color-surface-navy-subtle: var(--rw-surface-navy-subtle);
+  --color-surface-navy-hover: var(--rw-surface-navy-hover);
+  --color-surface-blue-subtle: var(--rw-surface-blue-subtle);
+  --color-surface-amber-subtle: var(--rw-surface-amber-subtle);
+  --color-surface-success-subtle: var(--rw-surface-success-subtle);
+  --color-surface-danger-subtle: var(--rw-surface-danger-subtle);
+  --color-text-primary: var(--rw-text-primary);
+  --color-text-muted: var(--rw-text-muted);
+  --color-text-inverse: var(--rw-text-inverse);
+  --color-text-inverse-muted: var(--rw-text-inverse-muted);
+  --color-text-blue: var(--rw-text-blue);
+  --color-text-success: var(--rw-text-success);
+  --color-text-danger: var(--rw-text-danger);
+  --color-text-accent: var(--rw-text-accent);
+  --color-border-subtle: var(--rw-border-subtle);
+  --color-border-control: var(--rw-border-control);
+  --color-border-focus: var(--rw-border-focus);
+  --color-border-focus-on-dark: var(--rw-border-focus-on-dark);
+  --color-border-danger: var(--rw-border-danger);
+  --radius-rw-sm: var(--rw-radius-sm);
+  --radius-rw-md: var(--rw-radius-md);
+  --shadow-rw-sm: var(--rw-shadow-sm);
+  --shadow-rw-md: var(--rw-shadow-md);
+  --shadow-rw-lg: var(--rw-shadow-lg);
+  --shadow-rw-focus: var(--rw-shadow-focus);
+}

@@ -1,0 +1,228 @@
+/* Generated from the Figma Foundations page (variables + styles). Do not edit by hand;
+ * regenerate when the Figma tokens change. Light is the default; dark follows the
+ * system unless the user picked a theme (data-theme on <html>). */
+
+:root {
+  color-scheme: light;
+  --rw-brand-navy: #0B2545;
+  --rw-brand-blue: #4A7FB5;
+  --rw-brand-amber: #F2A900;
+  --rw-brand-success: #2E9E6B;
+  --rw-brand-danger: #D64545;
+  --rw-surface-white: #FFFFFF;
+  --rw-surface-light-gray: #F4F6F9;
+  --rw-surface-navy-subtle: #E7EBF1;
+  --rw-surface-navy-hover: #1B3A63;
+  --rw-surface-blue-subtle: #E8F0F8;
+  --rw-surface-amber-subtle: #FFF4D6;
+  --rw-surface-success-subtle: #E5F4EC;
+  --rw-surface-danger-subtle: #FBE9E9;
+  --rw-text-primary: #0B2545;
+  --rw-text-muted: #4A5B73;
+  --rw-text-inverse: #FFFFFF;
+  --rw-text-inverse-muted: #B8C4D4;
+  --rw-text-blue: #2F6296;
+  --rw-text-success: #1F6F4A;
+  --rw-text-danger: #B42B2B;
+  --rw-text-accent: #F2A900;
+  --rw-border-subtle: #C9D2DE;
+  --rw-border-control: #6B7A90;
+  --rw-border-focus: #2F6296;
+  --rw-border-focus-on-dark: #F2A900;
+  --rw-border-danger: #D64545;
+  --rw-space-0: 0px;
+  --rw-space-4: 4px;
+  --rw-space-8: 8px;
+  --rw-space-12: 12px;
+  --rw-space-16: 16px;
+  --rw-space-24: 24px;
+  --rw-space-32: 32px;
+  --rw-space-40: 40px;
+  --rw-space-48: 48px;
+  --rw-space-64: 64px;
+  --rw-radius-sm: 8px;
+  --rw-radius-md: 16px;
+  --rw-radius-full: 999px;
+  --rw-size-touch-mobile: 48px;
+  --rw-size-touch-web: 44px;
+  --rw-size-control-height: 48px;
+  --rw-shadow-sm: 0 1px 2px #0B25450F, 0 1px 3px #0B25450F;
+  --rw-shadow-md: 0 4px 12px #0B254514;
+  --rw-shadow-lg: 0 12px 32px #0B254524;
+  --rw-shadow-focus: 0 0 0 2px var(--rw-surface-white), 0 0 0 4px var(--rw-border-focus);
+  --rw-shadow-focus-on-dark: 0 0 0 2px var(--rw-brand-navy), 0 0 0 4px var(--rw-border-focus-on-dark);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --rw-brand-navy: #2F6296;
+  --rw-brand-blue: #6E9FD3;
+  --rw-brand-amber: #7A5800;
+  --rw-brand-success: #1F6F4A;
+  --rw-brand-danger: #E06666;
+  --rw-surface-white: #112240;
+  --rw-surface-light-gray: #0A1628;
+  --rw-surface-navy-subtle: #1C3358;
+  --rw-surface-navy-hover: #3A72AD;
+  --rw-surface-blue-subtle: #142E52;
+  --rw-surface-amber-subtle: #33290A;
+  --rw-surface-success-subtle: #0E2E22;
+  --rw-surface-danger-subtle: #3A1519;
+  --rw-text-primary: #E7EBF1;
+  --rw-text-muted: #B8C4D4;
+  --rw-text-inverse: #FFFFFF;
+  --rw-text-inverse-muted: #D5DEEA;
+  --rw-text-blue: #8DB6E2;
+  --rw-text-success: #6FCF9E;
+  --rw-text-danger: #F19A9A;
+  --rw-text-accent: #FFE08A;
+  --rw-border-subtle: #2A3F63;
+  --rw-border-control: #8796AB;
+  --rw-border-focus: #8DB6E2;
+  --rw-border-focus-on-dark: #FFE08A;
+  --rw-border-danger: #E06666;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --rw-brand-navy: #2F6296;
+    --rw-brand-blue: #6E9FD3;
+    --rw-brand-amber: #7A5800;
+    --rw-brand-success: #1F6F4A;
+    --rw-brand-danger: #E06666;
+    --rw-surface-white: #112240;
+    --rw-surface-light-gray: #0A1628;
+    --rw-surface-navy-subtle: #1C3358;
+    --rw-surface-navy-hover: #3A72AD;
+    --rw-surface-blue-subtle: #142E52;
+    --rw-surface-amber-subtle: #33290A;
+    --rw-surface-success-subtle: #0E2E22;
+    --rw-surface-danger-subtle: #3A1519;
+    --rw-text-primary: #E7EBF1;
+    --rw-text-muted: #B8C4D4;
+    --rw-text-inverse: #FFFFFF;
+    --rw-text-inverse-muted: #D5DEEA;
+    --rw-text-blue: #8DB6E2;
+    --rw-text-success: #6FCF9E;
+    --rw-text-danger: #F19A9A;
+    --rw-text-accent: #FFE08A;
+    --rw-border-subtle: #2A3F63;
+    --rw-border-control: #8796AB;
+    --rw-border-focus: #8DB6E2;
+    --rw-border-focus-on-dark: #FFE08A;
+    --rw-border-danger: #E06666;
+  }
+}
+
+@utility type-hero {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 56px;
+  letter-spacing: -0.5px;
+}
+
+@utility type-display {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.5px;
+}
+
+@utility type-h1 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.25px;
+}
+
+@utility type-h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 30px;
+  letter-spacing: 0px;
+}
+
+@utility type-h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: 0px;
+}
+
+@utility type-stat {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 44px;
+  letter-spacing: -0.5px;
+}
+
+@utility type-body-lg {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: 0px;
+}
+
+@utility type-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0px;
+}
+
+@utility type-body-sm {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0px;
+}
+
+@utility type-label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0px;
+}
+
+@utility type-button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0px;
+}
+
+@utility type-caption {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+}
+
+@utility type-overline {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.8px;
+}
+
+@utility type-nav {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+}

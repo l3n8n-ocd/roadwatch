@@ -224,6 +224,26 @@ Use either: paste each block as a GitHub issue, or run `bash create-issues.sh` o
 - [ ] Tag the final version
 
 
+> Issues 28 and 29 moved to M4 on Oct 20: the demo and promotional video is due Oct 30 (DECISIONS #34).
+
+### 28. Record the demo and promotional video
+**Owner:** All | **Due:** Oct 30
+
+- [ ] MP4, any length, decided by the Documentation Lead
+- [ ] Technologies used
+- [ ] Demo of major features
+- [ ] Database structure and architecture
+- [ ] Challenges and solutions
+- [ ] Every member speaks
+
+### 29. Publish the demo video
+**Owner:** Princess, Lenon, Carl | **Due:** Oct 30
+
+- [ ] Princess: export the final MP4 and upload it to Cloudinary
+- [ ] Lenon: git lfs install, commit docs/video/roadwatch-demo.mp4 (LFS, 1 GB free storage, check bandwidth)
+- [ ] Carl: set DEMO_VIDEO_URL on the API host
+- [ ] Check the video plays in the web page and the mobile screen
+
 ## Milestone: M5 Docs and Submission (Nov 2) (due 2026-11-02)
 
 ### 26. PowerPoint user guide
@@ -239,24 +259,6 @@ Use either: paste each block as a GitHub issue, or run `bash create-issues.sh` o
 - [ ] Fill docs/contributions/CONTRIBUTIONS.md
 - [ ] Attach commit-log.txt and handoff-log.csv
 - [ ] Get sign-offs
-
-### 28. Record the video presentation
-**Owner:** All | **Due:** Oct 31
-
-- [ ] MP4, any length, decided by the Documentation Lead
-- [ ] Technologies used
-- [ ] Demo of major features
-- [ ] Database structure and architecture
-- [ ] Challenges and solutions
-- [ ] Every member speaks
-
-### 29. Publish the demo video
-**Owner:** Princess, Lenon, Carl | **Due:** Nov 1
-
-- [ ] Princess: export the final MP4 and upload it to Cloudinary
-- [ ] Lenon: git lfs install, commit docs/video/roadwatch-demo.mp4 (LFS, 1 GB free storage, check bandwidth)
-- [ ] Carl: set DEMO_VIDEO_URL on the API host
-- [ ] Check the video plays in the web page and the mobile screen
 
 ### 30. Final submission check
 **Owner:** Lenon | **Due:** Nov 2

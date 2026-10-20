@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 16, 2026 (starter v2 + Carl's backend merged into api/).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions in the planning conversation (Oct 12-15, 2026). Last updated Oct 20, 2026 (professor's rulings: no anonymous reporting, Reporter and Officer mobile-only, Admin web-only; Brevo email API; project domain; API deploy moved to Phase 2).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Claude Code has not inspected the user's repo while this file was written. Always inspect the real files before relying on any path or detail here.
 
@@ -14,11 +14,12 @@ Claude Code has not inspected the user's repo while this file was written. Alway
 | Course | IT 305 Advance Web Development, BSIT 3I-G1, Bulacan State University (College of Information and Communications Technology) |
 | Type | Group project, 4 members, one functional web and mobile system |
 | Build window | Oct 12-30, 2026 (system finished Oct 30) |
-| Oct 31 - Nov 2 | Documentation and video |
+| Oct 30 | Demo and promotional video due (with the finished system) |
+| Oct 31 - Nov 2 | Documentation (PPT user guide, contribution report) and submission |
 | Submission | Nov 2, 2026 |
 | Repo | Public GitHub repo, monorepo, owned by Lenon's personal account (**not created yet as of Oct 15**; setup steps are in `docs/SETUP-GUIDE.md`) |
 
-**Problem:** road accident reporting is slow and disorganized. The system lets the public report accidents (details, GPS location, photos) from a website or mobile app and track status, while administrators and traffic officers verify, assign, manage and report on records.
+**Problem:** road accident reporting is slow and disorganized. The system lets the public report accidents (details, GPS location, photos) from the mobile app and track status, while administrators (web dashboard) and traffic officers (mobile app) verify, assign, manage and report on records. The course text says "website or mobile app" for reporters; the professor ruled Reporter and Traffic Officer mobile-only and Administrator web-only (`docs/DECISIONS.md` #36).
 
 **Team (all confirmed)**
 
@@ -39,8 +40,8 @@ Claude Code has not inspected the user's repo while this file was written. Alway
 
 Objectives (from the course description): web and mobile reporting; quick digital report form; GPS or manual map location; photo evidence; authority verification and management; report status tracking; centralized database; statistics to identify accident-prone areas; public-authority communication; secure authentication and access control.
 
-**In scope:** everything in section 7 (FR-01 to FR-15), the three roles, web dashboard, Flutter app, deployment, demo video inside the apps, user deactivation.
-**Out of scope (Confirmed):** SMS and push notifications, Firebase, anonymous reporting (pending the professor, see section 19), email verification, Play Store release (APK only).
+**In scope:** everything in section 7 (FR-01 to FR-15), the three roles, web dashboard (Administrator), Flutter app (Reporter and Traffic Officer), deployment, demo video inside the apps, user deactivation.
+**Out of scope (Confirmed):** SMS and push notifications, Firebase, anonymous reporting (professor: not required, #35), email verification, Play Store release (APK only), reporter or officer screens on the web, administrator screens on mobile (#36).
 
 ---
 
@@ -65,18 +66,19 @@ Objectives (from the course description): web and mobile reporting; quick digita
 | Validation and security libs | zod, helmet, cors, bcrypt, jsonwebtoken, multer | In starter `package.json` |
 | ORM | **Sequelize** (already in starter dependencies). Do not add Prisma | Confirmed |
 | Database | MySQL. Host: **Aiven managed MySQL (TLS)**. Local MySQL optional for dev | Confirmed |
-| API hosting | **Render** (free web service, sleeps when idle) | Confirmed |
+| API hosting | **Render** (free web service, sleeps when idle). Blueprint `render.yaml` at the repo root (Node 22, Singapore, `rootDir: api`, health `/api/health`, auto-deploy from `main`); service on Lenon's Render account, operated with Carl (#39); steps in `docs/SETUP-GUIDE.md` Part F | Confirmed |
 | Web hosting | Vercel (root folder `web`, env `VITE_API_URL`) | Recommended |
+| Domain | Namecheap `.me` from the GitHub Student Developer Pack, claimed by Lenon (DNS). Used for the email sender, the web app, `api.` on Render and the APK link. Name: `roadwatch-ph.me` (#38) | Confirmed Oct 20 |
 | Mobile delivery | Release APK built by GitHub Actions on tag `v*` | Recommended |
 | Photos | Cloudinary (store only the URL in `report_photos`) | Confirmed |
 | Maps | OpenStreetMap via Leaflet (web) and flutter_map (mobile); Nominatim for address lookup | Confirmed |
-| Email | Nodemailer. **Gmail SMTP (app password) is the sending method for the demo** (`MAIL_PROVIDER=smtp`). Resend SMTP stays in the code as an optional provider, usable only if a domain is verified | Confirmed |
+| Email | **Brevo transactional email API over HTTPS** (`MAIL_PROVIDER=brevo`, `BREVO_API_KEY`), called with Node's built-in `fetch`. Render's free tier blocks SMTP ports, so Gmail SMTP cannot be used once deployed (#37). Sender on the project domain with SPF/DKIM/DMARC. `MAIL_PROVIDER=log` for local dev and tests. Not implemented yet (Carl, Phase 3); `mailer.js` still has the old Nodemailer SMTP/Resend code, which will be removed | Confirmed Oct 20 |
 | Exports | pdfkit (PDF), json2csv (CSV) | Recommended |
 | Auth | Own JWT with role middleware | Confirmed |
 | CI/CD | GitHub Actions (`api-ci`, `web-ci`, `mobile-ci`); Render and Vercel auto-deploy from `main` | Confirmed |
 | Design | Figma for UI/UX (course IT 304W) | Confirmed |
 
-**Rejected, do not reintroduce without approval:** Firebase (all services), Firestore or NoSQL, Prisma, Railway, Google Maps, Brevo, TiDB Cloud, React-Bootstrap (Tailwind chosen), SMS and push notifications.
+**Rejected, do not reintroduce without approval:** Firebase (all services), Firestore or NoSQL, Prisma, Railway, Google Maps, TiDB Cloud, Gmail SMTP on Render (blocked), React-Bootstrap (Tailwind chosen), SMS and push notifications.
 
 **Environment notes:** development machines include Windows (use Git Bash for `scripts/commit-as.sh`). Node 20 was initially suggested, then replaced by Node >= 22 because Node 20 is end of life.
 
@@ -85,21 +87,22 @@ Objectives (from the course description): web and mobile reporting; quick digita
 ## 5. System Architecture
 
 ```
-Flutter app ─┐
-             ├─► REST API (Express + Sequelize, JWT, role middleware) ─► MySQL (Aiven, TLS)
-React web  ──┘        ├─► Cloudinary (photos)
-                      ├─► Nodemailer ─► Gmail SMTP (optional: Resend SMTP)
-                      └─► PDF/CSV export
+Flutter app (Reporter, Officer) ─┐
+                                 ├─► REST API (Express + Sequelize, JWT, role middleware) ─► MySQL (Aiven, TLS)
+React web (landing, Admin) ──────┘        ├─► Cloudinary (photos)
+                                          ├─► Brevo email API (HTTPS)
+                                          └─► PDF/CSV export
 Clients ─► OpenStreetMap tiles and Nominatim directly
 ```
 
-- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`.
+- One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36): `reporter` and `officer` sign in on mobile only, `admin` on web only; each app sends `platform` (`web` or `mobile`) at login and the API answers 403 `WRONG_PLATFORM` for the wrong one (API, web and mobile done Oct 20; the mobile app still turns officers away until the officer screens ship in Phase 3).
 - Photos are uploaded through the API (multer) to Cloudinary; only URLs go to MySQL.
 - The demo video is uploaded to Cloudinary. Both clients read its URL from `GET /api/app-info` (`DEMO_VIDEO_URL` env var on Render). Do not bundle the video into `web/public` or Flutter assets.
 - Render's free tier sleeps when idle. Warm the API before demos, recordings and grading.
 
 **API groups (implemented Oct 16 from Carl's backend; contract in `docs/API.md`):**
 `/api/auth` (register is public and always creates a Reporter, ignoring any client role; login rejects inactive users), `/api/reports` (create, my reports, track), `/api/admin/reports` (filter, verify, assign, status), `/api/officer/reports` (assigned, remarks, status), `POST /api/users` (admin only, creates Traffic Officers), user role change and deactivate or reactivate (admin only), `/api/dashboard/stats`, `/api/exports`, `/api/app-info`.
+**Approved Oct 17, not implemented yet:** update own profile (e.g. `PATCH /api/auth/me`) and change own password, for mobile Settings (`docs/DECISIONS.md` #25); `GET /api/public/updates` (public, read-only, verified records only, no reporter fields; see `docs/DECISIONS.md` #23). It feeds the "Public road updates" section of the public web landing page (#24).
 
 ---
 
@@ -145,7 +148,7 @@ CI workflows skip themselves until `package.json` or `pubspec.yaml` exists in th
 
 **Report fields:** Report ID (system generated), reporter name and contact, accident date and time (required), location text (required), GPS lat/long (optional), accident type (required), vehicles involved (where applicable), injury information (required, includes an Unknown option), description (required), photos (optional), status, date submitted (automatic), assigned officer (if assigned), official remarks (optional).
 
-**Statuses (all 8 confirmed):** Submitted, Under Review, Additional Information Required, Verified, Assigned, In Progress, Resolved/Closed, Rejected (with a recorded reason).
+**Statuses (all 8 confirmed):** Submitted, Under Review, Additional Information Required, Verified, Assigned, In Progress, Resolved/Closed, Rejected (with a recorded reason). **Order (Confirmed Oct 19, course workflow):** the administrator verifies before assigning an officer; officers set In Progress, Additional Information Required and Resolved/Closed (`docs/DECISIONS.md` #30; API change pending for Carl).
 
 **Hard rule from the course:** the system must clearly distinguish a public-submitted report from an officially verified accident record (`reports.record_type`: `public_submission` vs `verified_record`).
 
@@ -160,6 +163,8 @@ CI workflows skip themselves until `package.json` or `pubspec.yaml` exists in th
 | Reporter (Public User) | Register, log in, submit reports with location and photos, view own history, track status, receive notifications |
 | Administrator | Manage user accounts and roles (create officers, change roles, deactivate or reactivate), review and validate reports, assign reports to officers, manage accident categories and settings, monitor activity, generate and export reports, view dashboard |
 | Traffic Officer | View assigned reports, verify information, update investigation and response status, add official remarks, record actions taken |
+
+Platforms (Confirmed Oct 20, professor, #36): Reporter and Traffic Officer use the mobile app only; Administrator uses the web dashboard only. One Flutter app serves both mobile roles (home chosen by role).
 
 Account creation (Confirmed): the first Administrator is created with `npm run seed:admin` (reads `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` from `.env`). Administrators then create Traffic Officers inside the system (`POST /api/users`, admin only). Reporters self-register. Reporter personal information shown in the web UI must have access restrictions (course UI spec). An administrator must not be able to deactivate their own account.
 
@@ -196,11 +201,12 @@ Rules: every status change writes a `report_status_history` row; important admin
 
 - **Responsive and accessibility target (Confirmed): fully responsive web and WCAG 2.1 AA.** This means labels on all form fields, visible keyboard focus, full keyboard navigation, alt text on images, status never shown by color alone (chips need text), minimum touch targets, and sufficient color contrast. Plan extra testing time (Pauline). On mobile, follow Flutter semantics labels and sufficient text scaling.
 - Palette (Confirmed, navy and white): navy `#0B2545`, accent blue `#4A7FB5`, amber `#F2A900` (warnings, pending), success `#2E9E6B`, danger `#D64545`, light gray `#F4F6F9`, white.
-- **Contrast caution (Unverified, check with a contrast tool):** amber `#F2A900` and accent blue `#4A7FB5` as text on white are likely below the 4.5:1 AA ratio. Use navy for body text, use amber only as a fill with navy text on it, and darken the blue for text or links if the checker says it fails. Update this section with the final values.
+- **Contrast (Confirmed Oct 17, WCAG formula):** amber on white 2.0:1, accent blue on white 4.2:1, danger on white 4.4:1 and success on white 3.4:1 all fail for normal text. Rules: body text is navy (15.4:1 on white); amber is a fill with navy text on it (7.7:1), or text on navy only; no normal-size text on accent blue or danger fills. Approved text-only variants (Pauline, Oct 17): `text/blue #2F6296` (6.35:1), `text/success #1F6F4A` (6.12:1), `text/danger #B42B2B` (6.32:1). Brand colors stay for fills, icons and large shapes. Full pair table: Figma → Foundations → Contrast checks (`docs/ui-design/figma-index.md`).
+- **Themes (Confirmed Oct 17):** Light and Dark on web and mobile, default follows the system (`docs/DECISIONS.md` #26). Dark values and their contrast table are in Figma → Foundations. Mobile bottom nav: Home, My reports, Notifications, Settings; the Demo Video screen opens from Settings (#25). The web opens on a public landing page (#24). Staff web top bar: a Light/Dark switch, then the user menu, which opens a dropdown (account, Edit profile, Change password, Action log, Contact support, About); Log out is a separate button beside it (#27). The Action log endpoints (own actions; admin-only all staff) are approved in design, not built.
 - Type: Poppins Bold headings, Inter body. 8-pt spacing grid, 16 px radius, soft shadows.
 - Status chips are colored per status and always include the status text. Keep one consistent title, status-chip position and navigation across screens.
-- **Mobile screens (course spec plus plan):** M0 login/register; M1 home with prominent "Report an Accident"; M2 accident details form; M3 GPS and map location; M4 camera/photo upload; M5 submission confirmation with Report ID; M6 report tracking and history; notifications; Demo Video screen.
-- **Web screens:** W1 login (role-based redirect); W2 admin dashboard (summary cards: total, pending, verified, closed; trend chart; type chart; map; recent reports); W3 report management (search, filters, table); W4 report details (info, map, photo viewer, restricted reporter info, assign officer, status and remarks, Verified/Public badge); W5 officer queue; W6 users and settings (create officer, change role, deactivate or reactivate); W7 reports and export; Demo Video page.
+- **Mobile screens (course spec plus plan):** M0 login/register; M1 home with prominent "Report an Accident"; M2 accident details form; M3 GPS and map location; M4 camera/photo upload; M5 submission confirmation with Report ID; M6 report tracking and history; notifications; Demo Video screen. **Officer (added Oct 20, #36, to design in Figma first):** assigned reports list, report details with actions (In Progress, Additional Information Required, Resolved/Closed, remarks), Open in Maps, Notifications, Settings.
+- **Web screens (Administrator only, #36):** public landing page with road updates, hotlines and a Download the app (APK) button; W1 Administrator sign-in (the role chooser #28 and reporter screens R0-R6 #29 are superseded and move to a Figma "Archive" page; W5 officer queue too); W2 admin dashboard (summary cards: total, pending, verified, closed; trend chart; type chart; map; recent reports); W3 report management (search, filters, table); W4 report details (info, map, photo viewer, restricted reporter info, assign officer, status and remarks, Verified/Public badge); W5 officer queue; W6 users and settings (create officer, change role, deactivate or reactivate); W7 reports and export; Demo Video page; W8 Action log and W9 About (from the user menu, #27).
 - Charts and the map need text alternatives or data tables to meet AA.
 
 ---
@@ -234,7 +240,7 @@ Rules: every status change writes a `report_status_history` row; important admin
 - Tools: Git, Node >= 22, a MySQL client (Workbench, DBeaver or CLI), Flutter SDK, Android tooling for APK.
 - **API:** `cd api`, copy `.env.example` to `.env`, fill values, `npm install`, `npm run dev`.
 - **Aiven TLS:** set `DB_SSL=true` and either `DB_SSL_CA` (certificate text with `\n`) or `DB_SSL_CA_PATH`. `src/config/dbConfig.js` builds the connection settings.
-- **Email:** set `MAIL_PROVIDER=smtp`, `SMTP_USER` (Gmail address), `SMTP_PASS` (Gmail app password, requires 2-step verification on that account), and `MAIL_FROM`. Leave `RESEND_API_KEY` empty unless a domain gets verified.
+- **Email (target, #37):** `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` (Brevo → SMTP & API → API keys; Render env only), `MAIL_FROM` (an address on the project domain verified in Brevo). Until Carl's change lands, `mailer.js` still reads the old SMTP settings.
 - **Web:** not generated yet. Run once: `cd web && npm create vite@latest . -- --template react`, then install deps and Tailwind per `web/SETUP.md`. Env: `VITE_API_URL=http://localhost:5000/api`.
 - **Mobile:** not generated yet. Run once: `cd mobile && flutter create . --org com.roadwatch --project-name roadwatch_mobile`, then add packages per `mobile/SETUP.md`.
 - Env variable names live in `api/.env.example` (PORT, CLIENT_ORIGIN, DB_*, JWT_*, ADMIN_*, CLOUDINARY_URL, MAIL_PROVIDER, MAIL_FROM, RESEND_API_KEY, SMTP_*, DEMO_VIDEO_URL). Never put real values in the repo.
@@ -262,7 +268,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 ## 15. Testing and Quality Assurance
 
-- Automated API tests: 16 (JWT guard, health/app-info, and a 12-step database flow covering register, roles, report lifecycle, officer scoping, deactivation, notifications, dashboard, exports, upload validation). The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
+- Automated API tests: 18 (JWT guard, health/app-info, login platform validation, and a 13-step database flow covering register, roles, the login platform check, report lifecycle, officer scoping, deactivation, notifications, dashboard, exports, upload validation). All 18 passed on Oct 20 on Node 22 + local MariaDB 10.11. The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
 - Pauline owns a manual test plan: one test case per FR-01 to FR-15 (steps, expected, actual, pass/fail), executed on the deployed system around Oct 29. Add accessibility checks for the WCAG AA target (keyboard-only pass, contrast check, screen-reader labels, phone-width layout).
 - CI runs lint, test and build per folder on PRs and pushes to `dev` and `main`.
 - `seed-admin.js`, `mailer.js` and `dbConfig.js` were syntax-checked only. They have **not** been run against a real database or SMTP service.
@@ -278,7 +284,11 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 **Implemented in `api/` (Oct 16, merged from Carl's `roadwatch_backend`, aligned to the approved schema):** auth (register/login/me, JWT, role middleware), Sequelize models, reporter endpoints (submit, my reports, tracking, photo upload code), admin and officer endpoints, user management (create officer, role, deactivate/reactivate), notifications (in-app + email code), dashboard stats, period summaries, CSV/PDF export, rate limiting, input validation. 16 automated tests pass on a local MariaDB 10.11 database.
 **Verified only locally:** everything above ran against local MariaDB, including TLS (`DB_SSL=true` with a CA file) and `seed:admin`. **Not verified:** Aiven itself, Cloudinary upload, Gmail SMTP, Render deployment.
-**Not started (treat as unimplemented):** web app, mobile app, deployment.
+**Implemented Oct 19 from the Figma high-fidelity prototype (Foundations, Components, Mobile, Web, Flows; DECISIONS #33):**
+- `web/`: React + Vite + Tailwind 4 app with every Web frame (W0-W9, Demo video), light/dark tokens generated from Figma, component library, role-guarded routes. `npm run lint` and `npm run build` pass; every route was smoke-tested in Chromium at 1440 and 390 px with a **mocked** API. **Oct 20 (#36):** Administrator only; the reporter screens (R0-R6), officer queue and officer view were removed, sign-in sends `platform: "web"` and shows the mobile-only-account state, and the landing calls to action download the APK (smoke-tested again with a mocked API, lint and build pass).
+- `mobile/`: Flutter (Android) app with every Mobile frame (M0-M6, Notifications, Settings and its sub-screens). Reporters only. `flutter analyze` clean, `flutter test` passes (widget tests with a fake API).
+**Not verified:** either app against the real API, map tiles and Nominatim (blocked in the build environment), camera/GPS on a device, the release APK (no Android SDK in the build environment).
+**Deployment:** `render.yaml` Blueprint and the Part F guide are ready (Oct 20; API boot checked locally the way Render runs it); not deployed yet. Web on Vercel not started. Endpoints the UI already calls but the API lacks: `GET /public/updates`, `PATCH /auth/me`, change password, `GET /auth/me/activity`, `GET /admin/audit-logs` (screens show their designed unavailable state).
 
 **Setup status (Confirmed by the user, Oct 15, 22:35):**
 - GitHub repo: **not created yet**, so the starter zip has not been pushed and `members.conf` is not filled.
@@ -291,11 +301,11 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 ## 17. Known Issues and Technical Debt (remaining items are to-do)
 
 - Fixed in starter v2 (Oct 16): `*.pem` ignored, `api/scripts/check-db.js` added (`npm run check:db`), `is_active` added to schema and ERD, Gmail SMTP defaults in `.env.example` and `mailer.js`. Verified locally only; confirm they exist in the real repo.
-- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotate them. Carl's `JWT_SECRET` was the placeholder.
+- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotated (confirmed Oct 20). Revoke the Gmail app password once Brevo works.
 - Render's free tier sleeps when idle. The Aiven free plan limits were not verified in the conversation.
 - Git LFS: the user relies on 1 GB free storage. Bandwidth limits and "Download ZIP" behavior (LFS pointers only) are unverified. Submit the MP4 as a separate file too.
 - An earlier starter had `npm test` set to `node --test tests/`, which fails on Node 22. It was fixed to `node --test`. If an old copy exists, update it.
-- WCAG AA contrast of the palette is unchecked (see section 10).
+- WCAG AA contrast of the palette was checked on Oct 17 (see section 10); the approved text variants must also be used in code.
 - Course document inconsistencies: duplicated section numbers ("5"), section listed as 3H/3I/3J vs 3I G1/G2 (resolved: BSIT 3I-G1).
 
 ---
@@ -322,12 +332,12 @@ Do not do the following without the user's approval:
 ## 19. Pending Tasks and Priorities
 
 **Open decisions (only these remain)**
-- **Anonymous reporting:** login required for now. Princess asks the professor on **Oct 16**. If yes: nullable `reporter_id`, add a tracking code, optional contact fields, and tell Carl before Oct 20.
-- **Palette contrast:** confirm final text colors with a contrast checker.
+- **Domain:** `roadwatch-ph.me` (Namecheap `.me`, Lenon); availability not checked yet (#38).
 - **Column types and ENUM values:** proposed during planning. Carl may finalize them when loading the schema; tell Lenon so the ERD stays in sync.
 - **Aiven free-plan limits:** not verified.
 
-**Decided on Oct 15:** Sequelize, Render, `is_active` for deactivation, Gmail SMTP for demo email, full responsive and WCAG AA target.
+**Decided on Oct 15:** Sequelize, Render, `is_active` for deactivation, full responsive and WCAG AA target (Gmail SMTP was replaced by the Brevo API on Oct 20).
+**Decided on Oct 20:** anonymous reporting not required (#35); Reporter and Officer mobile-only, Administrator web-only (#36); Brevo email API (#37); Namecheap `.me` domain (#38); Phase 2 (Oct 21) = core only: Render deploy (Blueprint), platform check, web admin-only, reporter on mobile seen by admin on web; officer app, Brevo and endpoints #23/#25/#27/#30 in Phase 3; Figma Archive and officer frames now (#39).
 
 **Immediate next steps (in order)**
 Follow `docs/SETUP-GUIDE.md` (Parts A to D, with troubleshooting).
@@ -344,12 +354,12 @@ Follow `docs/SETUP-GUIDE.md` (Parts A to D, with troubleshooting).
 | 1 Foundation (by Oct 16, at risk) | Public repo, Aiven MySQL with schema and seed, API skeleton, Figma wireframes, generate Vite and Flutter projects, professor question | Lenon, Carl, Pauline, Princess |
 | 2 Core flow (by Oct 21) | Register/login/JWT/roles/admin seed, report submission and Cloudinary upload, mobile register/login/report form, web login/list/details, start test plan | Carl, Lenon, Pauline |
 | 3 Workflows (by Oct 26) | Admin/officer endpoints and user management (incl. deactivate), web admin pages, mobile tracking and notifications, email via Nodemailer + Gmail SMTP, dashboard and exports, demo video feature | Carl, Pauline, Lenon |
-| 4 Deploy and test (by Oct 30) | Deploy API to Render, Aiven and web to Vercel; APK from tag; full test plan including accessibility checks; bug fixes only; freeze and tag | Carl, Lenon, Pauline |
-| 5 Docs (Oct 31-Nov 2) | PPT guide, contribution report, record MP4 video, publish video (Cloudinary, Git LFS, `DEMO_VIDEO_URL`), final submission check | Princess, Lenon, Carl |
+| 4 Deploy and test (by Oct 30) | Deploy API to Render, Aiven and web to Vercel; record and publish the demo and promotional video (MP4, every member speaks; Cloudinary, Git LFS, `DEMO_VIDEO_URL`); APK from tag; full test plan including accessibility checks; bug fixes only; freeze and tag | Carl, All, Lenon, Pauline |
+| 5 Docs (Oct 31-Nov 2) | PPT guide, contribution report, final submission check | Princess, Lenon |
 
 Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a reporter submits on mobile and an admin sees it on web; Oct 26 the full lifecycle works and emails send.
 
-**Video (Confirmed):** MP4, any length (Documentation Lead decides), covering technologies, demo, database and architecture, and challenges; every member participates. Stored at `docs/video/roadwatch-demo.mp4` (Git LFS) and shown inside web and mobile via `/api/app-info`.
+**Video (Confirmed):** due **Oct 30** (Confirmed Oct 20: tracker step 20 in Phase 4, owner All; `docs/DECISIONS.md` #34). MP4, any length (Documentation Lead decides), covering technologies, demo, database and architecture, and challenges; every member participates. Stored at `docs/video/roadwatch-demo.mp4` (Git LFS) and shown inside web and mobile via `/api/app-info`.
 
 ---
 
@@ -378,7 +388,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 - Do not run `git commit` or `git push` unless the user asks. If asked to commit work for a teammate, use `scripts/commit-as.sh`.
 - Update `docs/DECISIONS.md` and this file when a decision or requirement changes. Update `docs/contributions/handoff-log.csv` only through `commit-as.sh`.
 
-**Nested files:** `api/CLAUDE.md` exists now. Suggested, not yet created: `web/CLAUDE.md` (routes, components, Tailwind tokens, accessibility checklist), `mobile/CLAUDE.md` (feature folders, packages), `database/CLAUDE.md` (schema rules, migration policy). Keep the root file as the single source for project-wide decisions. Create them only once real code exists in those folders.
+**Nested files:** `api/CLAUDE.md`, `web/CLAUDE.md` and `mobile/CLAUDE.md` exist. Suggested, not yet created: `database/CLAUDE.md` (schema rules, migration policy). Keep the root file as the single source for project-wide decisions. Create them only once real code exists in those folders.
 
 ---
 
@@ -386,8 +396,8 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 
 | Item | State |
 |---|---|
-| Anonymous vs login reporting | Login required now; professor to answer Oct 16 |
-| Palette contrast for WCAG AA | Unchecked |
+| Anonymous vs login reporting | Closed Oct 20: not required, login stays (#35) |
+| Palette contrast for WCAG AA | Checked Oct 17; text variants approved (section 10) |
 | Column types, ENUM values, nullable choices | Proposed during planning, not course-mandated |
 | Aiven free-plan limits | Not verified |
 | Git LFS bandwidth and ZIP behavior | Not verified |

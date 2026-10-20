@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "./styles/tokens.css";
+@import "./styles/theme.css";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+html {
+  background: var(--rw-surface-light-gray);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--rw-surface-light-gray);
+  color: var(--rw-text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible keyboard focus everywhere (Figma Focus/ring). In the base layer so a
+   component can swap it with a utility (e.g. the amber ring on navy surfaces). */
+@layer base {
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--rw-shadow-focus);
+  }
+}
+
+/* Screen-reader-only helper. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

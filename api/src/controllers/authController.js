@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { User, Role } = require('../models');
-const { ROLES } = require('../config/constants');
+const { ROLES, ROLE_PLATFORM } = require('../config/constants');
 const { signToken } = require('../middleware/auth');
 const { recordAudit } = require('../services/auditService');
 const HttpError = require('../utils/httpError');
@@ -23,12 +23,22 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const { contact_email, password } = req.body;
+  const { contact_email, password, platform } = req.body;
   const user = await User.scope('withPassword').findOne({ where: { contact_email }, include: [{ model: Role, as: 'role' }] });
   // Same message for unknown email, wrong password and deactivated account, so nothing is leaked.
   const ok = user && user.is_active && (await bcrypt.compare(password, user.password_hash));
   if (!ok) throw new HttpError(401, 'Invalid email or password');
-  await recordAudit(user.user_id, 'auth.login');
+  // Checked only after the password, so the platform message never reveals whether an email exists.
+  const role = user.role.role_name;
+  const home = ROLE_PLATFORM[role];
+  if (platform !== home) {
+    await recordAudit(user.user_id, 'auth.login_wrong_platform', { platform });
+    const message = home === 'mobile'
+      ? `${role} accounts sign in on the RoadWatch Android app.`
+      : 'Administrators sign in on the RoadWatch web dashboard.';
+    throw new HttpError(403, message, { code: 'WRONG_PLATFORM', platform: home });
+  }
+  await recordAudit(user.user_id, 'auth.login', { platform });
   res.json({ success: true, data: { token: signToken(user), user: publicUser(user, user.role.role_name) } });
 }
 

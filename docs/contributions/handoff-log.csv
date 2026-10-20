@@ -2,3 +2,14 @@ date,member,message,paths,commit
 2026-10-16,"Carl Ernest Santos","feat(api): merge backend with auth, reports, admin, officer, exports and tests","api/ .github/workflows/api-ci.yml",2692f59
 2026-10-16,"Lenon Adriano","docs: add API contract and update decisions, setup guide and CLAUDE.md for the backend merge","CLAUDE.md docs/API.md docs/DECISIONS.md docs/SETUP-GUIDE.md",5bf4aad
 2026-10-16,"Carl Ernest Santos","chore(api): add import-schema helper to load schema.sql and seed.sql","api/scripts/import-schema.js",f9de362
+2026-10-19,"Pauline Lapuz","feat(web): add UI component library and staff/reporter layouts from Figma","web/src/components web/src/layouts web/src/index.css",391dbbd
+2026-10-19,"Lenon Adriano","feat(mobile): create Flutter app foundation from the Figma prototype","mobile/",0b798a0
+2026-10-19,"Pauline Lapuz","feat(web): add admin dashboard, report management and officer queue","web/src/pages/admin/Dashboard.jsx web/src/pages/admin/ReportManagement.jsx web/src/pages/officer/OfficerQueue.jsx web/src/api/client.js web/src/api/endpoints.js",570e27e
+2026-10-19,"Pauline Lapuz","feat(web): add public landing page and sign-in screens","web/.env.example web/src/pages/public/Landing.jsx web/src/pages/auth",dff18b9
+2026-10-19,"Pauline Lapuz","feat(web): add report details, users and summaries screens","web/src/pages/admin/ReportDetails.jsx web/src/pages/admin/Users.jsx web/src/pages/admin/Summaries.jsx",508ce11
+2026-10-19,"Pauline Lapuz","feat(web): add reporter screens, demo video, action log and about","web/",2be6d2b
+2026-10-19,"Lenon Adriano","feat(mobile): add all mobile screens from the Figma prototype","mobile/",8f4f8af
+2026-10-20,"Carl Ernest Santos","feat(api): refuse login on the wrong platform (#36)","api/ docs/API.md",46335d8
+2026-10-20,"Pauline Lapuz","feat(web): administrator-only web with platform sign-in (#36)","web/",bc64d7f
+2026-10-20,"Lenon Adriano","feat(mobile): sign in with platform mobile; admins sent to the web (#36)","mobile/",f5ec0c8
+2026-10-20,"Carl Ernest Santos","chore(deploy): Render Blueprint for the API and the deploy guide (#39)","render.yaml docs/SETUP-GUIDE.md",829c817
