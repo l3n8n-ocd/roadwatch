@@ -6,20 +6,10 @@ import 'package:flutter/foundation.dart';
 import '../api/api_exception.dart';
 import '../api/models.dart';
 import '../api/roadwatch_api.dart';
-import '../constants.dart';
 
 enum AuthStatus { unknown, signedOut, signedIn }
 
-enum AuthFailureKind {
-  invalidCredentials,
-  deactivated,
-  adminAccount,
-  officerAccount,
-  emailTaken,
-  validation,
-  network,
-  other,
-}
+enum AuthFailureKind { invalidCredentials, deactivated, adminAccount, emailTaken, validation, network, other }
 
 /// A sign-in or registration problem with the Figma M0 wording (title + message for the
 /// error banner, frames 109:79 and 109:164).
@@ -56,17 +46,6 @@ class AuthFailure implements Exception {
     'Administrator accounts sign in on the RoadWatch web dashboard.',
   );
 
-  /// Traffic Officers belong in this app (#36), but their screens (Figma O1-O6) ship in Phase 3.
-  /// Until then the app keeps no token for them. Remove this when the officer home is built.
-  static const officerAccount = AuthFailure(
-    AuthFailureKind.officerAccount,
-    'Officer screens are coming',
-    'Traffic Officer accounts can use the next release of the RoadWatch app. Ask your administrator when it is ready.',
-  );
-
-  /// Failure for a signed-in account this version of the app does not serve.
-  static AuthFailure forRole(String role) => role == Roles.officer ? officerAccount : adminAccount;
-
   static const sessionExpired = AuthFailure(
     AuthFailureKind.other,
     'Signed out',
@@ -77,7 +56,8 @@ class AuthFailure implements Exception {
   String toString() => 'AuthFailure($kind): $message';
 }
 
-/// Holds the signed-in reporter. Screens read it with `context.watch<AuthProvider>()`.
+/// Holds the signed-in Reporter or Traffic Officer (#36). Screens read it with
+/// `context.watch<AuthProvider>()`; HomeShell picks the tabs from [AppUser.role].
 class AuthProvider extends ChangeNotifier {
   AuthProvider(this.api) {
     api.client.onUnauthorized = _onUnauthorized;
@@ -111,9 +91,9 @@ class AuthProvider extends ChangeNotifier {
     }
     try {
       final me = await api.me();
-      if (!me.isReporter) {
+      if (!me.usesMobileApp) {
         await api.client.tokens.clear();
-        _setSignedOut(notice: AuthFailure.forRole(me.role));
+        _setSignedOut(notice: AuthFailure.adminAccount);
         return;
       }
       await _saveUser(me);
@@ -142,7 +122,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> login({required String email, required String password}) async {
     try {
       final session = await api.login(email: email, password: password);
-      if (!session.user.isReporter) throw AuthFailure.forRole(session.user.role);
+      if (!session.user.usesMobileApp) throw AuthFailure.adminAccount;
       await _startSession(session);
     } on ApiException catch (e) {
       if (e.isWrongPlatform) throw AuthFailure.adminAccount;
@@ -187,7 +167,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// PATCH /auth/me. Not built on the API yet (#25): callers show the ApiException message.
+  /// PATCH /auth/me (#25): callers show the ApiException message when it fails.
   Future<void> updateProfile({required String fullName, String? phone}) async {
     final updated = await api.updateMe(fullName: fullName, phone: phone);
     _user = updated;

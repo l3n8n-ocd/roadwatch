@@ -3,6 +3,7 @@ library;
 
 export 'rw_bottom_nav.dart';
 export 'rw_button.dart';
+export 'rw_detail_parts.dart';
 export 'rw_dialog.dart';
 export 'rw_empty_state.dart';
 export 'rw_field_parts.dart';

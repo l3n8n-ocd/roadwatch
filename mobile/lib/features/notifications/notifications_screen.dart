@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/api/models.dart';
 import '../../core/constants.dart';
+import '../../core/state/auth_provider.dart';
 import '../../core/state/notifications_provider.dart';
 import '../../core/state/settings_provider.dart';
 import '../../core/theme/tokens.dart';
@@ -11,7 +12,7 @@ import '../../core/widgets/widgets.dart';
 import '../../routes.dart';
 
 /// Notifications (FR-09, in-app). Figma (Mobile page 90:4): Notifications/Default 119:1759,
-/// Empty 119:1871.
+/// Empty 119:1871; officers: O5/Notifications/Default 323:3085 (assignment alerts).
 ///
 /// NotificationsProvider holds the list (HomeShell refreshes it when this tab opens). Tapping a
 /// row marks it read and opens the report's tracking screen. Settings > Notifications (in-app)
@@ -36,7 +37,8 @@ class _NotificationsTabState extends State<NotificationsTab> {
       // Opening the report matters more than the read flag; it is retried on the next tap.
     }
     if (!mounted || n.reportId == null) return;
-    Navigator.of(context).pushNamed(Routes.tracking, arguments: n.reportId);
+    final officer = context.read<AuthProvider>().user?.isOfficer ?? false;
+    Navigator.of(context).pushNamed(officer ? Routes.officerReport : Routes.tracking, arguments: n.reportId);
   }
 
   Future<void> _markAll() async {
@@ -62,8 +64,13 @@ class _NotificationsTabState extends State<NotificationsTab> {
     final c = RwColors.of(context);
     final provider = context.watch<NotificationsProvider>();
     final settings = context.watch<SettingsProvider>();
+    final officer = context.select<AuthProvider, bool>((a) => a.user?.isOfficer ?? false);
     final items = provider.items
-        .where((n) => _visible(n, settings.alertStatusChanges, settings.alertInfoRequests))
+        .where(
+          (n) => officer
+              ? (settings.alertNewAssignments || !_isAssignment(n.message))
+              : _visible(n, settings.alertStatusChanges, settings.alertInfoRequests),
+        )
         .toList();
     final unread = items.where((n) => !n.isRead).length;
 
@@ -83,10 +90,12 @@ class _NotificationsTabState extends State<NotificationsTab> {
     } else if (items.isEmpty) {
       children = [
         const SizedBox(height: RwSpace.s48 - RwSpace.s32),
-        const RwEmptyState(
+        RwEmptyState(
           icon: RwIcons.bell,
           title: 'No notifications yet',
-          message: 'Status changes on your reports will show up here.',
+          message: officer
+              ? 'Reports assigned to you will show up here.'
+              : 'Status changes on your reports will show up here.',
         ),
       ];
     } else {
@@ -226,6 +235,9 @@ class _NotificationsSkeleton extends StatelessWidget {
     );
   }
 }
+
+/// "Report #12 was assigned to you." (officer alerts, O5).
+bool _isAssignment(String message) => message.toLowerCase().contains('assigned to you');
 
 bool _isInfoRequest(String message) {
   final m = message.toLowerCase();

@@ -28,6 +28,9 @@ abstract final class Statuses {
     resolved,
     rejected,
   ];
+
+  /// The statuses a Traffic Officer may set (#30); verifying, assigning and rejecting stay with the admin.
+  static const officerChoices = [inProgress, additionalInfo, resolved];
 }
 
 class InjuryOption {

@@ -9,9 +9,11 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/widgets.dart';
 import '../../routes.dart';
 
-/// Settings. Figma (Mobile page 90:4): Settings/Main (Light) 161:2022, (Dark) 161:2285.
+/// Settings. Figma (Mobile page 90:4): Settings/Main (Light) 161:2022, (Dark) 161:2285; officers:
+/// O6/Settings/Main (Light) 323:3198.
 ///
-/// Profile header from GET /auth/me, then the rows from docs/DECISIONS.md #25. Preferences are
+/// Profile header from GET /auth/me, then the rows from docs/DECISIONS.md #25. Officers get the
+/// "New assignments" alert instead of the reporter alerts and no "How to report". Preferences are
 /// stored on this phone only (SettingsProvider). Tab body hosted by HomeShell (no back button).
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -58,6 +60,7 @@ class _SettingsTabState extends State<SettingsTab> {
   Widget build(BuildContext context) {
     final c = RwColors.of(context);
     final user = context.watch<AuthProvider>().user;
+    final officer = user?.isOfficer ?? false;
     final settings = context.watch<SettingsProvider>();
     final themeLabel = switch (settings.themeMode) {
       ThemeMode.light => 'Light',
@@ -89,7 +92,9 @@ class _SettingsTabState extends State<SettingsTab> {
               RwSettingsRow.navigation(
                 icon: RwIcons.eye,
                 label: 'Privacy',
-                description: 'Who can see your contact details',
+                description: officer
+                    ? 'How reporter contact details are protected'
+                    : 'Who can see your contact details',
                 onTap: () => _push(Routes.privacy),
               ),
             ],
@@ -114,20 +119,30 @@ class _SettingsTabState extends State<SettingsTab> {
           const _GroupLabel('Notifications (in-app)'),
           _Group(
             children: [
-              RwSettingsRow.toggle(
-                icon: RwIcons.bell,
-                label: 'Status changes',
-                description: 'When a report you sent changes status',
-                switchValue: settings.alertStatusChanges,
-                onSwitchChanged: settings.setAlertStatusChanges,
-              ),
-              RwSettingsRow.toggle(
-                icon: RwIcons.message,
-                label: 'Requests for more information',
-                description: 'When an officer needs details from you',
-                switchValue: settings.alertInfoRequests,
-                onSwitchChanged: settings.setAlertInfoRequests,
-              ),
+              if (officer)
+                RwSettingsRow.toggle(
+                  icon: RwIcons.bell,
+                  label: 'New assignments',
+                  description: 'When an administrator assigns a report to you',
+                  switchValue: settings.alertNewAssignments,
+                  onSwitchChanged: settings.setAlertNewAssignments,
+                ),
+              if (!officer) ...[
+                RwSettingsRow.toggle(
+                  icon: RwIcons.bell,
+                  label: 'Status changes',
+                  description: 'When a report you sent changes status',
+                  switchValue: settings.alertStatusChanges,
+                  onSwitchChanged: settings.setAlertStatusChanges,
+                ),
+                RwSettingsRow.toggle(
+                  icon: RwIcons.message,
+                  label: 'Requests for more information',
+                  description: 'When an officer needs details from you',
+                  switchValue: settings.alertInfoRequests,
+                  onSwitchChanged: settings.setAlertInfoRequests,
+                ),
+              ],
             ],
           ),
           const _GroupLabel('Accessibility'),
@@ -151,11 +166,12 @@ class _SettingsTabState extends State<SettingsTab> {
                 description: '${Hotlines.emergency.number}, police (PNP) and fire (BFP)',
                 onTap: () => _push(Routes.hotlines),
               ),
-              RwSettingsRow.navigation(
-                icon: RwIcons.helpCircle,
-                label: 'How to report',
-                onTap: () => _push(Routes.howToReport),
-              ),
+              if (!officer)
+                RwSettingsRow.navigation(
+                  icon: RwIcons.helpCircle,
+                  label: 'How to report',
+                  onTap: () => _push(Routes.howToReport),
+                ),
               RwSettingsRow.navigation(
                 icon: RwIcons.playCircle,
                 label: 'Demo video',

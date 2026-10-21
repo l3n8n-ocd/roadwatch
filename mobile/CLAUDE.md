@@ -1,10 +1,10 @@
 # mobile/CLAUDE.md: RoadWatch mobile (Flutter, Android)
 
 Project-wide rules live in the root `CLAUDE.md`. This file covers the Flutter app only.
-One app for **Reporters** and (from Phase 3) **Traffic Officers**; Administrators use the web (#36).
+One app for **Reporters** and **Traffic Officers**; Administrators use the web (#36).
 Login sends `platform: "mobile"`: the API answers 403 `WRONG_PLATFORM` for Administrators (shown as
-"Use the RoadWatch website"). Officers pass the API check but the app keeps no token for them until the
-officer screens (Figma O1-O6, Flow C) are built; see `AuthFailure.officerAccount`.
+"Use the RoadWatch website"). `HomeShell` picks the tabs from the role: reporters Home, My reports,
+Notifications, Settings; officers Assigned, Notifications, Settings (Figma O1-O6, Flow C, Oct 21).
 
 ## Source of design
 - Figma file `psx52NYL69RkycK7Z44EAb`: Foundations (90:2), Components (90:3), **Mobile (90:4)**, Flows (90:6).
@@ -42,7 +42,8 @@ lib/
                              RwSize, RwType, RwShadow. Do not hand-edit hex values.
   core/theme/app_theme.dart  Material 3 ThemeData for both modes
   core/widgets/              Figma components (import widgets.dart)
-  features/<area>/           one file per screen; features/report/report_draft.dart holds the 3-step form
+  features/<area>/           one file per screen; features/report/report_draft.dart holds the 3-step form;
+                             features/officer/ = O1 Assigned tab, O2 details + O3 update sheet + O4 toast
 assets/icons/                56 Figma icons as SVG (stroke recolored by RwIcon)
 assets/images/               emblem.png, hero-street.jpg, pnp-seal.png, bfp-seal.png
 assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
@@ -55,7 +56,8 @@ assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 (`.fromReport`), `RwTimelineItem`, `RwPhotoTile`, `RwMap` (OSM + attribution; pin / no pin /
 `locating`), `RwToast` + `showRwToast`, `RwEmptyState` (`.noReports/.noResults/.error/.videoComingSoon`),
 `RwSkeleton*`, `RwTopBar.home/.inner`, `RwBottomNav` + `RwTab`, `RwNotificationItem`, `RwStepper`,
-`RwSwitch`, `RwSettingsRow` (`.navigation/.toggle/.info/.destructive`), `RwDialog` +
+`RwSwitch`, `RwSettingsRow` (`.navigation/.toggle/.info/.destructive`), `RwCard`, `RwSectionTitle`, `RwMetaRow`,
+`RwDetailItem`, `RwPhotoViewer` (report detail parts, shared by tracking and officer details), `RwDialog` +
 `showRwConfirmDialog`, `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
 Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max 8), `RwPulse` (stops after N),
 `RwDrawIn`, `RwSharedAxisPageTransitionsBuilder` (app.dart). All respect `disableAnimations` (short fades).
@@ -72,5 +74,7 @@ Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max
   `Navigator.pushNamed(context, Routes.x, arguments: ...)`.
 - API errors: catch `ApiException` and show `e.message` (friendly); field errors via `e.fieldError(name)`
   (e.g. a wrong current password on Change password).
-- Tracking shows the actor's role, never staff names. Photos upload after the report is created.
+- Tracking shows the actor's role, never staff names (officers do see "Maria Cruz (Admin)"). Photos upload
+  after the report is created.
+- Officers set only `Statuses.officerChoices` (In Progress, Additional Information Required, Resolved/Closed, #30).
 - Do not bundle the demo video; read `demoVideoUrl` from `GET /api/app-info`.

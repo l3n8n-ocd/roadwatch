@@ -124,6 +124,37 @@ class RoadWatchApi {
     return body.dataList.map(ReportPhoto.fromJson).toList();
   }
 
+  // ----- reports (Traffic Officer, assigned to me only) -----
+
+  /// GET /officer/reports: reports assigned to the signed-in officer, newest first.
+  Future<Paged<Report>> officerReports({int page = 1, int limit = 100, String? status}) async {
+    final body = await client.get(
+      '/officer/reports',
+      query: {'page': page, 'limit': limit, 'status': status},
+    );
+    final pagination = body.json['pagination'];
+    return Paged(
+      items: body.dataList.map(Report.fromJson).toList(),
+      pagination: Pagination.fromJson(pagination is Map ? Map<String, dynamic>.from(pagination) : null),
+    );
+  }
+
+  /// GET /officer/reports/:id with reporter contact, photos and statusHistory (404 if not assigned to me).
+  Future<Report> officerReport(int reportId) async =>
+      Report.fromJson((await client.get('/officer/reports/$reportId')).dataMap);
+
+  /// PATCH /officer/reports/:id: a status from [Statuses.officerChoices] and/or official remarks.
+  Future<Report> updateOfficerReport(int reportId, {String? status, String? remarks}) async {
+    final body = await client.patch(
+      '/officer/reports/$reportId',
+      body: {
+        'status': ?status,
+        if (remarks != null && remarks.trim().isNotEmpty) 'remarks': remarks.trim(),
+      },
+    );
+    return Report.fromJson(body.dataMap);
+  }
+
   // ----- notifications -----
 
   /// GET /notifications: newest 100 plus the unread count.

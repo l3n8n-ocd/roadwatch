@@ -5,6 +5,7 @@ import 'features/auth/login_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/my_reports/tracking_screen.dart';
+import 'features/officer/officer_report_screen.dart';
 import 'features/report/report_confirmation_screen.dart';
 import 'features/report/report_details_screen.dart';
 import 'features/report/report_location_screen.dart';
@@ -20,7 +21,8 @@ import 'features/settings/language_screen.dart';
 import 'features/settings/privacy_screen.dart';
 
 /// Named routes (plain Navigator). Tabs (/home, /my-reports, /notifications, /settings) all
-/// open the HomeShell on that tab; inside the shell, switch tabs with HomeShell.selectTab.
+/// open the HomeShell on that tab (/home is Assigned for officers); inside the shell, switch tabs
+/// with HomeShell.selectTab.
 abstract final class Routes {
   static const login = '/login';
   static const register = '/register';
@@ -35,6 +37,9 @@ abstract final class Routes {
 
   /// Argument: the report_id (int).
   static const tracking = '/tracking';
+
+  /// Traffic Officer report details (O2). Argument: the report_id (int).
+  static const officerReport = '/officer/report';
   static const notifications = '/notifications';
   static const settings = '/settings';
   static const editProfile = '/settings/edit-profile';
@@ -72,6 +77,9 @@ abstract final class Routes {
             : const ReportConfirmationArgs(reportId: 0),
       ),
       tracking => TrackingScreen(reportId: settings.arguments is int ? settings.arguments as int : 0),
+      officerReport => OfficerReportScreen(
+        reportId: settings.arguments is int ? settings.arguments as int : 0,
+      ),
       editProfile => const EditProfileScreen(),
       changePassword => const ChangePasswordScreen(),
       appearance => const AppearanceScreen(),

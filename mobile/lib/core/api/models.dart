@@ -28,6 +28,10 @@ class AppUser {
   final String role;
 
   bool get isReporter => role == Roles.reporter;
+  bool get isOfficer => role == Roles.officer;
+
+  /// The roles this app serves (#36); Administrators use the website.
+  bool get usesMobileApp => isReporter || isOfficer;
 
   factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
     userId: _int(j['user_id']),
@@ -85,6 +89,7 @@ class StatusHistoryEntry {
     this.previousStatus,
     this.changedAt,
     this.changedByName,
+    this.changedByRole,
   });
 
   final int historyId;
@@ -95,12 +100,16 @@ class StatusHistoryEntry {
   /// Staff names are not shown to reporters (Figma M6 note: show the actor's role instead).
   final String? changedByName;
 
+  /// Role of the person who made the change (Reporter, Administrator or Traffic Officer).
+  final String? changedByRole;
+
   factory StatusHistoryEntry.fromJson(Map<String, dynamic> j) => StatusHistoryEntry(
     historyId: _int(j['history_id']),
     previousStatus: _str(j['previous_status']),
     newStatus: _str(j['new_status']) ?? '',
     changedAt: _date(j['changed_at']),
     changedByName: _str(_map(j['changedBy'])?['full_name']),
+    changedByRole: _str(_map(_map(j['changedBy'])?['role'])?['role_name']),
   );
 }
 
@@ -122,6 +131,9 @@ class Report {
     this.officialRemarks,
     this.dateSubmitted,
     this.assignedOfficerName,
+    this.reporterName,
+    this.reporterPhone,
+    this.reporterEmail,
     this.photos = const [],
     this.statusHistory = const [],
   });
@@ -142,6 +154,11 @@ class Report {
   final String? officialRemarks;
   final DateTime? dateSubmitted;
   final String? assignedOfficerName;
+
+  /// Reporter contact: only sent to the reporter, administrators and the assigned officer.
+  final String? reporterName;
+  final String? reporterPhone;
+  final String? reporterEmail;
   final List<ReportPhoto> photos;
   final List<StatusHistoryEntry> statusHistory;
 
@@ -168,6 +185,9 @@ class Report {
       officialRemarks: _str(j['official_remarks']),
       dateSubmitted: _date(j['date_submitted']),
       assignedOfficerName: _str(_map(j['assignedOfficer'])?['full_name']),
+      reporterName: _str(_map(j['reporter'])?['full_name']),
+      reporterPhone: _str(_map(j['reporter'])?['contact_phone']),
+      reporterEmail: _str(_map(j['reporter'])?['contact_email']),
       photos: _list(j['photos']).map(ReportPhoto.fromJson).toList(),
       // Newest first, so statusHistory.first is the current status.
       statusHistory: history,
