@@ -53,7 +53,7 @@ export default function DataTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {rows.map((row, index) => {
             const key = getRowKey(row);
             const selected = selectedKey != null && key === selectedKey;
             return (
@@ -63,8 +63,12 @@ export default function DataTable({
                 aria-selected={selectedKey != null ? selected : undefined}
                 onClick={clickable ? () => onRowClick(row) : undefined}
                 onKeyDown={clickable ? (event) => handleKeyDown(event, row) : undefined}
+                // A3: new rows fade in, the first 8 one after another (only opacity waits for the delay).
+                style={{
+                  transition: `opacity 250ms cubic-bezier(0.22, 1, 0.36, 1) ${Math.min(index, 7) * 40}ms, background-color 150ms, color 150ms`,
+                }}
                 className={cx(
-                  'type-body-sm text-text-primary transition-colors',
+                  'type-body-sm text-text-primary starting:opacity-0',
                   selected ? 'bg-surface-blue-subtle' : 'bg-surface-white',
                   clickable && 'cursor-pointer hover:bg-surface-light-gray',
                   // Table rows do not always paint box-shadow, so focus also gets an outline.

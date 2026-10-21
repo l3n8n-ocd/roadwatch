@@ -17,6 +17,8 @@ export default function Toast({ type = 'info', title, children, onClose, classNa
       role={type === 'error' ? 'alert' : 'status'}
       className={cx(
         'flex w-full max-w-[360px] items-start gap-3 overflow-hidden rounded-rw-md border border-border-subtle bg-surface-white pr-1 shadow-rw-lg',
+        // A5: slides up 16 px and fades in (only fades with reduce motion).
+        'transition-[opacity,translate] duration-250 ease-out starting:translate-y-4 starting:opacity-0 motion-reduce:starting:translate-y-0',
         className,
       )}
     >
