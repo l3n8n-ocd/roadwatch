@@ -69,8 +69,8 @@ src/
 - The web is for Administrators only (#36). Reporters and Traffic Officers use the Android app; their old
   web screens (R0-R6, W5, officer W4) were removed on Oct 20 and live on the Figma Archive page.
 - Login sends `platform: "web"`. The API answers 403 `details.code = WRONG_PLATFORM` for other roles, shown
-  as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default: latest
-  GitHub release; switch to roadwatch-ph.me/app once the domain is live, #38).
+  as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default:
+  `roadwatch.apk` from the latest GitHub release, #22; switch to roadwatch-ph.me/app once the domain is live, #38).
 - Roles are enforced by the API; `RequireRole` only routes.
 - Reporter contact details only on screens the API returns them for (admin, assigned officer).
 - Public updates, edit profile, change password, action log and admin audit logs exist on the API since Oct 21

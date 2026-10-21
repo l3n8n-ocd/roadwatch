@@ -7,6 +7,7 @@ How to read this file:
 - **Mobile** and **Web** pages hold the source screens. **Flows** holds copies wired for the prototype; if a screen changes, update the source page and re-copy it to Flows.
 - Every color, spacing and radius is a variable (collections Primitives, Color with Light and Dark modes, Layout). Web code syntax is `var(--rw-*)`.
 - Open the prototype: Flows page → Present (▶) → choose a flow from the flow list.
+- PNG exports of every Mobile and Web frame (Oct 21) are in [`screens/`](screens/README.md).
 - Pauline's original draft is untouched on the page "Pauline draft (original)" and now serves as the **low-fidelity prototype**. The high-fidelity prototype (and the source for the React and Flutter code) is the five pages below: Foundations, Components, Mobile, Web, Flows (DECISIONS #33).
 
 ## Pages

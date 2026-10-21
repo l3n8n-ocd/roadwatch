@@ -180,13 +180,12 @@ gh issue create --title "Mobile tracking and notifications screens" --milestone 
 - [ ] Status history
 - [ ] Notifications screen
 EOF
-gh issue create --title "Email notifications with Nodemailer and Gmail SMTP" --milestone "M3 Workflows (Oct 26)" --label "owner:carl,phase:3-workflows" --body-file - << 'EOF'
+gh issue create --title "Email notifications with the Brevo API" --milestone "M3 Workflows (Oct 26)" --label "owner:carl,phase:3-workflows" --body-file - << 'EOF'
 **Owner:** Carl
 **Due:** Oct 25
 
-- [ ] Use src/config/mailer.js with MAIL_PROVIDER=smtp (Gmail app password)
-- [ ] Set SMTP_USER, SMTP_PASS (Gmail app password) and MAIL_FROM
-- [ ] Resend is optional and only emails other people after you verify a domain
+- [ ] Use src/config/mailer.js with MAIL_PROVIDER=brevo (HTTPS API; Render's free tier blocks SMTP, #37)
+- [ ] Set BREVO_API_KEY and MAIL_FROM (an address on roadwatch-ph.me, domain authenticated in Brevo)
 - [ ] Send on submission and on status change
 - [ ] Save a row in notifications
 EOF
@@ -215,7 +214,7 @@ gh issue create --title "Deploy API, database and web" --milestone "M4 Deploy an
 - [ ] Aiven MySQL: set DB_SSL=true and the CA certificate in the host environment
 - [ ] Web on Vercel (root folder web) with VITE_API_URL
 - [ ] Set all env vars from .env.example on the host
-- [ ] Confirm MAIL_PROVIDER=smtp and the Gmail app password are set on Render
+- [ ] Confirm MAIL_PROVIDER=brevo, BREVO_API_KEY and MAIL_FROM are set on Render
 - [ ] Open the API a few minutes before any demo (free tiers sleep)
 EOF
 gh issue create --title "Build the release APK" --milestone "M4 Deploy and Test (Oct 30)" --label "owner:lenon,phase:4-deploy-test" --body-file - << 'EOF'
