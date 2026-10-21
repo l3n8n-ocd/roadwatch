@@ -60,7 +60,7 @@ Objectives (from the course description): web and mobile reporting; quick digita
 
 | Layer | Choice | Status |
 |---|---|---|
-| Web | React + Vite + Tailwind CSS. Suggested: react-router-dom, axios, Recharts, leaflet and react-leaflet | Confirmed (libraries Recommended) |
+| Web | React + Vite + Tailwind CSS. Suggested: react-router-dom, axios, Recharts, leaflet and react-leaflet. Motion: GSAP + ScrollTrigger (#41, spec in `docs/ui-design/motion-spec.md`) | Confirmed (libraries Recommended; GSAP Confirmed Oct 20) |
 | Mobile | Flutter + Dart. Suggested: dio, flutter_map, latlong2, geolocator, image_picker, flutter_secure_storage, provider, video_player | Confirmed (packages Recommended) |
 | API | Node.js (>= 22 in `api/package.json`) + Express | Confirmed |
 | Validation and security libs | zod, helmet, cors, bcrypt, jsonwebtoken, multer | In starter `package.json` |
