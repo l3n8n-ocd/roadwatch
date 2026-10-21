@@ -10,6 +10,7 @@ export 'rw_icon.dart';
 export 'rw_icon_button.dart';
 export 'rw_logo.dart';
 export 'rw_map.dart';
+export 'rw_motion.dart';
 export 'rw_notification_item.dart';
 export 'rw_photo_tile.dart';
 export 'rw_pressable.dart';

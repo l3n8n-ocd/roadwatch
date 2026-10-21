@@ -142,12 +142,16 @@ class _HomeTabState extends State<HomeTab> {
       ),
       _Load.ready => Column(
         children: [
-          for (final r in _reports) ...[
-            RwReportCard.fromReport(
-              r,
-              onTap: () => Navigator.of(context).pushNamed(Routes.tracking, arguments: r.reportId),
+          for (var i = 0; i < _reports.length; i++) ...[
+            RwEntrance.listItem(
+              index: i,
+              child: RwReportCard.fromReport(
+                _reports[i],
+                onTap: () =>
+                    Navigator.of(context).pushNamed(Routes.tracking, arguments: _reports[i].reportId),
+              ),
             ),
-            if (r != _reports.last) const SizedBox(height: RwSpace.s12),
+            if (i < _reports.length - 1) const SizedBox(height: RwSpace.s12),
           ],
         ],
       ),
@@ -206,7 +210,8 @@ class _GreetingBand extends StatelessWidget {
                   style: RwType.bodySm.copyWith(color: c.textInverseMuted),
                 ),
                 const SizedBox(height: RwSpace.s16),
-                _ReportCta(onTap: onReport),
+                // #41, M1: the card grows in from 96% as Home opens.
+                RwEntrance(fromScale: 0.96, offset: 0, child: _ReportCta(onTap: onReport)),
                 const SizedBox(height: RwSpace.s16),
                 const _EmergencyShortcut(),
               ],
@@ -242,12 +247,18 @@ class _ReportCta extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(color: c.brandAmber, borderRadius: RwRadius.mdAll),
-              alignment: Alignment.center,
-              child: RwIcon(RwIcons.alertTriangle, size: 32, color: c.textPrimary),
+            // One gentle pulse of the amber tile once the card has arrived (#41, M1).
+            RwPulse(
+              times: 1,
+              delay: RwMotion.medium,
+              scale: 1.08,
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(color: c.brandAmber, borderRadius: RwRadius.mdAll),
+                alignment: Alignment.center,
+                child: RwIcon(RwIcons.alertTriangle, size: 32, color: c.textPrimary),
+              ),
             ),
             const SizedBox(width: RwSpace.s16),
             Expanded(

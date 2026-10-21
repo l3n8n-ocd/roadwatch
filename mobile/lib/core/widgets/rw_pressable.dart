@@ -89,6 +89,13 @@ class _RwPressableState extends State<RwPressable> {
       ),
       child: widget.builder(context, state),
     );
+    // Press feedback (#41, M7): shrinks to 98% while held; not with reduce motion.
+    final pressedScale = _pressed && _enabled && !MediaQuery.disableAnimationsOf(context) ? 0.98 : 1.0;
+    final animated = AnimatedScale(
+      scale: pressedScale,
+      duration: const Duration(milliseconds: 100),
+      child: content,
+    );
 
     return Semantics(
       container: true,
@@ -122,7 +129,7 @@ class _RwPressableState extends State<RwPressable> {
           onTapUp: _enabled ? (_) => setState(() => _pressed = false) : null,
           onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
           onTap: _enabled ? _activate : null,
-          child: content,
+          child: animated,
         ),
       ),
     );

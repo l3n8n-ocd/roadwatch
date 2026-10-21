@@ -59,13 +59,21 @@ class ReportConfirmationScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(RwSpace.s16, RwSpace.s16, RwSpace.s16, RwSpace.s32),
                   children: [
+                    // #41, M5: the circle grows in, then its tick draws from left to right.
                     Center(
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(color: c.surfaceSuccessSubtle, shape: BoxShape.circle),
-                        alignment: Alignment.center,
-                        child: RwIcon(RwIcons.checkCircle, size: 40, color: c.textSuccess),
+                      child: RwEntrance(
+                        fromScale: 0.6,
+                        offset: 0,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(color: c.surfaceSuccessSubtle, shape: BoxShape.circle),
+                          alignment: Alignment.center,
+                          child: RwDrawIn(
+                            delay: const Duration(milliseconds: 200),
+                            child: RwIcon(RwIcons.checkCircle, size: 40, color: c.textSuccess),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: RwSpace.s16),
@@ -99,39 +107,42 @@ class ReportConfirmationScreen extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: RwSpace.s16),
-                    Container(
-                      // 16 px sides (Figma 24) so the status chip and record badge share one row.
-                      padding: const EdgeInsets.symmetric(horizontal: RwSpace.s16, vertical: RwSpace.s24),
-                      decoration: BoxDecoration(
-                        color: c.surfaceWhite,
-                        borderRadius: RwRadius.mdAll,
-                        border: Border.all(color: c.borderSubtle),
-                        boxShadow: RwShadow.sm,
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Your Report ID'.toUpperCase(),
-                            semanticsLabel: 'Your Report ID',
-                            style: RwType.overline.copyWith(color: c.textBlue),
-                          ),
-                          const SizedBox(height: RwSpace.s8),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              code,
-                              semanticsLabel: 'Report ID $code',
-                              style: RwType.display.copyWith(color: c.textPrimary),
+                    RwEntrance(
+                      delay: const Duration(milliseconds: 300),
+                      child: Container(
+                        // 16 px sides (Figma 24) so the status chip and record badge share one row.
+                        padding: const EdgeInsets.symmetric(horizontal: RwSpace.s16, vertical: RwSpace.s24),
+                        decoration: BoxDecoration(
+                          color: c.surfaceWhite,
+                          borderRadius: RwRadius.mdAll,
+                          border: Border.all(color: c.borderSubtle),
+                          boxShadow: RwShadow.sm,
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Your Report ID'.toUpperCase(),
+                              semanticsLabel: 'Your Report ID',
+                              style: RwType.overline.copyWith(color: c.textBlue),
                             ),
-                          ),
-                          const SizedBox(height: RwSpace.s8),
-                          const Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: RwSpace.s8,
-                            runSpacing: RwSpace.s8,
-                            children: [RwStatusChip(Statuses.submitted), RwRecordBadge(verified: false)],
-                          ),
-                        ],
+                            const SizedBox(height: RwSpace.s8),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                code,
+                                semanticsLabel: 'Report ID $code',
+                                style: RwType.display.copyWith(color: c.textPrimary),
+                              ),
+                            ),
+                            const SizedBox(height: RwSpace.s8),
+                            const Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: RwSpace.s8,
+                              runSpacing: RwSpace.s8,
+                              children: [RwStatusChip(Statuses.submitted), RwRecordBadge(verified: false)],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     if (!args.photoUploadFailed) ...[
@@ -141,11 +152,18 @@ class ReportConfirmationScreen extends StatelessWidget {
                         child: Text('What happens next', style: RwType.h3.copyWith(color: c.textPrimary)),
                       ),
                       const SizedBox(height: RwSpace.s12),
-                      const _NextStep(1, 'An administrator reviews and verifies your report.'),
-                      const SizedBox(height: RwSpace.s12),
-                      const _NextStep(2, 'Once verified, a traffic officer is assigned to follow it up.'),
-                      const SizedBox(height: RwSpace.s12),
-                      const _NextStep(3, 'You get a notification and an email at every status change.'),
+                      // The three steps stagger in after the Report ID card (60 ms apart).
+                      for (final (i, text) in const [
+                        'An administrator reviews and verifies your report.',
+                        'Once verified, a traffic officer is assigned to follow it up.',
+                        'You get a notification and an email at every status change.',
+                      ].indexed) ...[
+                        if (i > 0) const SizedBox(height: RwSpace.s12),
+                        RwEntrance(
+                          delay: Duration(milliseconds: 800 + 60 * i),
+                          child: _NextStep(i + 1, text),
+                        ),
+                      ],
                     ],
                   ],
                 ),

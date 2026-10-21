@@ -34,10 +34,29 @@ class RwStepper extends StatelessWidget {
                 Expanded(
                   child: Container(
                     height: 6,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: i <= step ? c.brandNavy : c.surfaceNavySubtle,
+                      color: i < step ? c.brandNavy : c.surfaceNavySubtle,
                       borderRadius: BorderRadius.circular(3),
                     ),
+                    // The current step's segment fills from the left when the step opens (#41, M3).
+                    child: i == step
+                        ? TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: 1),
+                            duration: MediaQuery.disableAnimationsOf(context)
+                                ? Duration.zero
+                                : const Duration(milliseconds: 300),
+                            curve: const Cubic(0.22, 1, 0.36, 1),
+                            builder: (context, t, _) => Align(
+                              alignment: Alignment.centerLeft,
+                              child: FractionallySizedBox(
+                                widthFactor: t,
+                                heightFactor: 1,
+                                child: ColoredBox(color: c.brandNavy),
+                              ),
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ],

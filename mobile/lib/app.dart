@@ -83,16 +83,22 @@ class _AppState extends State<_App> {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: reduce),
           child: Theme(
-            data: reduce
-                ? theme.copyWith(
-                    pageTransitionsTheme: const PageTransitionsTheme(
+            // Screens move with a shared-axis slide (#41, M3); with reduce motion they only fade.
+            data: theme.copyWith(
+              pageTransitionsTheme: reduce
+                  ? const PageTransitionsTheme(
                       builders: {
                         TargetPlatform.android: _FadePageTransitionsBuilder(),
                         TargetPlatform.iOS: _FadePageTransitionsBuilder(),
                       },
+                    )
+                  : const PageTransitionsTheme(
+                      builders: {
+                        TargetPlatform.android: RwSharedAxisPageTransitionsBuilder(),
+                        TargetPlatform.iOS: RwSharedAxisPageTransitionsBuilder(),
+                      },
                     ),
-                  )
-                : theme,
+            ),
             child: child ?? const SizedBox.shrink(),
           ),
         );
