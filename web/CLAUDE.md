@@ -73,5 +73,5 @@ src/
   GitHub release; switch to roadwatch-ph.me/app once the domain is live, #38).
 - Roles are enforced by the API; `RequireRole` only routes.
 - Reporter contact details only on screens the API returns them for (admin, assigned officer).
-- Endpoints not built yet (public updates, edit profile, change password, action log, admin audit logs):
-  call them through `endpoints.js` and show the designed empty/error state when they fail.
+- Public updates, edit profile, change password, action log and admin audit logs exist on the API since Oct 21
+  (#23, #25, #27). Pages still show their designed empty/error state when a request fails.

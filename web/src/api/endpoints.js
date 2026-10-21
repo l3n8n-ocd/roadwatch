@@ -1,20 +1,19 @@
 import { api } from './client';
 
-// Thin wrappers over docs/API.md. Endpoints marked "not built yet" are approved in
-// design (docs/DECISIONS.md) but do not exist on the API; callers must handle errors.
+// Thin wrappers over docs/API.md.
 export const auth = {
   // The web signs in Administrators only; the API refuses other roles on "web" (#36).
   login: (contact_email, password) => api.post('/auth/login', { contact_email, password, platform: 'web' }),
   me: () => api.get('/auth/me'),
-  updateMe: (body) => api.patch('/auth/me', body), // not built yet (#25)
-  changePassword: (body) => api.patch('/auth/me/password', body), // not built yet (#25)
-  myActivity: (params) => api.get('/auth/me/activity', { params }), // not built yet (#27)
+  updateMe: (body) => api.patch('/auth/me', body), // #25
+  changePassword: (body) => api.patch('/auth/me/password', body), // #25
+  myActivity: (params) => api.get('/auth/me/activity', { params, withPagination: true }), // #27, { data, pagination }
 };
 
 export const publicApi = {
   health: () => api.get('/health'),
   appInfo: () => api.get('/app-info'),
-  updates: () => api.get('/public/updates'), // not built yet (#23)
+  updates: () => api.get('/public/updates'), // verified records, last 7 days (#23)
   stats: () => api.get('/public/stats'), // landing stats bar (#40)
 };
 
@@ -35,7 +34,7 @@ export const admin = {
   setStatus: (id, body) => api.patch(`/admin/reports/${id}/status`, body),
   assign: (id, body) => api.patch(`/admin/reports/${id}/assign`, body),
   addAccidentType: (type_name) => api.post('/admin/accident-types', { type_name }),
-  auditLogs: (params) => api.get('/admin/audit-logs', { params }), // not built yet (#27)
+  auditLogs: (params) => api.get('/admin/audit-logs', { params, withPagination: true }), // #27, { data, pagination }
 };
 
 export const users = {
