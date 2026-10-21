@@ -45,7 +45,7 @@ Values that must match the database exactly:
 |---|---|---|
 | GET `/officer/reports` | same filters as the admin list | Only reports assigned to me |
 | GET `/officer/reports/:id` | | Includes reporter contact because it is assigned to me |
-| PATCH `/officer/reports/:id` | `status?` one of Under Review, Additional Information Required, Verified, In Progress, Resolved/Closed; `remarks?` (at least one) | Officers cannot assign or reject |
+| PATCH `/officer/reports/:id` | `status?` one of Additional Information Required, In Progress, Resolved/Closed; `remarks?` (at least one) | Officers cannot review, verify, assign or reject (#30) |
 
 ## Administrator
 
@@ -54,7 +54,7 @@ Values that must match the database exactly:
 | GET `/admin/reports` | `status`, `accident_type_id`, `record_type`, `assigned_officer_id`, `date_from`, `date_to`, `location`, `q` (id, location or description text), `page`, `limit` | FR-11 search and filter |
 | GET `/admin/reports/:id` | | Full detail with history |
 | PATCH `/admin/reports/:id/status` | `status`, `remarks?`, `rejection_reason` (required when `Rejected`) | Not for `Assigned` (use assign). `Verified` sets `record_type = verified_record`. |
-| PATCH `/admin/reports/:id/assign` | `officer_id`, `remarks?` | Sets status `Assigned`. The officer must be an active Traffic Officer. |
+| PATCH `/admin/reports/:id/assign` | `officer_id`, `remarks?` | Sets status `Assigned`. The report must be **Verified** first (#30), or already have an officer (re-assign); never Rejected or Resolved/Closed. The officer must be an active Traffic Officer. |
 | POST `/admin/accident-types` | `type_name` | Add a category |
 | POST `/users` | `full_name`, `contact_email`, `password`, `role`, `contact_phone?` | Creates Traffic Officers (or any role) |
 | GET `/users` | `role?` | |

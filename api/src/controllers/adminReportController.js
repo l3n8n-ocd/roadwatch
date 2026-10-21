@@ -30,6 +30,11 @@ async function assign(req, res) {
   const report = await Report.findByPk(req.params.id);
   if (!report) throw new HttpError(404, 'Report not found');
   if (['Rejected', 'Resolved/Closed'].includes(report.report_status)) throw new HttpError(400, `A "${report.report_status}" report cannot be assigned`);
+  // Workflow #30: the administrator verifies before assigning. A report that already has an officer
+  // (Assigned, In Progress, Additional Information Required) may be re-assigned.
+  if (!report.assigned_officer_id && report.report_status !== 'Verified') {
+    throw new HttpError(400, 'Verify the report first. You can assign an officer once it is Verified.');
+  }
   const officer = await User.findByPk(req.body.officer_id, { include: [{ model: Role, as: 'role' }] });
   if (!officer || officer.role.role_name !== ROLES.OFFICER || !officer.is_active) {
     throw new HttpError(400, 'officer_id must be an active Traffic Officer');
