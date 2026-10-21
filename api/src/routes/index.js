@@ -35,9 +35,14 @@ const id = validate(s.idParam, 'params');
 router.post('/auth/register', authLimiter, validate(s.register), wrap(auth.register));
 router.post('/auth/login', authLimiter, validate(s.login), wrap(auth.login));
 router.get('/auth/me', authenticate, wrap(auth.me));
+router.patch('/auth/me', authenticate, validate(s.updateMe), wrap(auth.updateMe));
+// The limiter slows down guessing the current password.
+router.patch('/auth/me/password', authLimiter, authenticate, validate(s.changePassword), wrap(auth.changePassword));
+router.get('/auth/me/activity', authenticate, validate(s.activityQuery, 'query'), wrap(auth.myActivity));
 
 // ----- public data (no token) -----
 router.get('/public/stats', publicLimiter, wrap(misc.publicStats));
+router.get('/public/updates', publicLimiter, wrap(misc.publicUpdates));
 
 // Everything below needs a valid token.
 router.use(authenticate);
@@ -64,6 +69,7 @@ router.get('/admin/reports/:id', allowRoles(ADMIN), id, wrap(adminReports.getOne
 router.patch('/admin/reports/:id/status', allowRoles(ADMIN), id, validate(s.adminStatus), wrap(adminReports.setStatus));
 router.patch('/admin/reports/:id/assign', allowRoles(ADMIN), id, validate(s.assign), wrap(adminReports.assign));
 router.post('/admin/accident-types', allowRoles(ADMIN), validate(s.accidentType), wrap(misc.createType));
+router.get('/admin/audit-logs', allowRoles(ADMIN), validate(s.auditLogQuery, 'query'), wrap(misc.auditLogs));
 
 router.post('/users', allowRoles(ADMIN), validate(s.createUser), wrap(users.create));
 router.get('/users', allowRoles(ADMIN), validate(s.listUsersQuery, 'query'), wrap(users.list));

@@ -4,8 +4,7 @@ import 'api_client.dart';
 import 'models.dart';
 
 /// One method per endpoint the mobile app uses (contract: docs/API.md).
-/// Methods marked "not built yet" exist in the approved design (#25) but not on the API;
-/// screens must catch the ApiException and show the designed error state.
+/// Screens catch the ApiException and show the designed error state.
 class RoadWatchApi {
   RoadWatchApi(this.client);
 
@@ -58,7 +57,7 @@ class RoadWatchApi {
     return AppUser.fromJson(data['user'] is Map ? Map<String, dynamic>.from(data['user']) : data);
   }
 
-  /// PATCH /auth/me (name and phone). Not built yet on the API (#25).
+  /// PATCH /auth/me (name and phone, #25). Email and role cannot be changed.
   Future<AppUser> updateMe({required String fullName, String? phone}) async {
     final data = (await client.patch(
       '/auth/me',
@@ -70,7 +69,7 @@ class RoadWatchApi {
     return AppUser.fromJson(data['user'] is Map ? Map<String, dynamic>.from(data['user']) : data);
   }
 
-  /// PATCH /auth/me/password. Not built yet on the API (#25); path matches web endpoints.js.
+  /// PATCH /auth/me/password (#25). A wrong current password is a 400 with a `current_password` field error.
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {
     await client.patch(
       '/auth/me/password',
@@ -123,6 +122,37 @@ class RoadWatchApi {
     final form = FormData.fromMap({'photos': files});
     final body = await client.post('/reports/$reportId/photos', body: form, onSendProgress: onSendProgress);
     return body.dataList.map(ReportPhoto.fromJson).toList();
+  }
+
+  // ----- reports (Traffic Officer, assigned to me only) -----
+
+  /// GET /officer/reports: reports assigned to the signed-in officer, newest first.
+  Future<Paged<Report>> officerReports({int page = 1, int limit = 100, String? status}) async {
+    final body = await client.get(
+      '/officer/reports',
+      query: {'page': page, 'limit': limit, 'status': status},
+    );
+    final pagination = body.json['pagination'];
+    return Paged(
+      items: body.dataList.map(Report.fromJson).toList(),
+      pagination: Pagination.fromJson(pagination is Map ? Map<String, dynamic>.from(pagination) : null),
+    );
+  }
+
+  /// GET /officer/reports/:id with reporter contact, photos and statusHistory (404 if not assigned to me).
+  Future<Report> officerReport(int reportId) async =>
+      Report.fromJson((await client.get('/officer/reports/$reportId')).dataMap);
+
+  /// PATCH /officer/reports/:id: a status from [Statuses.officerChoices] and/or official remarks.
+  Future<Report> updateOfficerReport(int reportId, {String? status, String? remarks}) async {
+    final body = await client.patch(
+      '/officer/reports/$reportId',
+      body: {
+        'status': ?status,
+        if (remarks != null && remarks.trim().isNotEmpty) 'remarks': remarks.trim(),
+      },
+    );
+    return Report.fromJson(body.dataMap);
   }
 
   // ----- notifications -----

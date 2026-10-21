@@ -20,6 +20,27 @@ const login = z.object({
   platform: z.enum(PLATFORMS, { errorMap: () => ({ message: "platform must be 'web' or 'mobile'" }) }),
 });
 
+// Own account (#25): name and phone only; email and role cannot be changed here.
+const updateMe = z.object({
+  full_name: z.string().trim().min(2).max(100),
+  contact_phone: z.string().trim().max(20).nullable().optional(),
+});
+const changePassword = z.object({
+  current_password: z.string().min(1).max(128),
+  new_password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+}).refine((d) => d.current_password !== d.new_password, { message: 'Choose a password different from the current one', path: ['new_password'] });
+
+// Action log (#27). action is an exact action ("auth.login") or a group prefix ("user", "export").
+const activityQuery = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  action: z.preprocess(emptyToUndef, z.string().trim().regex(/^[a-z_.]{1,100}$/, 'Unknown action').optional()),
+  period: z.enum(['7d', '30d', '90d', 'all']).default('30d'),
+});
+const auditLogQuery = activityQuery.extend({
+  user_id: z.preprocess(emptyToUndef, z.coerce.number().int().positive().optional()),
+});
+
 const createUser = register.extend({ role: z.enum(Object.values(ROLES)) });
 const setRole = z.object({ role: z.enum(Object.values(ROLES)) });
 const setActive = z.object({ is_active: z.boolean() });
@@ -71,6 +92,6 @@ const accidentType = z.object({ type_name: z.string().trim().min(2).max(60) });
 const idParam = z.object({ id });
 
 module.exports = {
-  register, login, createUser, setRole, setActive, listUsersQuery, createReport, listQuery, adminStatus, assign,
+  register, login, updateMe, changePassword, activityQuery, auditLogQuery, createUser, setRole, setActive, listUsersQuery, createReport, listQuery, adminStatus, assign,
   officerUpdate, summaryQuery, accidentType, idParam,
 };

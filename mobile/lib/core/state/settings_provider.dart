@@ -27,12 +27,14 @@ class SettingsProvider extends ChangeNotifier {
   static const _kReduceMotion = 'rw.reduceMotion';
   static const _kAlertStatus = 'rw.alerts.statusChanges';
   static const _kAlertInfo = 'rw.alerts.infoRequests';
+  static const _kAlertAssignments = 'rw.alerts.newAssignments';
 
   ThemeMode _themeMode = ThemeMode.system;
   AppLanguage _language = AppLanguage.english;
   bool? _reduceMotion;
   bool _alertStatusChanges = true;
   bool _alertInfoRequests = true;
+  bool _alertNewAssignments = true;
 
   /// System (default), Light or Dark.
   ThemeMode get themeMode => _themeMode;
@@ -42,6 +44,9 @@ class SettingsProvider extends ChangeNotifier {
   bool? get reduceMotionOverride => _reduceMotion;
   bool get alertStatusChanges => _alertStatusChanges;
   bool get alertInfoRequests => _alertInfoRequests;
+
+  /// Officers: show "assigned to you" alerts (O6).
+  bool get alertNewAssignments => _alertNewAssignments;
 
   /// Whether animations should be reduced, combining the stored choice with the OS setting.
   bool reduceMotion(BuildContext context) =>
@@ -57,6 +62,7 @@ class SettingsProvider extends ChangeNotifier {
       _reduceMotion = await _prefs.getBool(_kReduceMotion);
       _alertStatusChanges = await _prefs.getBool(_kAlertStatus) ?? true;
       _alertInfoRequests = await _prefs.getBool(_kAlertInfo) ?? true;
+      _alertNewAssignments = await _prefs.getBool(_kAlertAssignments) ?? true;
     } catch (_) {
       // Storage unavailable: keep defaults.
     }
@@ -91,6 +97,12 @@ class SettingsProvider extends ChangeNotifier {
     _alertInfoRequests = value;
     notifyListeners();
     await _save(() => _prefs.setBool(_kAlertInfo, value));
+  }
+
+  Future<void> setAlertNewAssignments(bool value) async {
+    _alertNewAssignments = value;
+    notifyListeners();
+    await _save(() => _prefs.setBool(_kAlertAssignments, value));
   }
 
   Future<void> _save(Future<void> Function() write) async {

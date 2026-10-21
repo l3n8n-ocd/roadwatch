@@ -8,8 +8,8 @@ import '../../core/widgets/widgets.dart';
 
 /// Change password. Figma (Mobile page 90:4): Settings/Change password (validation) 162:2396.
 ///
-/// RoadWatchApi.changePassword (approved in #25, not built on the API yet: the request fails and
-/// the error banner explains it). New password 8+ characters; the confirmation is checked here.
+/// RoadWatchApi.changePassword (PATCH /auth/me/password, #25). A wrong current password comes back as a
+/// field error under that field. New password 8+ characters; the confirmation is checked here.
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
 

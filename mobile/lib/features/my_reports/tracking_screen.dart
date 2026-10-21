@@ -142,10 +142,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   void _openPhoto(ReportPhoto photo, String label) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => _PhotoViewer(url: photo.url, label: label),
-    );
+    RwPhotoViewer.show(context, url: photo.url, label: label);
   }
 
   @override
@@ -208,7 +205,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(RwSpace.s16),
       children: [
-        _Card(
+        RwCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -233,9 +230,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 ],
               ),
               const SizedBox(height: RwSpace.s12),
-              _MetaRow(icon: RwIcons.mapPin, text: r.location),
+              RwMetaRow(icon: RwIcons.mapPin, text: r.location),
               const SizedBox(height: RwSpace.s12),
-              _MetaRow(icon: RwIcons.calendar, text: formatAccidentDateTime(r.accidentDate, r.accidentTime)),
+              RwMetaRow(icon: RwIcons.calendar, text: formatAccidentDateTime(r.accidentDate, r.accidentTime)),
             ],
           ),
         ),
@@ -249,9 +246,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
           ),
         ],
         gap,
-        const _SectionTitle('Status history'),
+        const RwSectionTitle('Status history'),
         const SizedBox(height: RwSpace.s12),
-        _Card(
+        RwCard(
           child: Column(
             children: [
               // History appears top to bottom, 60 ms apart (#41, M6).
@@ -270,22 +267,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
           ),
         ),
         gap,
-        const _SectionTitle('Details you sent'),
+        const RwSectionTitle('Details you sent'),
         const SizedBox(height: RwSpace.s12),
-        _Card(
+        RwCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < details.length; i++) ...[
                 if (i > 0) const SizedBox(height: RwSpace.s12),
-                _Detail(label: details[i].$1, value: details[i].$2),
+                RwDetailItem(label: details[i].$1, value: details[i].$2),
               ],
             ],
           ),
         ),
         if (r.hasLocation) ...[
           gap,
-          const _SectionTitle('Map location'),
+          const RwSectionTitle('Map location'),
           const SizedBox(height: RwSpace.s12),
           ClipRRect(
             borderRadius: RwRadius.mdAll,
@@ -294,7 +291,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
         ],
         if (r.photos.isNotEmpty) ...[
           gap,
-          _SectionTitle('Photos (${r.photos.length})'),
+          RwSectionTitle('Photos (${r.photos.length})'),
           const SizedBox(height: RwSpace.s12),
           Wrap(
             spacing: RwSpace.s8,
@@ -358,83 +355,6 @@ List<_HistoryRow> _historyFor(Report r) {
             : (entries[i].newStatus == Statuses.submitted ? 'Report received.' : null),
       ),
   ];
-}
-
-/// White card with the subtle border (Figma Summary card, timeline, details).
-class _Card extends StatelessWidget {
-  const _Card({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = RwColors.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(RwSpace.s16),
-      decoration: BoxDecoration(
-        color: c.surfaceWhite,
-        borderRadius: RwRadius.mdAll,
-        border: Border.all(color: c.borderSubtle),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    header: true,
-    child: Text(text, style: RwType.h3.copyWith(color: RwColors.of(context).textPrimary)),
-  );
-}
-
-class _MetaRow extends StatelessWidget {
-  const _MetaRow({required this.icon, required this.text});
-  final String icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = RwColors.of(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: RwIcon(icon, size: RwSize.iconSm, color: c.textMuted),
-        ),
-        const SizedBox(width: RwSpace.s8),
-        Expanded(
-          child: Text(text, style: RwType.bodySm.copyWith(color: c.textMuted)),
-        ),
-      ],
-    );
-  }
-}
-
-class _Detail extends StatelessWidget {
-  const _Detail({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = RwColors.of(context);
-    return MergeSemantics(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: RwType.label.copyWith(color: c.textMuted)),
-          const SizedBox(height: 2),
-          Text(value, style: RwType.body.copyWith(color: c.textPrimary)),
-        ],
-      ),
-    );
-  }
 }
 
 /// Figma "Action needed (official_remarks)": amber-subtle card with the officer's request.
@@ -516,7 +436,7 @@ class _TrackingSkeleton extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Card(
+              RwCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -533,7 +453,7 @@ class _TrackingSkeleton extends StatelessWidget {
               SizedBox(height: RwSpace.s16),
               RwSkeleton(width: 140, height: 24, radius: RwRadius.sm),
               SizedBox(height: RwSpace.s12),
-              _Card(
+              RwCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -551,62 +471,6 @@ class _TrackingSkeleton extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Full-size photo with pinch zoom and a labelled close button.
-class _PhotoViewer extends StatelessWidget {
-  const _PhotoViewer({required this.url, required this.label});
-  final String url;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = RwColors.of(context);
-    return Dialog.fullscreen(
-      backgroundColor: c.surfaceLightGray,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: RwSpace.s8, vertical: RwSpace.s8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: RwSpace.s8),
-                      child: Semantics(
-                        header: true,
-                        child: Text(label, style: RwType.h3.copyWith(color: c.textPrimary)),
-                      ),
-                    ),
-                  ),
-                  RwIconButton(
-                    icon: RwIcons.x,
-                    semanticLabel: 'Close photo',
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: InteractiveViewer(
-                maxScale: 4,
-                child: Center(
-                  child: Image.network(
-                    url,
-                    semanticLabel: 'Accident photo, $label',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) =>
-                        Text("Couldn't load this photo.", style: RwType.body.copyWith(color: c.textMuted)),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

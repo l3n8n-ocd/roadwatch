@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const { User, Role } = require('../models');
 const { ROLES, ROLE_PLATFORM } = require('../config/constants');
 const { signToken } = require('../middleware/auth');
-const { recordAudit } = require('../services/auditService');
+const { recordAudit, listAuditLogs } = require('../services/auditService');
 const HttpError = require('../utils/httpError');
 
 const publicUser = (u, role) => ({ user_id: u.user_id, full_name: u.full_name, contact_email: u.contact_email, contact_phone: u.contact_phone, role });
@@ -46,4 +46,32 @@ async function me(req, res) {
   res.json({ success: true, data: { user: req.user } });
 }
 
-module.exports = { register, login, me };
+// Edit profile (#25): name and phone only.
+async function updateMe(req, res) {
+  const user = await User.findByPk(req.user.user_id);
+  user.full_name = req.body.full_name;
+  if (req.body.contact_phone !== undefined) user.contact_phone = req.body.contact_phone || null;
+  await user.save();
+  await recordAudit(user.user_id, 'account.profile_updated');
+  res.json({ success: true, data: { user: publicUser(user, req.user.role) } });
+}
+
+// Change password (#25). A wrong current password is a 400 (not 401) so the apps do not sign the user out.
+async function changePassword(req, res) {
+  const user = await User.scope('withPassword').findByPk(req.user.user_id);
+  if (!(await bcrypt.compare(req.body.current_password, user.password_hash))) {
+    throw new HttpError(400, 'Your current password is incorrect.', { current_password: ['Your current password is incorrect.'] });
+  }
+  user.password_hash = await bcrypt.hash(req.body.new_password, 12);
+  await user.save();
+  await recordAudit(user.user_id, 'account.password_changed');
+  res.json({ success: true, data: { message: 'Password changed' } });
+}
+
+// Action log, own actions (#27).
+async function myActivity(req, res) {
+  const result = await listAuditLogs({ ...req.validQuery, userId: req.user.user_id });
+  res.json({ success: true, ...result });
+}
+
+module.exports = { register, login, me, updateMe, changePassword, myActivity };

@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Report, User, AccidentType, ReportPhoto, ReportStatusHistory } = require('../models');
+const { Report, User, Role, AccidentType, ReportPhoto, ReportStatusHistory } = require('../models');
 const { STATUSES, ROLES } = require('../config/constants');
 
 // Reporter contact details are restricted (course UI spec): only the reporter, an Administrator,
@@ -14,7 +14,11 @@ function includes({ withHistory = false } = {}) {
     { model: ReportPhoto, as: 'photos' },
   ];
   if (withHistory) {
-    list.push({ model: ReportStatusHistory, as: 'statusHistory', include: [{ model: User, as: 'changedBy', attributes: ['full_name'] }] });
+    list.push({ model: ReportStatusHistory, as: 'statusHistory', include: [{
+      model: User, as: 'changedBy', attributes: ['full_name'],
+      // The role lets staff screens say "Maria Cruz (Admin)"; the reporter app shows only the role.
+      include: [{ model: Role, as: 'role', attributes: ['role_name'] }],
+    }] });
   }
   return list;
 }

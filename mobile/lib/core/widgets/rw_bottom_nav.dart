@@ -4,24 +4,38 @@ import '../theme/tokens.dart';
 import 'rw_icon.dart';
 import 'rw_pressable.dart';
 
-/// The 4 tabs (docs/DECISIONS.md #25).
+/// Bottom-nav tabs. Reporters see [reporterTabs] (#25), Traffic Officers [officerTabs] (#36).
 enum RwTab {
   home('Home', RwIcons.home),
   myReports('My reports', RwIcons.fileText),
+  assigned('Assigned', RwIcons.userCheck),
   notifications('Notifications', RwIcons.bell),
   settings('Settings', RwIcons.settings);
 
   const RwTab(this.label, this.icon);
   final String label;
   final String icon;
+
+  static const reporterTabs = [home, myReports, notifications, settings];
+  static const officerTabs = [assigned, notifications, settings];
 }
 
-/// Figma "Bottom nav" (105:617): 80 px bar, 4 equal items. The active item has a 64 × 32 navy
-/// indicator with a white icon and a text/primary label; inactive labels are text/muted.
+/// Figma "Bottom nav" (105:617): 80 px bar, equal items (Role=Reporter: 4, Role=Officer: 3). The
+/// active item has a 64 × 32 navy indicator with a white icon and a text/primary label; inactive
+/// labels are text/muted.
 class RwBottomNav extends StatelessWidget {
-  const RwBottomNav({super.key, required this.current, required this.onSelected, this.unreadCount = 0});
+  const RwBottomNav({
+    super.key,
+    required this.current,
+    required this.onSelected,
+    this.unreadCount = 0,
+    this.tabs = RwTab.reporterTabs,
+  });
 
   final RwTab current;
+
+  /// [RwTab.reporterTabs] or [RwTab.officerTabs].
+  final List<RwTab> tabs;
   final ValueChanged<RwTab> onSelected;
 
   /// Read out on the Notifications tab ("Notifications, 3 unread").
@@ -42,12 +56,12 @@ class RwBottomNav extends StatelessWidget {
           height: 80,
           child: Row(
             children: [
-              for (final (i, tab) in RwTab.values.indexed)
+              for (final (i, tab) in tabs.indexed)
                 Expanded(
                   child: _NavItem(
                     tab: tab,
                     active: tab == current,
-                    position: '${i + 1} of ${RwTab.values.length}',
+                    position: '${i + 1} of ${tabs.length}',
                     unread: tab == RwTab.notifications ? unreadCount : 0,
                     onTap: () => onSelected(tab),
                   ),

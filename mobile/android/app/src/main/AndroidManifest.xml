@@ -55,7 +55,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- url_launcher: hotline tel: links (#31) and the OpenStreetMap attribution link. -->
+        <!-- url_launcher: hotline tel: links (#31), the OpenStreetMap attribution link and the officer's
+             "Open in Maps" (geo:, falls back to an https Google Maps link). -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="geo"/>
+        </intent>
         <intent>
             <action android:name="android.intent.action.DIAL"/>
             <data android:scheme="tel"/>

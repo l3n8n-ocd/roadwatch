@@ -8,9 +8,10 @@ import { reportCode } from '../../lib/format';
 
 // W8 Action log (Figma: Default 210:5390, Empty 214:5677, All staff 245:6849), decision #27.
 // My actions: GET /auth/me/activity. All staff (administrators only): GET /admin/audit-logs.
-// Both endpoints are approved in design but NOT built yet, so a 404 shows a "not available yet"
-// state. Proposed query: action, period (7d | 30d | 90d | all), user_id (All staff), page, limit.
-// Rows are audit_logs entries: { log_id, user_id, action_taken, action_details, timestamp, user? }.
+// Query: action (exact or group prefix), period (7d | 30d | 90d | all), user_id (All staff), page, limit.
+// Rows are audit_logs entries: { log_id, user_id, action_taken, action_details, timestamp, user? };
+// action_details is an object with target_name / officer_name filled in. A 404 (an older server) shows
+// the "not available yet" state.
 
 const PAGE_SIZE = 20;
 const TIME_ZONE = 'Asia/Manila'; // Philippine Standard Time, as the page says
@@ -23,6 +24,7 @@ const ACTION_OPTIONS = [
   { value: 'accident_type.created', label: 'Accident types' },
   { value: 'report.created', label: 'Reports submitted' },
   { value: 'auth.login', label: 'Sign-ins' },
+  { value: 'account', label: 'Profile and password' },
 ];
 
 const PERIOD_OPTIONS = [
@@ -109,6 +111,10 @@ function describe(entry) {
       return { icon: 'plus', label: 'Added accident type', details: d.type_name ? `New type: ${d.type_name}.` : 'New accident type.' };
     case 'auth.login':
       return { icon: 'lock', label: 'Signed in', details: 'Signed in to RoadWatch.' };
+    case 'account.profile_updated':
+      return { icon: 'user', label: 'Updated profile', details: 'Name or mobile number changed.' };
+    case 'account.password_changed':
+      return { icon: 'lock', label: 'Changed password', details: 'Password changed.' };
     case 'account.registered':
       return { icon: 'user', label: 'Registered', details: 'Account created.' };
     default:

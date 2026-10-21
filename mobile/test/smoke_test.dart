@@ -98,12 +98,21 @@ void main() {
       expect(await api.client.tokens.readToken(), 'test-token');
     });
 
-    test('keeps no token for Traffic Officers until the officer screens ship (Phase 3)', () async {
+    test('signs in a Traffic Officer too (officer screens, #36)', () async {
       final api = FakeApi(loginRole: Roles.officer);
       final auth = AuthProvider(api);
+      await auth.login(email: 'officer@example.com', password: 'secret123');
+      expect(auth.isSignedIn, isTrue);
+      expect(auth.user!.isOfficer, isTrue);
+      expect(await api.client.tokens.readToken(), 'test-token');
+    });
+
+    test('keeps no token for an Administrator who passes the platform check', () async {
+      final api = FakeApi(loginRole: Roles.admin);
+      final auth = AuthProvider(api);
       await expectLater(
-        auth.login(email: 'officer@example.com', password: 'secret123'),
-        throwsA(isA<AuthFailure>().having((f) => f.kind, 'kind', AuthFailureKind.officerAccount)),
+        auth.login(email: 'admin@example.com', password: 'secret123'),
+        throwsA(isA<AuthFailure>().having((f) => f.kind, 'kind', AuthFailureKind.adminAccount)),
       );
       expect(auth.isSignedIn, isFalse);
       expect(await api.client.tokens.readToken(), isNull);

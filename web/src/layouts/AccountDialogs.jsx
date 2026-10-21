@@ -4,9 +4,9 @@ import { auth } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import { HOTLINES } from '../lib/constants';
 
-// Dialogs opened from the user menu (both layouts). Edit profile and Change password use the
-// endpoints approved in DECISIONS #25 (not built yet on the API): any API error, including
-// "not found", is shown inline so the user knows nothing was saved.
+// Dialogs opened from the user menu. Edit profile (PATCH /auth/me) and Change password
+// (PATCH /auth/me/password), DECISIONS #25: any API error is shown inline so the user knows
+// nothing was saved.
 
 function ErrorMessage({ children }) {
   if (!children) return null;
