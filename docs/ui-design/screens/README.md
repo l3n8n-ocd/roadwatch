@@ -14,7 +14,6 @@ File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for 
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is
 "M6/My reports/Empty".
 
-Known gaps in the Figma frames themselves (not fixed by the export):
-- `settings-edit-profile.png` and `settings-change-password.png` still say the endpoints are "not built yet";
-  they were built on Oct 21 (#25).
-- `w12-500-390.png`: the heading "Something went wrong on our end" does not wrap and is clipped at phone width.
+Figma fixes on Oct 21 (frames re-exported): Edit profile no longer shows the "not built yet" endpoint note,
+Change password's note matches the app, O3 and O4 say only the reporter is notified (as the API does), and the
+W12 500 heading wraps at 390 px.
