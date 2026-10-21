@@ -64,4 +64,4 @@ Values that must match the database exactly:
 | GET `/exports/summary` | `period` = daily, weekly, monthly or annual; `date?` (YYYY-MM-DD) | FR-12 summary JSON |
 | GET `/exports/reports.csv`, GET `/exports/reports.pdf` | same filters as the admin list | File download. Use `fetch` with the token and save the blob (a plain link cannot send the header). |
 
-Every status change writes `report_status_history`, `audit_logs` and an in-app notification (plus an email when SMTP is configured). Rejection reasons are stored in `official_remarks` as `Rejected: <reason>`.
+Every status change writes `report_status_history`, `audit_logs` and an in-app notification (plus an email to the reporter when Brevo is configured, #37; an assigned officer is told in the app only). Rejection reasons are stored in `official_remarks` as `Rejected: <reason>`.
