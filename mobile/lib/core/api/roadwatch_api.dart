@@ -4,8 +4,7 @@ import 'api_client.dart';
 import 'models.dart';
 
 /// One method per endpoint the mobile app uses (contract: docs/API.md).
-/// Methods marked "not built yet" exist in the approved design (#25) but not on the API;
-/// screens must catch the ApiException and show the designed error state.
+/// Screens catch the ApiException and show the designed error state.
 class RoadWatchApi {
   RoadWatchApi(this.client);
 
@@ -58,7 +57,7 @@ class RoadWatchApi {
     return AppUser.fromJson(data['user'] is Map ? Map<String, dynamic>.from(data['user']) : data);
   }
 
-  /// PATCH /auth/me (name and phone). Not built yet on the API (#25).
+  /// PATCH /auth/me (name and phone, #25). Email and role cannot be changed.
   Future<AppUser> updateMe({required String fullName, String? phone}) async {
     final data = (await client.patch(
       '/auth/me',
@@ -70,7 +69,7 @@ class RoadWatchApi {
     return AppUser.fromJson(data['user'] is Map ? Map<String, dynamic>.from(data['user']) : data);
   }
 
-  /// PATCH /auth/me/password. Not built yet on the API (#25); path matches web endpoints.js.
+  /// PATCH /auth/me/password (#25). A wrong current password is a 400 with a `current_password` field error.
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {
     await client.patch(
       '/auth/me/password',

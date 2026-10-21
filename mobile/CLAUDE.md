@@ -70,7 +70,7 @@ Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max
   map and images have text alternatives; honour Reduce motion (`MediaQuery.disableAnimationsOf`).
 - Tabs live in `HomeShell` (switch with `HomeShell.selectTab`); other screens are pushed with
   `Navigator.pushNamed(context, Routes.x, arguments: ...)`.
-- API errors: catch `ApiException` and show `e.message` (friendly). Endpoints not built yet
-  (`updateMe`, `changePassword`) must show the designed error state.
+- API errors: catch `ApiException` and show `e.message` (friendly); field errors via `e.fieldError(name)`
+  (e.g. a wrong current password on Change password).
 - Tracking shows the actor's role, never staff names. Photos upload after the report is created.
 - Do not bundle the demo video; read `demoVideoUrl` from `GET /api/app-info`.

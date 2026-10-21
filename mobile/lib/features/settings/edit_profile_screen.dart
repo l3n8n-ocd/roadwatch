@@ -8,8 +8,8 @@ import '../../core/widgets/widgets.dart';
 
 /// Edit profile. Figma (Mobile page 90:4): Settings/Edit profile 162:2322.
 ///
-/// Saves name and mobile number with AuthProvider.updateProfile (PATCH /auth/me, approved in #25
-/// but not built on the API yet: the request fails and the error banner explains it).
+/// Saves name and mobile number with AuthProvider.updateProfile (PATCH /auth/me, #25); any API error
+/// shows in the error banner.
 /// The email is the login and is read-only here.
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
