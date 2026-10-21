@@ -101,14 +101,19 @@ class _NotificationsTabState extends State<NotificationsTab> {
               message: provider.error!.message,
             ),
           ),
-        for (final n in items)
-          RwNotificationItem(
-            message: n.message,
-            timeLabel: _timeLabel(n.createdAt),
-            isRead: n.isRead,
-            icon: _iconFor(n.message),
-            iconColor: _iconColorFor(c, n.message),
-            onTap: () => _open(n),
+        // #41, M2: items fade and rise one after another on first load (max 8 staggered).
+        for (var i = 0; i < items.length; i++)
+          RwEntrance.listItem(
+            key: ValueKey(items[i].notificationId),
+            index: i,
+            child: RwNotificationItem(
+              message: items[i].message,
+              timeLabel: _timeLabel(items[i].createdAt),
+              isRead: items[i].isRead,
+              icon: _iconFor(items[i].message),
+              iconColor: _iconColorFor(c, items[i].message),
+              onTap: () => _open(items[i]),
+            ),
           ),
       ];
     }

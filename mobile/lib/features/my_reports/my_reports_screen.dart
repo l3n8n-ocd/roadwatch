@@ -181,7 +181,15 @@ class _MyReportsTabState extends State<MyReportsTab> {
           style: RwType.label.copyWith(color: c.textMuted),
         ),
       ),
-      for (final r in _items) ...[gap, RwReportCard.fromReport(r, onTap: () => _openReport(r))],
+      // #41, M2: cards fade and rise one after another on first load (max 8 staggered).
+      for (var i = 0; i < _items.length; i++) ...[
+        gap,
+        RwEntrance.listItem(
+          key: ValueKey(_items[i].reportId),
+          index: i,
+          child: RwReportCard.fromReport(_items[i], onTap: () => _openReport(_items[i])),
+        ),
+      ],
       if (_loadingMore) ...[
         gap,
         Semantics(

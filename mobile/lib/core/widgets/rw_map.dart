@@ -119,7 +119,20 @@ class _RwMapState extends State<RwMap> {
                         width: 40,
                         height: 48,
                         alignment: Alignment.topCenter,
-                        child: CustomPaint(painter: _PinPainter(c.brandNavy, c.surfaceWhite)),
+                        // The pin drops onto the map each time it is placed (#41, M4).
+                        child: TweenAnimationBuilder<double>(
+                          key: ValueKey(pin),
+                          tween: Tween(begin: 0, end: 1),
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 400),
+                          curve: Curves.easeOutBack,
+                          child: CustomPaint(painter: _PinPainter(c.brandNavy, c.surfaceWhite)),
+                          builder: (context, t, child) => Opacity(
+                            opacity: t.clamp(0.0, 1.0),
+                            child: Transform.translate(offset: Offset(0, -24 * (1 - t)), child: child),
+                          ),
+                        ),
                       ),
                     ],
                   ),

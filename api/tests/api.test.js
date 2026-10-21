@@ -136,6 +136,10 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.equal((await call('GET', '/admin/reports?status=Nonsense', { token: admin.token })).status, 400);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Rejected' } })).status, 400);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Assigned' } })).status, 400);
+      // Workflow #30: assigning is locked until the report is Verified.
+      const early = await call('PATCH', `/admin/reports/${reportId}/assign`, { token: admin.token, body: { officer_id: officer.id } });
+      assert.equal(early.status, 400);
+      assert.match(early.body.error, /Verify the report first/);
       const v = await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Verified', remarks: 'Checked against photos' } });
       assert.equal(v.body.data.record_type, 'verified_record');
       assert.equal(v.body.data.is_verified_record, true);
@@ -158,6 +162,9 @@ test('database-backed API flow', { skip }, async (t) => {
       const r = await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'In Progress', remarks: 'On site' } });
       assert.equal(r.body.data.report_status, 'In Progress');
       assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'Rejected' } })).status, 400);
+      // Workflow #30: officers no longer review or verify.
+      assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'Verified' } })).status, 400);
+      assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'Under Review' } })).status, 400);
       assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token2, body: { remarks: 'hi' } })).status, 404);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/assign`, { token: officer.token, body: { officer_id: officer.id } })).status, 403);
     });

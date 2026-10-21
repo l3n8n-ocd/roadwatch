@@ -226,6 +226,20 @@ Landing page (updated Oct 20, #36): the footer "Staff sign-in" goes to B1 Admini
 
 Log out: every signed-in web frame in Flows (B2 to B7, D1 to D5, E2, F1, F2) has a Log out button beside the user menu, wired to 0 · W0 Public landing.
 
+## Motion (#41, key frames; spec: `docs/ui-design/motion-spec.md`)
+
+| Frame / asset | Node ID | Link |
+|---|---|---|
+| Page: Motion (#41) | `356:29566` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-29566) |
+| P1 · Hero road and pin story (4 key frames) | `356:29570` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-29570) |
+| P4 · Stats count-up (3 key frames) | `356:37184` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-37184) |
+| P10 · FAQ chat (3 key frames) | `356:37292` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-37292) |
+| App · M5 Report sent and M6 tracking (6 key frames) | `356:37328` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-37328) |
+| Motion tokens and Reduce motion | `356:37668` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-37668) |
+| W0 hero: Road and pin illustration (desktop) | `356:16116` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-16116) |
+| W0 hero: Road and pin illustration (390) | `356:16123` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-16123) |
+| Flows 0 · W0 hero: Road and pin illustration | `356:25892` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=356-25892) |
+
 ## Archive (superseded Oct 20, 2026, decision #36)
 
 Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=316-14443)). The professor ruled that Reporter and Traffic Officer are mobile-only and Administrator is web-only, so these frames are no longer used by the apps or the prototype. They are kept for the record, and the officer frames are the reference for the officer mobile screens. Links that led from them to frames still in use were removed; links between archived frames still work on the Archive page.

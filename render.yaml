@@ -45,6 +45,7 @@ services:
       # cloudinary://API_KEY:API_SECRET@CLOUD_NAME
       - key: CLOUDINARY_URL
         sync: false
-      # Email is added in Phase 3 with Brevo (#37): MAIL_PROVIDER=brevo, BREVO_API_KEY, MAIL_FROM.
-      # Until then no mail settings are set, so the API skips emails (in-app notifications still work).
+      # Email (Brevo over HTTPS, #37): add MAIL_PROVIDER=brevo, BREVO_API_KEY and MAIL_FROM in the dashboard
+      # once the Brevo account and the sender domain are verified. Without them the API skips emails
+      # (in-app notifications still work).
       # DEMO_VIDEO_URL is added in the dashboard after the video is uploaded (Oct 30).

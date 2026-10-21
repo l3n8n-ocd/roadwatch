@@ -15,6 +15,7 @@ export { default as RecordBadge } from './RecordBadge';
 export { default as ReportCard } from './ReportCard';
 export { default as TimelineItem, Timeline } from './TimelineItem';
 export { default as StatCard } from './StatCard';
+export { default as AnimatedNumber } from './AnimatedNumber';
 export { default as DataTable } from './DataTable';
 export { default as MapView } from './MapView';
 export { default as Toast } from './Toast';

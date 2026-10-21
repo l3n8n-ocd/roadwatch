@@ -14,6 +14,7 @@ import {
 } from '../../components/ui';
 import { dashboard } from '../../api/endpoints';
 import useServerError from '../../lib/useServerError';
+import { prefersReducedMotion } from '../../lib/motion';
 import { formatDateTime, reportCode } from '../../lib/format';
 
 // W2 Administrator dashboard (Figma 123:108, dark 166:4256).
@@ -189,7 +190,10 @@ function TrendCard({ days }) {
                   strokeWidth={2}
                   dot={(props) => <TodayDot {...props} lastIndex={days.length - 1} />}
                   activeDot={{ r: 5, fill: 'var(--rw-brand-navy)', stroke: 'var(--rw-surface-white)', strokeWidth: 2 }}
-                  isAnimationActive={false}
+                  // A2: the trend line draws left to right (off with reduce motion).
+                  isAnimationActive={!prefersReducedMotion()}
+                  animationDuration={600}
+                  animationEasing="ease-out"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -214,16 +218,17 @@ function TypeBars({ byType, total }) {
         <p className="type-body-sm text-text-primary">No reports yet.</p>
       ) : (
         <ul className="flex flex-col gap-4">
-          {rows.map((row) => (
+          {rows.map((row, index) => (
             <li key={row.type_name} className="flex flex-col gap-1.5">
               <span className="flex items-start justify-between gap-2 type-body-sm text-text-primary">
                 <span>{row.type_name}</span>
                 <span className="type-label">{numberFmt.format(row.count)}</span>
               </span>
               <span aria-hidden="true" className="flex h-3 w-full">
+                {/* A2: bars grow from the left, one after another. */}
                 <span
-                  className="h-3 rounded-r-[4px] bg-brand-navy"
-                  style={{ width: `${(row.count / max) * 100}%` }}
+                  className="h-3 origin-left rounded-r-[4px] bg-brand-navy transition-transform duration-600 ease-out starting:scale-x-0 motion-reduce:transition-none"
+                  style={{ width: `${(row.count / max) * 100}%`, transitionDelay: `${index * 50}ms` }}
                 />
               </span>
             </li>
@@ -450,20 +455,22 @@ export default function Dashboard() {
             </p>
           )}
           <section aria-label="Summary" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard metric="total" label="Total reports" value={numberFmt.format(cards.total ?? 0)} caption="All time" />
+            <StatCard metric="total" label="Total reports" value={cards.total ?? 0} caption="All time" index={0} />
             <StatCard
               metric="pending"
               label="Pending"
-              value={numberFmt.format(cards.pending ?? 0)}
+              value={cards.pending ?? 0}
+              index={1}
               caption="Submitted, Under Review, Info required"
             />
             <StatCard
               metric="verified"
               label="Verified"
-              value={numberFmt.format(cards.verified ?? 0)}
+              value={cards.verified ?? 0}
+              index={2}
               caption="record_type = verified_record"
             />
-            <StatCard metric="closed" label="Closed" value={numberFmt.format(cards.closed ?? 0)} caption="Resolved/Closed" />
+            <StatCard metric="closed" label="Closed" value={cards.closed ?? 0} caption="Resolved/Closed" index={3} />
           </section>
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,692fr)_minmax(0,380fr)]">

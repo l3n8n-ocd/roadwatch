@@ -1,11 +1,12 @@
 const { sequelize, Report, ReportStatusHistory } = require('../models');
 const { VERIFIED_STATUSES } = require('../config/constants');
 const { recordAudit } = require('./auditService');
-const { notifyUser } = require('./notificationService');
+const { notifyUser, emailUser } = require('./notificationService');
 const HttpError = require('../utils/httpError');
 
 // The one place where a report's status changes. Every change writes report_status_history and audit_logs
-// in the same transaction, sets record_type, and notifies the reporter (in-app + email).
+// in the same transaction, sets record_type, and notifies the reporter (in-app + email). An assigned officer
+// is told in the app only (#37).
 async function changeStatus({ report, status, actor, remarks, assignedOfficerId, rejectionReason }) {
   const previous = report.report_status;
   if (previous === status && !remarks && !assignedOfficerId) {
@@ -43,8 +44,7 @@ async function changeStatus({ report, status, actor, remarks, assignedOfficerId,
     await t.rollback();
     throw err;
   }
-  // Email after commit (best effort).
-  const { emailUser } = require('./notificationService');
+  // Email the reporter after commit (best effort, #37).
   emailUser(report.reporter_id, `RoadWatch report #${report.report_id}: ${status}`,
     `Your accident report #${report.report_id} status is now "${status}".${report.official_remarks ? `\n\nRemarks: ${report.official_remarks}` : ''}`);
   return report;

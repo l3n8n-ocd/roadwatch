@@ -1,7 +1,9 @@
+import AnimatedNumber from './AnimatedNumber';
 import Icon from './Icon';
 import { cx } from '../../lib/cx';
 
 // Dashboard metric card (Figma 99:431). metric picks the icon and its tile color.
+// A numeric value counts up (A1); `index` staggers the card's entrance with its neighbours.
 const METRICS = {
   total: { icon: 'file-text', tile: 'bg-surface-navy-subtle', iconColor: 'text-text-primary' },
   pending: { icon: 'clock', tile: 'bg-surface-amber-subtle', iconColor: 'text-text-primary' },
@@ -9,12 +11,17 @@ const METRICS = {
   closed: { icon: 'check-circle', tile: 'bg-surface-blue-subtle', iconColor: 'text-text-blue' },
 };
 
-export default function StatCard({ metric = 'total', label, value, caption, className = '' }) {
+const numberFmt = new Intl.NumberFormat('en-US');
+
+export default function StatCard({ metric = 'total', label, value, caption, index = 0, className = '' }) {
   const look = METRICS[metric] || METRICS.total;
   return (
     <div
+      style={{ transitionDelay: `${index * 70}ms` }}
       className={cx(
         'flex flex-col gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-6 shadow-rw-sm',
+        'transition-[opacity,translate] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] starting:translate-y-4 starting:opacity-0',
+        'motion-reduce:duration-200 motion-reduce:starting:translate-y-0',
         className,
       )}
     >
@@ -24,7 +31,9 @@ export default function StatCard({ metric = 'total', label, value, caption, clas
           <Icon name={look.icon} size={20} className={look.iconColor} />
         </span>
       </div>
-      <p className="type-stat text-text-primary">{value}</p>
+      <p className="type-stat text-text-primary">
+        {typeof value === 'number' ? <AnimatedNumber value={value} format={(n) => numberFmt.format(Math.round(n))} /> : value}
+      </p>
       {caption && <p className="type-caption text-text-muted">{caption}</p>}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button, Emblem, Icon, IconButton, Logo, ThemeSwitch } from '../components/ui';
 import { publicApi } from '../api/endpoints';
@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { APK_URL, homePathFor } from '../lib/constants';
 import { cx } from '../lib/cx';
 import { ON_DARK_FOCUS, WRAP } from '../lib/publicStyles';
+import { DUR, gsap, useGSAP } from '../lib/motion';
 
 // Public shell (Figma W0 header 137:4096 and footer 138:4345, also on W10 About, W11 404, W12 500).
 // Section links point at the landing sections ("/#faq"); About is its own page (/about, #40).
@@ -66,9 +67,29 @@ export function PublicHeader() {
   }, [menuOpen]);
   useEffect(() => setMenuOpen(false), [pathname]);
 
+  // P3: once the page has scrolled 80 px, the sticky header gains a shadow and shrinks to 64 px.
+  const [compact, setCompact] = useState(false);
+  // A plain scroll listener: scroll-trigger refreshes briefly reset the scroll position while measuring.
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 80);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <header className="relative border-b border-border-subtle bg-surface-white">
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-2 px-2 lg:h-20 lg:gap-8 lg:px-16">
+    <header
+      className={cx(
+        'sticky top-0 z-[1200] border-b border-border-subtle bg-surface-white transition-shadow duration-250 motion-reduce:transition-none',
+        compact && 'shadow-rw-sm',
+      )}
+    >
+      <div
+        className={cx(
+          'mx-auto flex h-16 max-w-[1440px] items-center gap-2 px-2 transition-[height] duration-250 lg:gap-8 lg:px-16 motion-reduce:transition-none',
+          compact ? 'lg:h-16' : 'lg:h-20',
+        )}
+      >
         <IconButton
           icon={menuOpen ? 'x' : 'menu'}
           label={menuOpen ? 'Close menu' : 'Open menu'}
@@ -193,6 +214,14 @@ export function PublicFooter() {
 
 // Skip link + header + main + footer for every public page.
 export default function PublicLayout({ children, mainClassName = '' }) {
+  const { pathname } = useLocation();
+  const mainRef = useRef(null);
+
+  // P15: the page content fades in on each route change; the header and footer stay put.
+  useGSAP(() => gsap.from(mainRef.current, { opacity: 0, duration: DUR.short, ease: 'none' }), {
+    dependencies: [pathname],
+  });
+
   return (
     <div className="flex min-h-screen flex-col bg-surface-white">
       <a
@@ -202,7 +231,7 @@ export default function PublicLayout({ children, mainClassName = '' }) {
         Skip to main content
       </a>
       <PublicHeader />
-      <main id="main" tabIndex={-1} className={cx('flex-1 focus-visible:shadow-none', mainClassName)}>
+      <main ref={mainRef} id="main" tabIndex={-1} className={cx('flex-1 focus-visible:shadow-none', mainClassName)}>
         {children}
       </main>
       <PublicFooter />

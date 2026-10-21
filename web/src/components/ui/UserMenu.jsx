@@ -125,7 +125,8 @@ export default function UserMenu({ user, groups, compact = false, className = ''
           className={cx(
             'absolute top-[calc(100%+8px)] right-0 z-[1500] flex w-[296px] max-w-[calc(100vw-16px)] flex-col gap-1',
             'rounded-rw-md border border-border-subtle bg-surface-white p-2 shadow-rw-lg',
-            'transition-opacity duration-150 starting:opacity-0 motion-reduce:transition-none',
+            // A4: fades in and slides down 4 px (only fades with reduce motion).
+            'transition-[opacity,translate] duration-150 starting:-translate-y-1 starting:opacity-0 motion-reduce:starting:translate-y-0',
           )}
         >
           {/* Account header (GET /api/auth/me). Not focusable: it is not an action. */}

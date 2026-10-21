@@ -60,7 +60,7 @@ Objectives (from the course description): web and mobile reporting; quick digita
 
 | Layer | Choice | Status |
 |---|---|---|
-| Web | React + Vite + Tailwind CSS. Suggested: react-router-dom, axios, Recharts, leaflet and react-leaflet | Confirmed (libraries Recommended) |
+| Web | React + Vite + Tailwind CSS. Suggested: react-router-dom, axios, Recharts, leaflet and react-leaflet. Motion: GSAP + ScrollTrigger (#41, spec in `docs/ui-design/motion-spec.md`) | Confirmed (libraries Recommended; GSAP Confirmed Oct 20) |
 | Mobile | Flutter + Dart. Suggested: dio, flutter_map, latlong2, geolocator, image_picker, flutter_secure_storage, provider, video_player | Confirmed (packages Recommended) |
 | API | Node.js (>= 22 in `api/package.json`) + Express | Confirmed |
 | Validation and security libs | zod, helmet, cors, bcrypt, jsonwebtoken, multer | In starter `package.json` |
@@ -72,7 +72,7 @@ Objectives (from the course description): web and mobile reporting; quick digita
 | Mobile delivery | Release APK built by GitHub Actions on tag `v*` | Recommended |
 | Photos | Cloudinary (store only the URL in `report_photos`) | Confirmed |
 | Maps | OpenStreetMap via Leaflet (web) and flutter_map (mobile); Nominatim for address lookup | Confirmed |
-| Email | **Brevo transactional email API over HTTPS** (`MAIL_PROVIDER=brevo`, `BREVO_API_KEY`), called with Node's built-in `fetch`. Render's free tier blocks SMTP ports, so Gmail SMTP cannot be used once deployed (#37). Sender on the project domain with SPF/DKIM/DMARC. `MAIL_PROVIDER=log` for local dev and tests. Not implemented yet (Carl, Phase 3); `mailer.js` still has the old Nodemailer SMTP/Resend code, which will be removed | Confirmed Oct 20 |
+| Email | **Brevo transactional email API over HTTPS** (`MAIL_PROVIDER=brevo`, `BREVO_API_KEY`), called with Node's built-in `fetch`. Render's free tier blocks SMTP ports, so Gmail SMTP cannot be used once deployed (#37). Sender on the project domain with SPF/DKIM/DMARC. `MAIL_PROVIDER=log` for local dev and tests; unset = email off. Code done Oct 21 (`api/src/config/mailer.js`, nodemailer removed); not yet sent for real (Brevo account, domain and `BREVO_API_KEY` on Render pending) | Confirmed Oct 20 |
 | Exports | pdfkit (PDF), json2csv (CSV) | Recommended |
 | Auth | Own JWT with role middleware | Confirmed |
 | CI/CD | GitHub Actions (`api-ci`, `web-ci`, `mobile-ci`); Render and Vercel auto-deploy from `main` | Confirmed |
@@ -240,10 +240,10 @@ Rules: every status change writes a `report_status_history` row; important admin
 - Tools: Git, Node >= 22, a MySQL client (Workbench, DBeaver or CLI), Flutter SDK, Android tooling for APK.
 - **API:** `cd api`, copy `.env.example` to `.env`, fill values, `npm install`, `npm run dev`.
 - **Aiven TLS:** set `DB_SSL=true` and either `DB_SSL_CA` (certificate text with `\n`) or `DB_SSL_CA_PATH`. `src/config/dbConfig.js` builds the connection settings.
-- **Email (target, #37):** `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` (Brevo → SMTP & API → API keys; Render env only), `MAIL_FROM` (an address on the project domain verified in Brevo). Until Carl's change lands, `mailer.js` still reads the old SMTP settings.
+- **Email (#37):** `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` (Brevo → SMTP & API → API keys; Render env only), `MAIL_FROM` (an address on the project domain verified in Brevo). Locally use `MAIL_PROVIDER=log` (prints emails).
 - **Web:** not generated yet. Run once: `cd web && npm create vite@latest . -- --template react`, then install deps and Tailwind per `web/SETUP.md`. Env: `VITE_API_URL=http://localhost:5000/api`.
 - **Mobile:** not generated yet. Run once: `cd mobile && flutter create . --org com.roadwatch --project-name roadwatch_mobile`, then add packages per `mobile/SETUP.md`.
-- Env variable names live in `api/.env.example` (PORT, CLIENT_ORIGIN, DB_*, JWT_*, ADMIN_*, CLOUDINARY_URL, MAIL_PROVIDER, MAIL_FROM, RESEND_API_KEY, SMTP_*, DEMO_VIDEO_URL). Never put real values in the repo.
+- Env variable names live in `api/.env.example` (PORT, CLIENT_ORIGIN, DB_*, JWT_*, ADMIN_*, CLOUDINARY_URL, MAIL_PROVIDER, MAIL_FROM, BREVO_API_KEY, DEMO_VIDEO_URL). Never put real values in the repo.
 
 ---
 
@@ -268,10 +268,10 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 ## 15. Testing and Quality Assurance
 
-- Automated API tests: 18 (JWT guard, health/app-info, login platform validation, and a 13-step database flow covering register, roles, the login platform check, report lifecycle, officer scoping, deactivation, notifications, dashboard, exports, upload validation). All 18 passed on Oct 20 on Node 22 + local MariaDB 10.11 (the dashboard step also checks `GET /public/stats`, #40). The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
+- Automated API tests: 23 (JWT guard, health/app-info, login platform validation, 5 Brevo mailer unit tests with a mocked `fetch`, and a 13-step database flow covering register, roles, the login platform check, report lifecycle including verify-before-assign #30, officer scoping, deactivation, notifications, dashboard, exports, upload validation). All 23 passed on Oct 21 on Node 22 + local MariaDB 10.11 (the dashboard step also checks `GET /public/stats`, #40). The database flow only runs with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Passed on Node 22 + MariaDB 10.11, not yet on the user's repo or MySQL 8.
 - Pauline owns a manual test plan: one test case per FR-01 to FR-15 (steps, expected, actual, pass/fail), executed on the deployed system around Oct 29. Add accessibility checks for the WCAG AA target (keyboard-only pass, contrast check, screen-reader labels, phone-width layout).
 - CI runs lint, test and build per folder on PRs and pushes to `dev` and `main`.
-- `seed-admin.js`, `mailer.js` and `dbConfig.js` were syntax-checked only. They have **not** been run against a real database or SMTP service.
+- `mailer.js` (Brevo) is unit-tested with a mocked `fetch` and ran in log mode during the database flow; it has **not** sent through the real Brevo API yet.
 - Always report tests you could not run.
 
 ---
@@ -288,7 +288,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 - `web/`: React + Vite + Tailwind 4 app with every Web frame (W0-W9, Demo video), light/dark tokens generated from Figma, component library, role-guarded routes. `npm run lint` and `npm run build` pass; every route was smoke-tested in Chromium at 1440 and 390 px with a **mocked** API. **Oct 20 (#36):** Administrator only; the reporter screens (R0-R6), officer queue and officer view were removed, sign-in sends `platform: "web"` and shows the mobile-only-account state, and the landing calls to action download the APK (smoke-tested again with a mocked API, lint and build pass).
 - `mobile/`: Flutter (Android) app with every Mobile frame (M0-M6, Notifications, Settings and its sub-screens). Reporters only. `flutter analyze` clean, `flutter test` passes (widget tests with a fake API).
 **Not verified:** either app against the real API, map tiles and Nominatim (blocked in the build environment), camera/GPS on a device, the release APK (no Android SDK in the build environment).
-**Deployment (Oct 20):** API on Render at `https://roadwatch-api-gnky.onrender.com` (Blueprint `render.yaml`, Part F; `/api/health` answers, reported by Lenon) and web on Vercel at `https://roadwatch-theta.vercel.app`, both deploying from `main`. Not yet checked end to end: admin sign-in on the live site, a reporter submitting from a phone, Cloudinary uploads (the build environment cannot reach either host). **Prototype revisions #40 (Oct 20, coded):** web landing (Light/Dark switch, live stats bar from `GET /api/public/stats`, full hotlines card, FAQ chat, QR placeholder), public `/about` with Meet our team, 404 and 500 pages (error boundary + 5xx on a page's main request), admin About at `/admin/about`, log-out confirmation (web and mobile), Register note. Verified with lint, build, a Playwright smoke test on a mocked API (1440 and 390, dark mode), 18/18 API tests on local MariaDB, and `flutter analyze` + `flutter test`; not yet checked on the live site. Endpoints the UI already calls but the API lacks: `GET /public/updates`, `PATCH /auth/me`, change password, `GET /auth/me/activity`, `GET /admin/audit-logs` (screens show their designed unavailable state).
+**Deployment (Oct 20):** API on Render at `https://roadwatch-api-gnky.onrender.com` (Blueprint `render.yaml`, Part F; `/api/health` answers, reported by Lenon) and web on Vercel at `https://roadwatch-theta.vercel.app`, both deploying from `main`. Not yet checked end to end: admin sign-in on the live site, a reporter submitting from a phone, Cloudinary uploads (the build environment cannot reach either host). **Prototype revisions #40 (Oct 20, coded):** web landing (Light/Dark switch, live stats bar from `GET /api/public/stats`, full hotlines card, FAQ chat, QR placeholder), public `/about` with Meet our team, 404 and 500 pages (error boundary + 5xx on a page's main request), admin About at `/admin/about`, log-out confirmation (web and mobile), Register note. Verified with lint, build, a Playwright smoke test on a mocked API (1440 and 390, dark mode), 18/18 API tests on local MariaDB, and `flutter analyze` + `flutter test`; not yet checked on the live site. **Motion #41 (Oct 21, coded):** GSAP + ScrollTrigger on the public web pages (road-and-pin hero, parallax, sticky shrinking header, count-ups, reveals, FAQ chat), subtle admin motion (count-ups, chart draw, CSS entrances), Flutter motion helpers (`rw_motion.dart`: entrances, pulses, shared-axis page transitions, press scale, pin drop); reduce motion gives short fades everywhere. Verified with lint, build, Playwright (1440/390, reduced motion) and `flutter test` (29 pass); not yet seen on a real phone. Endpoints the UI already calls but the API lacks: `GET /public/updates`, `PATCH /auth/me`, change password, `GET /auth/me/activity`, `GET /admin/audit-logs` (screens show their designed unavailable state).
 
 **Setup status (Confirmed by the user, Oct 15, 22:35):**
 - GitHub repo: **not created yet**, so the starter zip has not been pushed and `members.conf` is not filled.
@@ -353,7 +353,7 @@ Follow `docs/SETUP-GUIDE.md` (Parts A to D, with troubleshooting).
 | 0 Prep (Oct 13-14) | Kickoff, members.conf with no-reply emails, DECISIONS.md | Lenon, Princess |
 | 1 Foundation (by Oct 16, at risk) | Public repo, Aiven MySQL with schema and seed, API skeleton, Figma wireframes, generate Vite and Flutter projects, professor question | Lenon, Carl, Pauline, Princess |
 | 2 Core flow (by Oct 21) | Register/login/JWT/roles/admin seed, report submission and Cloudinary upload, mobile register/login/report form, web login/list/details, start test plan | Carl, Lenon, Pauline |
-| 3 Workflows (by Oct 26) | Admin/officer endpoints and user management (incl. deactivate), web admin pages, mobile tracking and notifications, email via Nodemailer + Gmail SMTP, dashboard and exports, demo video feature | Carl, Pauline, Lenon |
+| 3 Workflows (by Oct 26) | Admin/officer endpoints and user management (incl. deactivate), web admin pages, mobile tracking and notifications, email via the Brevo API, dashboard and exports, demo video feature | Carl, Pauline, Lenon |
 | 4 Deploy and test (by Oct 30) | Deploy API to Render, Aiven and web to Vercel; record and publish the demo and promotional video (MP4, every member speaks; Cloudinary, Git LFS, `DEMO_VIDEO_URL`); APK from tag; full test plan including accessibility checks; bug fixes only; freeze and tag | Carl, All, Lenon, Pauline |
 | 5 Docs (Oct 31-Nov 2) | PPT guide, contribution report, final submission check | Princess, Lenon |
 
@@ -377,7 +377,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 - Implement only what is asked. Keep changes small and reviewable.
 
 **Verification and honesty**
-- Test relevant changes (`npm test`, build, lint, run the endpoint). State exactly what you ran and the result, and list tests you could not run (for example anything needing Aiven, Cloudinary, Gmail SMTP or a device).
+- Test relevant changes (`npm test`, build, lint, run the endpoint). State exactly what you ran and the result, and list tests you could not run (for example anything needing Aiven, Cloudinary, Brevo or a device).
 - Never claim a feature works unless it is implemented and verified. Do not describe planned work as done.
 
 **Ask or explain first when**

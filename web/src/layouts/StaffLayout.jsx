@@ -4,6 +4,7 @@ import { Button, ConfirmDialog, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu
 import { useAuth } from '../context/AuthContext';
 import { ROLES, homePathFor } from '../lib/constants';
 import { reportCode } from '../lib/format';
+import { DUR, gsap, useGSAP } from '../lib/motion';
 import { ChangePasswordDialog, ContactSupportDialog, EditProfileDialog } from './AccountDialogs';
 
 // Staff shell (Figma W2 123:108): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
@@ -29,6 +30,12 @@ export default function StaffLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const mainRef = useRef(null);
+
+  // A6: the page content fades in on each route change; the sidebar and top bar stay put.
+  useGSAP(() => gsap.from(mainRef.current, { opacity: 0, duration: DUR.short, ease: 'none' }), {
+    dependencies: [pathname],
+  });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dialog, setDialog] = useState(null); // 'profile' | 'password' | 'support' | 'logout'
   const [toast, setToast] = useState('');
@@ -136,7 +143,7 @@ export default function StaffLayout() {
           </span>
         </TopBarWeb>
 
-        <main id="main" tabIndex={-1} className="flex-1 focus-visible:shadow-none">
+        <main ref={mainRef} id="main" tabIndex={-1} className="flex-1 focus-visible:shadow-none">
           <Outlet />
         </main>
       </div>

@@ -56,7 +56,9 @@ assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 `locating`), `RwToast` + `showRwToast`, `RwEmptyState` (`.noReports/.noResults/.error/.videoComingSoon`),
 `RwSkeleton*`, `RwTopBar.home/.inner`, `RwBottomNav` + `RwTab`, `RwNotificationItem`, `RwStepper`,
 `RwSwitch`, `RwSettingsRow` (`.navigation/.toggle/.info/.destructive`), `RwDialog` +
-`showRwConfirmDialog`, `RwLogo`, `RwPressable` (base for anything tappable).
+`showRwConfirmDialog`, `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
+Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max 8), `RwPulse` (stops after N),
+`RwDrawIn`, `RwSharedAxisPageTransitionsBuilder` (app.dart). All respect `disableAnimations` (short fades).
 
 ## Rules
 - Colors only through `RwColors.of(context)`; text styles from `RwType`; spacing `RwSpace`.

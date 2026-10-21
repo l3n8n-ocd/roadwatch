@@ -223,7 +223,14 @@ class _TrackingScreenState extends State<TrackingScreen> {
               Wrap(
                 spacing: RwSpace.s8,
                 runSpacing: RwSpace.s8,
-                children: [RwStatusChip(r.status), RwRecordBadge.fromRecordType(r.recordType)],
+                children: [
+                  // A status change cross-fades the chip (#41, M6).
+                  AnimatedSwitcher(
+                    duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : RwMotion.short,
+                    child: KeyedSubtree(key: ValueKey(r.status), child: RwStatusChip(r.status)),
+                  ),
+                  RwRecordBadge.fromRecordType(r.recordType),
+                ],
               ),
               const SizedBox(height: RwSpace.s12),
               _MetaRow(icon: RwIcons.mapPin, text: r.location),
@@ -247,13 +254,17 @@ class _TrackingScreenState extends State<TrackingScreen> {
         _Card(
           child: Column(
             children: [
+              // History appears top to bottom, 60 ms apart (#41, M6).
               for (var i = 0; i < history.length; i++)
-                RwTimelineItem(
-                  status: history[i].status,
-                  meta: history[i].meta,
-                  remarks: history[i].remarks,
-                  current: i == 0,
-                  last: i == history.length - 1,
+                RwEntrance(
+                  delay: RwMotion.stagger(i, step: const Duration(milliseconds: 60)),
+                  child: RwTimelineItem(
+                    status: history[i].status,
+                    meta: history[i].meta,
+                    remarks: history[i].remarks,
+                    current: i == 0,
+                    last: i == history.length - 1,
+                  ),
                 ),
             ],
           ),

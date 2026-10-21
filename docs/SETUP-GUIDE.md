@@ -466,9 +466,9 @@ Register a reporter on the phone, submit a report with a photo, then refresh the
 
 ## F6. Free plan notes
 - The service **sleeps after about 15 minutes idle**. The next request wakes it in about a minute; the mobile app already waits long enough and shows a "server may be waking up" message. Open `/api/health` a few minutes before demos, recordings and grading.
-- **Email is off on purpose.** Render's free plan blocks SMTP, and Brevo arrives in Phase 3 (#37). With no mail settings the API skips emails; in-app notifications still work.
+- **Email needs Brevo.** Render's free plan blocks SMTP, so the API sends email through the Brevo API over HTTPS (#37, code done Oct 21). Until `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` and `MAIL_FROM` are set, the API skips emails; in-app notifications still work. Locally, `MAIL_PROVIDER=log` prints each email in the terminal instead.
 - If Aiven ever restricts **Allowed IP addresses**, add Render's outbound addresses (service, Connect, Outbound) or the API cannot reach the database.
-- Later additions in the dashboard (Environment), not in the repo: `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` and `MAIL_FROM` (Phase 3), `DEMO_VIDEO_URL` (Oct 30), and the custom domain `api.roadwatch-ph.me` under Settings, Custom Domains, with a CNAME at Namecheap (#38).
+- Later additions in the dashboard (Environment), not in the repo: `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` and `MAIL_FROM` (after Lenon verifies the domain in Brevo), `DEMO_VIDEO_URL` (Oct 30), and the custom domain `api.roadwatch-ph.me` under Settings, Custom Domains, with a CNAME at Namecheap (#38).
 
 ## F7. Troubleshooting
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/tokens.dart';
 import 'rw_icon.dart';
+import 'rw_motion.dart';
 import 'rw_status_chip.dart';
 
 /// Figma "Timeline item" (99:388): one status history row. Put several in a Column, newest
@@ -52,18 +53,23 @@ class RwTimelineItem extends StatelessWidget {
           children: [
             Column(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: current ? c.brandNavy : c.surfaceNavySubtle,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: RwIcon(
-                    iconName,
-                    size: RwSize.iconSm,
-                    color: current ? c.textInverse : c.textPrimary,
+                // The current status dot pulses twice, then stops (#41, M6).
+                RwPulse(
+                  times: current ? 2 : 0,
+                  delay: const Duration(milliseconds: 300),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: current ? c.brandNavy : c.surfaceNavySubtle,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: RwIcon(
+                      iconName,
+                      size: RwSize.iconSm,
+                      color: current ? c.textInverse : c.textPrimary,
+                    ),
                   ),
                 ),
                 if (!last) Expanded(child: Container(width: 2, color: c.borderSubtle)),

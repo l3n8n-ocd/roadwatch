@@ -41,45 +41,52 @@ class RwDialog extends StatelessWidget {
       icon: confirmIcon,
       onPressed: onConfirm ?? () => Navigator.of(context).pop(true),
     );
-    return Dialog(
-      backgroundColor: c.surfaceWhite,
-      surfaceTintColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(RwSpace.s16),
-      shape: const RoundedRectangleBorder(borderRadius: RwRadius.mdAll),
-      child: Padding(
-        padding: const EdgeInsets.all(RwSpace.s24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Semantics(
-                header: true,
-                child: Text(title, style: RwType.h2.copyWith(color: c.textPrimary)),
-              ),
-              const SizedBox(height: RwSpace.s8),
-              Text(message, style: RwType.body.copyWith(color: c.textMuted)),
-              if (content != null) ...[const SizedBox(height: RwSpace.s24), content!],
-              const SizedBox(height: RwSpace.s24),
-              // Phone width: stack full-width buttons, confirm first; side by side when wide.
-              LayoutBuilder(
-                builder: (context, box) => box.maxWidth < 400
-                    ? Column(
-                        children: [
-                          confirm,
-                          const SizedBox(height: RwSpace.s12),
-                          cancel,
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          Expanded(child: cancel),
-                          const SizedBox(width: RwSpace.s12),
-                          Expanded(child: confirm),
-                        ],
-                      ),
-              ),
-            ],
+    // The panel grows from 96% as it fades in (#41, M8); the route already fades.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0.96, end: 1),
+      duration: const Duration(milliseconds: 200),
+      curve: const Cubic(0.22, 1, 0.36, 1),
+      builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+      child: Dialog(
+        backgroundColor: c.surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(RwSpace.s16),
+        shape: const RoundedRectangleBorder(borderRadius: RwRadius.mdAll),
+        child: Padding(
+          padding: const EdgeInsets.all(RwSpace.s24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(title, style: RwType.h2.copyWith(color: c.textPrimary)),
+                ),
+                const SizedBox(height: RwSpace.s8),
+                Text(message, style: RwType.body.copyWith(color: c.textMuted)),
+                if (content != null) ...[const SizedBox(height: RwSpace.s24), content!],
+                const SizedBox(height: RwSpace.s24),
+                // Phone width: stack full-width buttons, confirm first; side by side when wide.
+                LayoutBuilder(
+                  builder: (context, box) => box.maxWidth < 400
+                      ? Column(
+                          children: [
+                            confirm,
+                            const SizedBox(height: RwSpace.s12),
+                            cancel,
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(child: cancel),
+                            const SizedBox(width: RwSpace.s12),
+                            Expanded(child: confirm),
+                          ],
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

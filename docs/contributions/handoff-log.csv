@@ -15,3 +15,7 @@ date,member,message,paths,commit
 2026-10-20,"Carl Ernest Santos","chore(deploy): Render Blueprint for the API and the deploy guide (#39)","render.yaml docs/SETUP-GUIDE.md",829c817
 2026-10-20,"Carl Ernest Santos","feat(api): public stats endpoint for the landing stats bar (#40)","api/src/controllers/miscController.js api/src/routes/index.js api/src/services/statsService.js api/tests/api.test.js docs/API.md",6e2ebed
 2026-10-20,"Pauline Lapuz","feat(web): landing stats, hotlines, FAQ, QR; About, 404 and 500 pages; log-out confirm (#40)","web/",162e69d
+2026-10-21,"Pauline Lapuz","feat(web): GSAP scroll motion on the public pages: road-and-pin hero, reveals, count-ups, FAQ chat (#41)","web/package.json web/package-lock.json web/src/lib/motion.js web/src/lib/useReveals.js web/src/layouts/PublicLayout.jsx web/src/pages/public",b683fcd
+2026-10-21,"Pauline Lapuz","feat(web): subtle admin motion: count-ups, chart draw, row, dialog, menu and toast entrances (#41)","web/src",150d5e4
+2026-10-21,"Carl Ernest Santos","feat(api): assigning requires a Verified report; officers no longer review or verify (#30)","api/src/config/constants.js api/src/controllers/adminReportController.js api/tests/api.test.js docs/API.md",bef2cc9
+2026-10-21,"Carl Ernest Santos","feat(api): send email through the Brevo API over HTTPS; remove nodemailer, Resend and Gmail SMTP (#37)","api/src/config/mailer.js api/src/services/notificationService.js api/src/services/statusService.js api/tests/mailer.test.js api/.env.example api/package.json api/package-lock.json docs/API.md",2c9a985

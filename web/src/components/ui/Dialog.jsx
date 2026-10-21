@@ -20,7 +20,7 @@ export default function Dialog({ open, onClose, title, description, children, ac
       {/* Backdrop */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-brand-navy/40"
+        className="absolute inset-0 bg-brand-navy/40 transition-opacity duration-150 starting:opacity-0"
         onClick={onClose}
       />
       <div
@@ -30,7 +30,8 @@ export default function Dialog({ open, onClose, title, description, children, ac
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`relative flex max-h-full w-full max-w-[480px] flex-col gap-6 overflow-y-auto rounded-rw-md bg-surface-white p-6 shadow-rw-lg sm:p-8 ${className}`}
+        // A4: the panel fades and grows from 96% (just fades with reduce motion).
+        className={`relative flex max-h-full w-full max-w-[480px] flex-col gap-6 overflow-y-auto rounded-rw-md bg-surface-white p-6 shadow-rw-lg transition-[opacity,scale] duration-200 ease-out starting:scale-96 starting:opacity-0 motion-reduce:starting:scale-100 sm:p-8 ${className}`}
       >
         <div className="flex flex-col gap-2">
           <h2 id={titleId} className="type-h2 text-text-primary">
