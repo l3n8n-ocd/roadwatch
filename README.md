@@ -15,7 +15,7 @@ Build window: Oct 12-30, 2026 | Submission: Nov 2, 2026
 ## Stack
 
 React + Vite + Tailwind (web) | Flutter + Dart (mobile) | Node.js + Express (API) | MySQL (Aiven) |
-OpenStreetMap (Leaflet / flutter_map) + Nominatim | Cloudinary | Nodemailer + Gmail SMTP | GitHub Actions
+OpenStreetMap (Leaflet / flutter_map) + Nominatim | Cloudinary | Brevo email API (HTTPS) | GitHub Actions
 
 ## Folder map
 
