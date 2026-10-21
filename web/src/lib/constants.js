@@ -50,8 +50,9 @@ export function homePathFor(role) {
   return role === ROLES.ADMIN ? '/admin' : '/';
 }
 
-// Release APK (GitHub Actions on tag v*). Switch VITE_APK_URL to roadwatch-ph.me/app once the domain is live (#38).
-export const APK_URL = import.meta.env.VITE_APK_URL || 'https://github.com/l3n8n-ocd/roadwatch/releases/latest';
+// Release APK: mobile-ci attaches roadwatch.apk to a GitHub Release on each v* tag (#22), so this link
+// downloads the newest one directly. Switch VITE_APK_URL to roadwatch-ph.me/app once the domain is live (#38).
+export const APK_URL = import.meta.env.VITE_APK_URL || 'https://github.com/l3n8n-ocd/roadwatch/releases/latest/download/roadwatch.apk';
 
 // Project support address (#40). It works once the domain and its email forwarding exist (#38).
 export const SUPPORT_EMAIL = 'support@roadwatch-ph.me';
