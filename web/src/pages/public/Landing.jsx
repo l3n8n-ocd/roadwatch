@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import L from 'leaflet';
 import { Marker, useMap } from 'react-leaflet';
@@ -19,6 +19,10 @@ import { APK_URL, HOTLINES, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../../lib/cons
 import { formatDate } from '../../lib/format';
 import { cx } from '../../lib/cx';
 import { ON_DARK_FOCUS, SECTION, WRAP } from '../../lib/publicStyles';
+import useReveals from '../../lib/useReveals';
+import { DUR, EASE, MQ, countTo, gsap, onEnter, reveal, useGSAP } from '../../lib/motion';
+import HeroRoad from './HeroRoad';
+import useLandingMotion from './useLandingMotion';
 import heroStreet from '../../assets/images/hero-street.jpg';
 import pnpSeal from '../../assets/images/pnp-seal.png';
 import bfpSeal from '../../assets/images/bfp-seal.png';
@@ -119,26 +123,37 @@ const STATS = [
   { key: 'active_officers', label: 'Active traffic officers', icon: 'users' },
 ];
 
+const HEADLINE = 'See an accident? Help make the road safer.';
+
 export default function Landing() {
   const { hash, key } = useLocation();
+  const rootRef = useRef(null);
+  // Motion (#41): generic scroll reveals plus the landing's own sequences (hero, steps, FAQ...).
+  useReveals(rootRef);
+  useLandingMotion(rootRef);
 
   // Links such as "/#faq" (header, footer, other pages) scroll here once the section exists.
+  // Sections below move down when the stats and road updates arrive, so line up again once they settle.
   useEffect(() => {
-    if (!hash) return;
-    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
-    if (target) target.scrollIntoView({ block: 'start' });
+    if (!hash) return undefined;
+    const scroll = () => document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: 'start' });
+    scroll();
+    const timer = setTimeout(scroll, 600);
+    return () => clearTimeout(timer);
   }, [hash, key]);
 
   return (
     <PublicLayout>
-      <Hero />
-      <StatsBar />
-      <HowItWorks />
-      <PublicUpdates />
-      <SafetyTips />
-      <About />
-      <Faq />
-      <ClosingCta />
+      <div ref={rootRef}>
+        <Hero />
+        <StatsBar />
+        <HowItWorks />
+        <PublicUpdates />
+        <SafetyTips />
+        <About />
+        <Faq />
+        <ClosingCta />
+      </div>
     </PublicLayout>
   );
 }
@@ -148,21 +163,38 @@ export default function Landing() {
 function Hero() {
   return (
     <section
+      data-hero
       aria-labelledby="hero-title"
-      className="relative isolate overflow-hidden bg-brand-navy px-4 py-10 sm:px-8 lg:px-16 lg:py-20"
+      className="relative isolate overflow-hidden bg-brand-navy px-4 pt-10 pb-[72px] sm:px-8 lg:px-16 lg:py-20"
     >
-      <img src={heroStreet} alt="" className="absolute inset-0 -z-10 size-full object-cover opacity-15" />
-      <div className={cx(WRAP, 'flex items-center gap-16')}>
+      {/* Taller than the hero so the scroll parallax (P2) never shows an edge. */}
+      <img
+        data-hero-photo
+        src={heroStreet}
+        alt=""
+        className="absolute inset-x-0 top-0 -z-10 h-[115%] w-full object-cover opacity-15"
+      />
+      <div className={cx(WRAP, 'relative flex items-center gap-16')}>
         <div className="flex min-w-0 flex-1 flex-col items-start gap-6">
-          <p className="type-overline text-text-accent uppercase">Safer roads start with you</p>
+          <p data-hero-fade className="type-overline text-text-accent uppercase">
+            Safer roads start with you
+          </p>
+          {/* Words are wrapped so they can rise one after another (P1); the text reads as one heading. */}
           <h1 id="hero-title" className="type-display text-text-inverse lg:type-hero">
-            See an accident? Help make the road safer.
+            {HEADLINE.split(' ').map((word, index) => (
+              <Fragment key={index}>
+                {index > 0 && ' '}
+                <span data-hero-word className="inline-block">
+                  {word}
+                </span>
+              </Fragment>
+            ))}
           </h1>
-          <p className="type-body text-text-inverse-muted sm:type-body-lg">
+          <p data-hero-fade className="type-body text-text-inverse-muted sm:type-body-lg">
             Report road accidents everywhere, with the location and photos, then follow every status change
             <span className="max-sm:hidden"> until a traffic officer closes the case</span>.
           </p>
-          <div className="flex w-full flex-col items-start gap-4 sm:w-auto sm:flex-row sm:items-center">
+          <div data-hero-fade className="flex w-full flex-col items-start gap-4 sm:w-auto sm:flex-row sm:items-center">
             <Button href={APK_URL} variant="secondary" icon="download" className="max-sm:h-12 max-sm:w-full">
               Download the Android app
             </Button>
@@ -173,11 +205,14 @@ function Hero() {
               See how it works
             </a>
           </div>
-          <p className="type-body-sm text-text-inverse-muted max-sm:hidden">
+          <p data-hero-fade className="type-body-sm text-text-inverse-muted max-sm:hidden">
             Free Android app (APK). Reporters and traffic officers use the app; this website is for browsing and for
             administrators.
           </p>
-          <p className="flex w-full items-center gap-3 rounded-rw-md bg-brand-amber px-4 py-3 type-label text-text-primary sm:w-auto">
+          <p
+            data-hero-fade
+            className="flex w-full items-center gap-3 rounded-rw-md bg-brand-amber px-4 py-3 type-label text-text-primary sm:w-auto"
+          >
             <Icon name="alert-triangle" size={20} />
             <span>
               Someone hurt or in danger?{' '}
@@ -187,11 +222,12 @@ function Hero() {
               first<span className="max-sm:hidden">, then report</span>.
             </span>
           </p>
-          <p className="type-body-sm text-text-inverse-muted max-sm:hidden">
+          <p data-hero-fade className="type-body-sm text-text-inverse-muted max-sm:hidden">
             Browsing is open to everyone. Reporting and tracking happen in the RoadWatch mobile app with a free account.
           </p>
         </div>
         <ProductPreview />
+        <HeroRoad />
       </div>
     </section>
   );
@@ -201,8 +237,9 @@ function Hero() {
 function ProductPreview() {
   return (
     <div
+      data-hero-card
       aria-hidden="true"
-      className="hidden w-[440px] shrink-0 flex-col gap-4 rounded-rw-md bg-surface-white p-6 shadow-rw-lg lg:flex"
+      className="relative z-10 hidden w-[440px] shrink-0 flex-col gap-4 rounded-rw-md bg-surface-white p-6 shadow-rw-lg lg:flex"
     >
       <p className="type-overline text-text-blue uppercase">What reporters see in the app</p>
       <div className="flex flex-col gap-3 rounded-rw-md border border-border-subtle bg-surface-white p-4 text-text-primary shadow-rw-sm">
@@ -256,8 +293,36 @@ function StatsBar() {
   }, []);
 
   const { status, data } = state;
+  const sectionRef = useRef(null);
+
+  // P4: count up to the live values once the bar is 20% visible (reduced motion: final values at once).
+  useGSAP(
+    () => {
+      if (status !== 'ready') return;
+      const mm = gsap.matchMedia();
+      mm.add(MQ.motion, () => {
+        const q = gsap.utils.selector(sectionRef);
+        q('[data-count]').forEach((el) => {
+          const to = Number(el.dataset.count);
+          el.textContent = numberFormat.format(0);
+          const tween = countTo(el, to, { format: (n) => numberFormat.format(Math.round(n)) });
+          tween.pause();
+          gsap.from(el.closest('[data-stat]').querySelector('svg'), {
+            scale: 0.8,
+            opacity: 0.4,
+            duration: DUR.medium,
+            ease: EASE.enter,
+            scrollTrigger: { ...onEnter(sectionRef.current, 'top 95%'), onEnter: () => tween.play() },
+          });
+        });
+      });
+      return () => mm.revert();
+    },
+    { scope: sectionRef, dependencies: [status] },
+  );
+
   return (
-    <section aria-labelledby="stats-title" className="bg-surface-white px-4 py-8 sm:px-8 lg:px-16 lg:py-12">
+    <section ref={sectionRef} aria-labelledby="stats-title" className="bg-surface-white px-4 py-8 sm:px-8 lg:px-16 lg:py-12">
       <div className={cx(WRAP, 'flex flex-col gap-3 lg:gap-4')}>
         <h2 id="stats-title" className="sr-only">
           RoadWatch in numbers
@@ -266,13 +331,23 @@ function StatsBar() {
           {STATS.map((stat) => {
             const value = data?.[stat.key];
             return (
-              <div key={stat.key} className="flex flex-col gap-2 rounded-rw-md bg-surface-light-gray p-4 lg:p-6">
+              <div key={stat.key} data-stat className="flex flex-col gap-2 rounded-rw-md bg-surface-light-gray p-4 lg:p-6">
                 <Icon name={stat.icon} size={24} className="text-text-blue max-lg:size-5" />
                 {/* Label first for screen readers; the number shows above it. */}
                 <div className="flex flex-col-reverse gap-2">
                   <dt className="type-body-sm text-text-muted lg:type-body">{stat.label}</dt>
-                  <dd className="type-display text-text-primary lg:type-stat">
-                    {status === 'ready' && value != null ? numberFormat.format(value) : '—'}
+                  <dd className="type-display text-text-primary tabular-nums lg:type-stat">
+                    {status === 'ready' && value != null ? (
+                      <>
+                        {/* The counting copy is hidden from screen readers; they read the final value. */}
+                        <span aria-hidden="true" data-count={value}>
+                          {numberFormat.format(value)}
+                        </span>
+                        <span className="sr-only">{numberFormat.format(value)}</span>
+                      </>
+                    ) : (
+                      '—'
+                    )}
                     {status === 'loading' && <span className="sr-only">Loading</span>}
                   </dd>
                 </div>
@@ -294,10 +369,11 @@ function StatsBar() {
 
 function SectionHeading({ id, title, children }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div data-reveal className="flex flex-col gap-2">
       <h2 id={id} className="type-h2 text-text-primary sm:type-h1">
         {title}
       </h2>
+      <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
       {children && <p className="type-body text-text-muted sm:type-body-lg">{children}</p>}
     </div>
   );
@@ -305,19 +381,22 @@ function SectionHeading({ id, title, children }) {
 
 function HowItWorks() {
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-light-gray')}>
+    <section id="how-it-works" aria-labelledby="how-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-light-gray')}>
       <div className={cx(WRAP, 'flex flex-col gap-6 lg:gap-10')}>
         <SectionHeading id="how-title" title="How RoadWatch works">
           Three steps from the roadside to a closed case.
         </SectionHeading>
-        <ol className="grid gap-6 md:grid-cols-3 md:gap-0">
+        <ol data-steps className="grid gap-6 md:grid-cols-3 md:gap-0">
           {STEPS.map((step, index) => (
-            <li key={step.title} className="flex gap-4 md:flex-col md:pr-8">
+            <li key={step.title} data-step className="flex gap-4 md:flex-col md:pr-8">
               <div className="flex shrink-0 items-center md:w-full" aria-hidden="true">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-navy type-label text-text-inverse md:size-14 md:type-h2">
+                <span
+                  data-step-dot
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-navy type-label text-text-inverse md:size-14 md:type-h2"
+                >
                   {index + 1}
                 </span>
-                {index < STEPS.length - 1 && <span className="hidden h-0.5 flex-1 bg-border-control md:block" />}
+                {index < STEPS.length - 1 && <span data-step-line className="hidden h-0.5 flex-1 bg-border-control md:block" />}
               </div>
               <div className="flex min-w-0 flex-col gap-1 md:gap-4">
                 <h3 className="flex items-center gap-2 type-h3 text-text-primary">
@@ -387,6 +466,7 @@ function PublicUpdates() {
   const [state, setState] = useState({ status: 'loading', updates: [] });
   const [expanded, setExpanded] = useState(false);
   const wide = useMediaQuery('(min-width: 768px)');
+  const sectionRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -416,8 +496,38 @@ function PublicUpdates() {
   const visible = showAll ? updates : updates.slice(0, 2);
   const canExpand = !wide && (updates.length > 2 || points.length > 0);
 
+  // P7: once records arrive, the map fades in, its pins drop one after another and the cards rise.
+  useGSAP(
+    () => {
+      if (status !== 'ready' || updates.length === 0) return;
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MQ.motion, reduce: MQ.reduce }, ({ conditions }) => {
+        const q = gsap.utils.selector(sectionRef);
+        const reduce = conditions.reduce;
+        const list = q('[data-update-list]')[0];
+        reveal(list?.children || [], { trigger: list, reduce });
+        const map = q('[data-update-map]')[0];
+        if (!map) return;
+        reveal(map, { trigger: map, reduce });
+        if (!reduce) {
+          gsap.from(q('.leaflet-marker-icon svg'), {
+            y: -16,
+            opacity: 0,
+            duration: 0.4,
+            ease: EASE.drop,
+            stagger: 0.07,
+            delay: 0.2,
+            scrollTrigger: onEnter(map),
+          });
+        }
+      });
+      return () => mm.revert();
+    },
+    { scope: sectionRef, dependencies: [status, showAll, updates.length] },
+  );
+
   return (
-    <section id="public-updates" aria-labelledby="updates-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-white')}>
+    <section ref={sectionRef} id="public-updates" aria-labelledby="updates-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-white')}>
       <div className={cx(WRAP, 'flex flex-col gap-6 lg:gap-8')}>
         <SectionHeading id="updates-title" title="Public road updates">
           <span className="max-sm:hidden">
@@ -456,14 +566,16 @@ function PublicUpdates() {
           <div className="flex flex-col gap-4">
             <div className="grid items-start gap-6 lg:grid-cols-[560px_1fr] lg:gap-8">
               {showAll && points.length > 0 && (
-                <MapView label="Map of verified road updates. The list of records carries the same information." zoom={12}>
-                  {points.map((point, index) => (
-                    <Marker key={`${point[0]}-${point[1]}-${index}`} position={point} icon={UPDATE_PIN} keyboard={false} />
-                  ))}
-                  <FitToPins points={points} />
-                </MapView>
+                <div data-update-map>
+                  <MapView label="Map of verified road updates. The list of records carries the same information." zoom={12}>
+                    {points.map((point, index) => (
+                      <Marker key={`${point[0]}-${point[1]}-${index}`} position={point} icon={UPDATE_PIN} keyboard={false} />
+                    ))}
+                    <FitToPins points={points} />
+                  </MapView>
+                </div>
               )}
-              <ul aria-label="Verified records" className={cx('flex flex-col gap-4', points.length === 0 && 'lg:col-span-2')}>
+              <ul data-update-list aria-label="Verified records" className={cx('flex flex-col gap-4', points.length === 0 && 'lg:col-span-2')}>
                 {visible.map((update) => (
                   <li
                     key={update.report_id}
@@ -508,13 +620,13 @@ function PublicUpdates() {
 
 function SafetyTips() {
   return (
-    <section id="safety-tips" aria-labelledby="tips-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-light-gray')}>
+    <section id="safety-tips" aria-labelledby="tips-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-light-gray')}>
       <div className={cx(WRAP, 'grid items-start gap-8 lg:grid-cols-[1fr_420px] lg:gap-16')}>
         <div className="flex min-w-0 flex-col gap-4 lg:gap-8">
           <SectionHeading id="tips-title" title="Road safety tips">
             Road safety starts with awareness. Follow traffic rules, avoid distracted driving and keep a safe distance.
           </SectionHeading>
-          <ul>
+          <ul data-reveal-left>
             {TIPS.map((tip) => (
               <li key={tip.title} className="flex items-start gap-4 border-b border-border-subtle py-4 sm:gap-5 sm:py-5">
                 <span
@@ -547,7 +659,7 @@ const AGENCIES = [
 function EmergencyCard() {
   const onDarkLink = cx('rounded-rw-sm text-text-inverse underline underline-offset-2', ON_DARK_FOCUS);
   return (
-    <aside aria-labelledby="emergency-title" className="flex flex-col gap-3 rounded-rw-md bg-brand-navy p-6 sm:gap-4 sm:p-10">
+    <aside data-reveal aria-labelledby="emergency-title" className="flex flex-col gap-3 rounded-rw-md bg-brand-navy p-6 sm:gap-4 sm:p-10">
       <p className="type-overline text-text-accent uppercase">In an emergency</p>
       <h3 id="emergency-title" className="type-h1 text-text-inverse">
         <a href={HOTLINES.emergency.tel} className={onDarkLink}>
@@ -574,7 +686,9 @@ function EmergencyCard() {
                   href={line.tel}
                   className={cx('flex min-h-12 items-center gap-3 rounded-rw-sm text-text-inverse sm:min-h-11', ON_DARK_FOCUS)}
                 >
-                  <Icon name="phone" size={18} />
+                  <span data-ring className="inline-flex">
+                    <Icon name="phone" size={18} />
+                  </span>
                   <span className="type-body underline underline-offset-2">
                     <span className="sr-only">Call {agency.code} </span>
                     {line.number}
@@ -593,12 +707,13 @@ function EmergencyCard() {
 
 function About() {
   return (
-    <section id="about" aria-labelledby="about-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-white')}>
+    <section id="about" aria-labelledby="about-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-white')}>
       <div className={cx(WRAP, 'grid items-start gap-8 lg:grid-cols-2 lg:gap-16')}>
-        <div className="flex flex-col gap-4">
+        <div data-reveal className="flex flex-col gap-4">
           <h2 id="about-title" className="type-h2 text-text-primary sm:type-h1">
             About RoadWatch
           </h2>
+          <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
           <p className="type-body text-text-primary sm:type-body-lg">
             RoadWatch is a web and mobile road accident reporting system made by BSIT 3I-G1 students at Bulacan State
             University for IT 305 Advanced Web Development. It makes it easier for the public to submit accident
@@ -614,9 +729,9 @@ function About() {
             <Icon name="chevron-right" size={20} />
           </Link>
         </div>
-        <div className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 sm:p-8">
+        <div data-reveal className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 sm:p-8">
           <h3 className="type-h3 text-text-primary">What RoadWatch supports</h3>
-          <ul className="flex flex-col gap-4">
+          <ul data-ticks className="flex flex-col gap-4">
             {SUPPORTS.map((item) => (
               <li key={item} className="flex items-center gap-3 type-body text-text-primary">
                 <Icon name="check-circle" size={20} className="text-text-success" />
@@ -636,14 +751,25 @@ function Faq() {
   const [expanded, setExpanded] = useState(false);
   const listId = useId();
   const hidden = FAQ.length - FAQ_PREVIEW;
+  const listRef = useRef(null);
+
+  // Phones: "Show more" reveals the next questions with the same fade and rise (P10).
+  useGSAP(
+    () => {
+      if (!expanded) return;
+      reveal(gsap.utils.selector(listRef)('[data-faq-extra]'), { reduce: window.matchMedia(MQ.reduce).matches });
+    },
+    { scope: listRef, dependencies: [expanded] },
+  );
   return (
-    <section id="faq" aria-labelledby="faq-title" className={cx(SECTION, 'scroll-mt-4 bg-surface-light-gray')}>
+    <section id="faq" aria-labelledby="faq-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-light-gray')}>
       <div className={cx(WRAP, 'grid items-start gap-4 lg:grid-cols-[400px_1fr] lg:gap-16')}>
-        <div className="flex flex-col gap-4">
+        <div data-reveal className="flex flex-col gap-4">
           <p className="type-overline text-text-blue uppercase">FAQ</p>
           <h2 id="faq-title" className="type-h2 text-text-primary sm:type-h1">
             Questions, answered
           </h2>
+          <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
           <p className="type-body text-text-muted sm:type-body-lg">
             Quick answers about reporting, tracking and privacy.
             <span className="max-lg:hidden"> Still stuck? Email the RoadWatch team.</span>
@@ -652,14 +778,16 @@ function Faq() {
         </div>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 rounded-rw-md bg-surface-white p-4 shadow-rw-sm sm:p-8">
-          <dl id={listId} className="flex flex-col gap-4">
+          <dl ref={listRef} id={listId} className="flex flex-col gap-4">
             {FAQ.map((item, index) => (
               <div
                 key={item.q}
+                data-faq-pair
+                data-faq-extra={index >= FAQ_PREVIEW || undefined}
                 className={cx('flex flex-col gap-2', !expanded && index >= FAQ_PREVIEW && 'max-md:hidden')}
               >
                 <dt className="flex justify-end">
-                  <span className="max-w-[488px] rounded-rw-md rounded-br-[4px] bg-brand-navy px-4 py-3 type-body text-text-inverse">
+                  <span data-faq-q className="max-w-[488px] rounded-rw-md rounded-br-[4px] bg-brand-navy px-4 py-3 type-body text-text-inverse">
                     {item.q}
                   </span>
                 </dt>
@@ -670,7 +798,17 @@ function Faq() {
                   >
                     RW
                   </span>
-                  <span className="max-w-[600px] rounded-rw-md rounded-tl-[4px] bg-surface-light-gray px-4 py-3 type-body text-text-primary">
+                  {/* "Typing" bubble shown for 400 ms before the answer (P10); decorative. */}
+                  <span
+                    data-faq-typing
+                    aria-hidden="true"
+                    className="hidden items-center gap-1.5 rounded-rw-md rounded-tl-[4px] bg-surface-light-gray px-4 py-4"
+                  >
+                    <span className="size-2 rounded-full bg-text-muted" />
+                    <span className="size-2 rounded-full bg-text-muted opacity-60" />
+                    <span className="size-2 rounded-full bg-text-muted opacity-30" />
+                  </span>
+                  <span data-faq-a className="max-w-[600px] rounded-rw-md rounded-tl-[4px] bg-surface-light-gray px-4 py-3 type-body text-text-primary">
                     {item.a}
                   </span>
                 </dd>
@@ -720,7 +858,7 @@ function ClosingCta() {
   return (
     <section aria-labelledby="cta-title" className="bg-surface-navy-subtle px-4 py-10 sm:px-8 lg:px-16 lg:py-14">
       <div className={cx(WRAP, 'flex flex-col gap-6 md:flex-row md:items-center md:gap-8')}>
-        <div className="flex min-w-0 flex-1 flex-col gap-2 text-text-primary">
+        <div data-reveal className="flex min-w-0 flex-1 flex-col gap-2 text-text-primary">
           <h2 id="cta-title" className="type-h2">
             Need to report an accident?
           </h2>
@@ -729,7 +867,7 @@ function ClosingCta() {
             report in about two minutes.
           </p>
         </div>
-        <div className="flex items-center gap-6">
+        <div data-reveal className="flex items-center gap-6">
           <Button href={APK_URL} icon="download" className="max-sm:h-12 max-sm:w-full">
             Download the Android app
           </Button>
@@ -738,7 +876,7 @@ function ClosingCta() {
           <div aria-hidden="true" className="hidden items-center gap-6 md:flex">
             <span className="type-body-sm text-text-muted">or</span>
             <div className="flex flex-col items-center gap-2">
-              <div className="flex size-28 items-center justify-center rounded-rw-sm border-2 border-dashed border-border-control bg-surface-white type-caption text-text-muted">
+              <div data-qr className="flex size-28 items-center justify-center rounded-rw-sm border-2 border-dashed border-border-control bg-surface-white type-caption text-text-muted">
                 QR code
               </div>
               <span className="type-caption text-text-primary">Scan to download</span>
