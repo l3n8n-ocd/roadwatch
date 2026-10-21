@@ -63,6 +63,32 @@ async function publicStats() {
   };
 }
 
+// Public road updates (#23): verified records whose accident happened in the last 7 days.
+// Only these fields leave the server: no reporter, contact details, description, remarks or photos.
+const UPDATE_DAYS = 7;
+const UPDATE_LIMIT = 20;
+async function publicUpdates() {
+  const since = new Date(Date.now() - UPDATE_DAYS * 86400000).toISOString().slice(0, 10);
+  const rows = await Report.findAll({
+    where: { record_type: 'verified_record', accident_date: { [Op.gte]: since } },
+    attributes: ['report_id', 'accident_date', 'accident_time', 'accident_location', 'latitude', 'longitude', 'report_status'],
+    include: [{ model: AccidentType, as: 'accidentType', attributes: ['type_name'] }],
+    order: [['accident_date', 'DESC'], ['accident_time', 'DESC'], ['report_id', 'DESC']],
+    limit: UPDATE_LIMIT,
+  });
+  return rows.map((r) => ({
+    report_id: r.report_id,
+    accident_type: { type_name: r.accidentType?.type_name || 'Other' },
+    accident_date: r.accident_date,
+    accident_time: r.accident_time,
+    accident_location: r.accident_location,
+    latitude: r.latitude === null ? null : Number(r.latitude),
+    longitude: r.longitude === null ? null : Number(r.longitude),
+    report_status: r.report_status,
+    record_type: 'verified_record',
+  }));
+}
+
 // FR-12: daily, weekly, monthly or annual summary around a given date.
 function periodRange(period, dateStr) {
   const d = new Date(`${dateStr}T00:00:00Z`);
@@ -99,4 +125,4 @@ async function periodSummary(period, dateStr) {
   };
 }
 
-module.exports = { dashboardStats, publicStats, periodSummary, periodRange };
+module.exports = { dashboardStats, publicStats, publicUpdates, periodSummary, periodRange };

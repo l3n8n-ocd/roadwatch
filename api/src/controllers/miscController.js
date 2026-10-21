@@ -1,8 +1,8 @@
 const { Notification, AccidentType } = require('../models');
-const { dashboardStats, publicStats: countPublicStats, periodSummary } = require('../services/statsService');
+const { dashboardStats, publicStats: countPublicStats, publicUpdates: listPublicUpdates, periodSummary } = require('../services/statsService');
 const { buildWhere } = require('../services/reportService');
 const { csvBuffer, pdfBuffer } = require('../services/exportService');
-const { recordAudit } = require('../services/auditService');
+const { recordAudit, listAuditLogs } = require('../services/auditService');
 const HttpError = require('../utils/httpError');
 
 // ----- notifications -----
@@ -39,6 +39,19 @@ async function publicStats(req, res) {
   res.json({ success: true, data: await countPublicStats() });
 }
 
+// Public road updates on the landing page (#23).
+async function publicUpdates(req, res) {
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json({ success: true, data: await listPublicUpdates() });
+}
+
+// ----- action log, all staff (admin, #27) -----
+async function auditLogs(req, res) {
+  const { user_id: userId, ...query } = req.validQuery;
+  const result = await listAuditLogs({ ...query, userId, staffOnly: true });
+  res.json({ success: true, ...result });
+}
+
 // ----- dashboard and exports (admin) -----
 async function stats(req, res) {
   res.json({ success: true, data: await dashboardStats() });
@@ -58,4 +71,4 @@ async function exportPdf(req, res) {
   res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="roadwatch-reports.pdf"' }).send(buf);
 }
 
-module.exports = { publicStats, listNotifications, markRead, markAllRead, listTypes, createType, stats, summary, exportCsv, exportPdf };
+module.exports = { publicStats, publicUpdates, auditLogs, listNotifications, markRead, markAllRead, listTypes, createType, stats, summary, exportCsv, exportPdf };

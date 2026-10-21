@@ -228,6 +228,67 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.equal((await call('GET', '/exports/reports.csv', { token: rep.token })).status, 403);
     });
 
+    await t.test('public road updates show verified records only, without reporter data (#23)', async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const fresh = (await call('POST', '/reports', { token: rep.token, body: report({ accident_date: today, accident_location: 'Public update road' }) })).body.data.report_id;
+      const pending = (await call('POST', '/reports', { token: rep.token, body: report({ accident_date: today, accident_location: 'Not verified yet' }) })).body.data.report_id;
+      await call('PATCH', `/admin/reports/${fresh}/status`, { token: admin.token, body: { status: 'Verified' } });
+      const u = await call('GET', '/public/updates');
+      assert.equal(u.status, 200);
+      const item = u.body.data.find((x) => x.report_id === fresh);
+      assert.ok(item, 'a verified record from today is listed');
+      assert.ok(!u.body.data.some((x) => x.report_id === pending), 'unverified submissions are not listed');
+      assert.ok(u.body.data.every((x) => x.record_type === 'verified_record'));
+      assert.deepEqual(Object.keys(item).sort(), ['accident_date', 'accident_location', 'accident_time', 'accident_type', 'latitude', 'longitude', 'record_type', 'report_id', 'report_status']);
+      assert.equal(typeof item.latitude, 'number');
+      assert.ok(item.accident_type.type_name);
+    });
+
+    await t.test('own profile and password (#25)', async () => {
+      assert.equal((await call('PATCH', '/auth/me', { body: { full_name: 'No Token' } })).status, 401);
+      assert.equal((await call('PATCH', '/auth/me', { token: rep.token, body: { full_name: 'X' } })).status, 400);
+      const p = await call('PATCH', '/auth/me', { token: rep.token, body: { full_name: 'Rep Renamed', contact_phone: '09171234567', contact_email: `taken.${run}@test.local`, role: 'Administrator' } });
+      assert.equal(p.status, 200);
+      assert.equal(p.body.data.user.full_name, 'Rep Renamed');
+      assert.equal(p.body.data.user.contact_phone, '09171234567');
+      assert.equal(p.body.data.user.contact_email, rep.email, 'email cannot be changed here');
+      assert.equal(p.body.data.user.role, 'Reporter', 'role cannot be changed here');
+      const cleared = await call('PATCH', '/auth/me', { token: rep.token, body: { full_name: 'Rep Renamed', contact_phone: null } });
+      assert.equal(cleared.body.data.user.contact_phone, null);
+
+      const wrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: 'not-it-123', new_password: 'newpassword456' } });
+      assert.equal(wrong.status, 400, 'a wrong current password is 400, not 401, so the apps keep the session');
+      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'short' } })).status, 400);
+      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: pw } })).status, 400);
+      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'newpassword456' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw, platform: 'mobile' } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'newpassword456', platform: 'mobile' } })).status, 200);
+    });
+
+    await t.test('action log: own actions for anyone, all staff for admins only (#27)', async () => {
+      const mine = await call('GET', '/auth/me/activity?period=all', { token: rep.token });
+      assert.equal(mine.status, 200);
+      assert.ok(mine.body.pagination.total >= 3);
+      assert.ok(mine.body.data.every((row) => row.user_id === mine.body.data[0].user_id));
+      const actions = mine.body.data.map((row) => row.action_taken);
+      assert.ok(actions.includes('account.password_changed') && actions.includes('account.profile_updated'));
+      const group = await call('GET', '/auth/me/activity?action=account', { token: rep.token });
+      assert.ok(group.body.data.length >= 2 && group.body.data.every((row) => row.action_taken.startsWith('account.')));
+      assert.equal((await call('GET', '/auth/me/activity?period=1y', { token: rep.token })).status, 400);
+
+      assert.equal((await call('GET', '/admin/audit-logs', { token: rep.token })).status, 403);
+      assert.equal((await call('GET', '/admin/audit-logs', { token: officer.token })).status, 403);
+      const all = await call('GET', `/admin/audit-logs?user_id=${admin.user.user_id}&action=user&period=7d&limit=50`, { token: admin.token });
+      assert.equal(all.status, 200);
+      assert.ok(all.body.data.every((row) => row.user_id === admin.user.user_id && row.action_taken.startsWith('user.')));
+      assert.equal(all.body.data[0].user.role, 'Administrator');
+      const everyone = await call('GET', '/admin/audit-logs?period=all&limit=100', { token: admin.token });
+      assert.ok(everyone.body.data.every((row) => row.user.role !== 'Reporter'), 'All staff leaves out reporters');
+      assert.ok(all.body.data.some((row) => row.action_details.target_name === 'Officer One'), 'user ids in details get names');
+      const assigned = await call('GET', `/admin/audit-logs?action=report.status_changed&user_id=${admin.user.user_id}&limit=100`, { token: admin.token });
+      assert.ok(assigned.body.data.some((row) => row.action_details.to === 'Assigned' && row.action_details.officer_name === 'Officer One'));
+    });
+
     await t.test('photo upload validates input (Cloudinary itself is not called)', async () => {
       const none = await fetch(`${base}/reports/${reportId}/photos`, { method: 'POST', headers: { Authorization: `Bearer ${rep.token}` }, body: new FormData() });
       assert.equal(none.status, 400);
