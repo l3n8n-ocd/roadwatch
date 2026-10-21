@@ -1,4 +1,4 @@
-# RoadWatch GitHub Issues Checklist (updated Oct 13)
+# RoadWatch GitHub Issues Checklist (updated Oct 21: email issue #18 uses the Brevo API, #37)
 
 Owners are proposed. Fixed dates: Oct 12 open, Oct 30 close, Nov 2 submission. Other dates are internal checkpoints.
 
@@ -160,12 +160,11 @@ Use either: paste each block as a GitHub issue, or run `bash create-issues.sh` o
 - [ ] Status history
 - [ ] Notifications screen
 
-### 18. Email notifications with Nodemailer and Gmail SMTP
+### 18. Email notifications with the Brevo API
 **Owner:** Carl | **Due:** Oct 25
 
-- [ ] Use src/config/mailer.js with MAIL_PROVIDER=smtp (Gmail app password)
-- [ ] Set SMTP_USER, SMTP_PASS (Gmail app password) and MAIL_FROM
-- [ ] Resend is optional and only emails other people after you verify a domain
+- [ ] Use src/config/mailer.js with MAIL_PROVIDER=brevo (HTTPS API; Render's free tier blocks SMTP, #37)
+- [ ] Set BREVO_API_KEY and MAIL_FROM (an address on roadwatch-ph.me, domain authenticated in Brevo)
 - [ ] Send on submission and on status change
 - [ ] Save a row in notifications
 
@@ -194,7 +193,7 @@ Use either: paste each block as a GitHub issue, or run `bash create-issues.sh` o
 - [ ] Aiven MySQL: set DB_SSL=true and the CA certificate in the host environment
 - [ ] Web on Vercel (root folder web) with VITE_API_URL
 - [ ] Set all env vars from .env.example on the host
-- [ ] Confirm MAIL_PROVIDER=smtp and the Gmail app password are set on Render
+- [ ] Confirm MAIL_PROVIDER=brevo, BREVO_API_KEY and MAIL_FROM are set on Render
 - [ ] Open the API a few minutes before any demo (free tiers sleep)
 
 ### 22. Build the release APK
