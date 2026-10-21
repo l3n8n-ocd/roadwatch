@@ -159,6 +159,8 @@ test('database-backed API flow', { skip }, async (t) => {
       const mine = await call('GET', '/officer/reports', { token: officer.token });
       assert.equal(mine.body.data[0].report_id, reportId);
       assert.ok(mine.body.data[0].reporter.contact_email, 'assigned officer may see reporter contact');
+      const detail = await call('GET', `/officer/reports/${reportId}`, { token: officer.token });
+      assert.ok(detail.body.data.statusHistory.every((h) => h.changedBy.role.role_name), 'history names the role of each actor');
       const r = await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'In Progress', remarks: 'On site' } });
       assert.equal(r.body.data.report_status, 'In Progress');
       assert.equal((await call('PATCH', `/officer/reports/${reportId}`, { token: officer.token, body: { status: 'Rejected' } })).status, 400);

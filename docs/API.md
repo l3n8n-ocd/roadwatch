@@ -48,7 +48,7 @@ Values that must match the database exactly:
 | Method and path | Body | Notes |
 |---|---|---|
 | GET `/officer/reports` | same filters as the admin list | Only reports assigned to me |
-| GET `/officer/reports/:id` | | Includes reporter contact because it is assigned to me |
+| GET `/officer/reports/:id` | | Includes reporter contact because it is assigned to me. `statusHistory[].changedBy` is `{ full_name, role: { role_name } }` (also on the other report detail endpoints). |
 | PATCH `/officer/reports/:id` | `status?` one of Additional Information Required, In Progress, Resolved/Closed; `remarks?` (at least one) | Officers cannot review, verify, assign or reject (#30) |
 
 ## Administrator
