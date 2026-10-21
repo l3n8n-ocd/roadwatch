@@ -1,6 +1,6 @@
 # RoadWatch motion spec (decision #41)
 
-Status: **draft for approval** (Oct 20, 2026). Figma key frames: page "Motion (#41)" (node IDs in `figma-index.md`).
+Status: **approved and coded** (Oct 21, 2026: hero 2.2 s and the emergency phone ring kept; header shrinks only). Figma key frames: page "Motion (#41)" (node IDs in `figma-index.md`).
 
 Goal: the public website feels alive while scrolling, the admin dashboard feels responsive, and the app feels smooth,
 without slowing anyone down. RoadWatch is a safety service, so motion is **calm, short and purposeful**: it shows where
@@ -69,7 +69,7 @@ WCAG 2.2.2); no motion delays a button, link or form from being usable; content 
 | A1 | Summary cards | On first load: rise with stagger (70 ms); numbers count up (700 ms). On Refresh: numbers tween from the old value to the new one, no rise. |
 | A2 | Charts | Trend line draws left to right (600 ms); type bars grow from 0 width (stagger 50 ms). Uses GSAP on the chart SVG, or Recharts' own animation where simpler. |
 | A3 | Tables and lists | First 8 rows fade in with stagger (40 ms) on first load and after a filter change. |
-| A4 | Dialogs and menus | Dialog: backdrop fades (150 ms), panel scales 0.96 → 1 and fades (200 ms). User menu: fades and slides 4 px. |
+| A4 | Dialogs and menus (CSS `@starting-style` entrances, also used for A2 bars, A3 rows and A5 toasts) | Dialog: backdrop fades (150 ms), panel scales 0.96 → 1 and fades (200 ms). User menu: fades and slides 4 px. |
 | A5 | Toasts | Slide up 16 px and fade in; fade out after 5 s. |
 | A6 | Page change | As P15. |
 
@@ -88,6 +88,6 @@ WCAG 2.2.2); no motion delays a button, link or form from being usable; content 
 
 ## 7. Performance and testing
 
-- GSAP core and ScrollTrigger load with the public pages only; the admin uses GSAP core only. Expected size: about 45 KB gzipped in total.
+- GSAP core and ScrollTrigger load with the public pages only; the admin uses GSAP core only. Measured: the web bundle grew by about 52 KB gzipped (GSAP core, ScrollTrigger, DrawSVG).
 - Use `ScrollTrigger.batch` for lists, `gsap.matchMedia()` for breakpoints and reduced motion, and clean up every animation when a page unmounts (`useGSAP` does this).
 - Test: Playwright at 1440 and 390 px (content visible after scrolling, no layout shift), with reduced motion emulated, and with JavaScript animation failing (content must still show). Pauline checks it on a low-end Android phone and with "Remove animations" on.

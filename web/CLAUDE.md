@@ -58,6 +58,13 @@ src/
 - Landing section links are `/#how-it-works`, `/#public-updates`, `/#safety-tips`, `/#faq`; Landing scrolls to the hash.
 - Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.
 
+## Motion (#41, docs/ui-design/motion-spec.md)
+- `lib/motion.js`: GSAP + ScrollTrigger + DrawSVG, tokens (`DUR`, `EASE`), `reveal()`, `countTo()`, `useRefreshOnResize()`.
+  Everything goes through `gsap.matchMedia()`: reduced motion = 200 ms fades. Use `fromTo` with explicit end values.
+- Public pages: `useReveals(ref)` handles `data-reveal`, `data-reveal-list`, `data-reveal-left`, `data-heading-bar`,
+  `data-pop`; landing-only sequences live in `pages/public/useLandingMotion.js`; hero drawing in `HeroRoad.jsx`.
+- Admin: CSS `starting:` entrances (rows, bars, dialogs, menus, toasts) and `AnimatedNumber`; no scroll effects.
+
 ## Data and roles
 - The web is for Administrators only (#36). Reporters and Traffic Officers use the Android app; their old
   web screens (R0-R6, W5, officer W4) were removed on Oct 20 and live on the Figma Archive page.
