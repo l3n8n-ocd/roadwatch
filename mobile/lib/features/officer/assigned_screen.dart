@@ -13,7 +13,7 @@ import '../../routes.dart';
 ///
 /// GET /officer/reports returns only the reports assigned to this officer. They are few, so the
 /// app loads them in one request and filters by status on the phone. "All open" (the default) hides
-/// Resolved/Closed. Tab body hosted by HomeShell (no back button).
+/// Resolved/Closed and Rejected (issue #44). Tab body hosted by HomeShell (no back button).
 class AssignedTab extends StatefulWidget {
   const AssignedTab({super.key});
 
@@ -61,7 +61,7 @@ class _AssignedTabState extends State<AssignedTab> {
   }
 
   List<Report> get _visible => switch (_filter) {
-    _allOpen => _items.where((r) => r.status != Statuses.resolved).toList(),
+    _allOpen => _items.where((r) => r.status != Statuses.resolved && r.status != Statuses.rejected).toList(),
     _all => _items,
     _ => _items.where((r) => r.status == _filter).toList(),
   };
@@ -159,7 +159,7 @@ class _AssignedTabState extends State<AssignedTab> {
           icon: RwIcons.search,
           title: _filter == _allOpen ? 'No open reports' : 'No reports with this status',
           message: _filter == _allOpen
-              ? 'Every report assigned to you is Resolved/Closed.'
+              ? 'Every report assigned to you is Resolved/Closed or Rejected.'
               : 'Choose another status to see the rest of your reports.',
           actionLabel: 'Show all assigned to me',
           secondaryAction: true,

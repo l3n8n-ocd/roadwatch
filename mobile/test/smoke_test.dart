@@ -140,6 +140,28 @@ void main() {
       expect(await api.client.tokens.readToken(), isNull);
     });
 
+    test('maps the API ACCOUNT_DEACTIVATED answer to "Account deactivated" (issue #40)', () async {
+      final deactivated = ApiException.fromResponse(
+        Response(
+          requestOptions: RequestOptions(path: '/auth/login'),
+          statusCode: 403,
+          data: {
+            'success': false,
+            'error': 'This account was deactivated. Contact the RoadWatch administrator.',
+            'details': {'code': 'ACCOUNT_DEACTIVATED'},
+          },
+        ),
+      );
+      final api = FakeApi(loginError: deactivated);
+      final auth = AuthProvider(api);
+      await expectLater(
+        auth.login(email: 'juan@example.com', password: 'secret123'),
+        throwsA(isA<AuthFailure>().having((f) => f.title, 'title', 'Account deactivated')),
+      );
+      expect(auth.isSignedIn, isFalse);
+      expect(await api.client.tokens.readToken(), isNull);
+    });
+
     test('maps 401 to the Figma "Couldn\'t log in" message', () async {
       final auth = AuthProvider(
         FakeApi(
