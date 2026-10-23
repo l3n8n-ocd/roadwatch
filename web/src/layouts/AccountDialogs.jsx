@@ -22,11 +22,23 @@ function apiErrorText(err) {
   return err?.message || 'Something went wrong. Please try again.';
 }
 
+// A 400 from the API puts the message for each field in err.details ({ current_password: ['...'] }).
+// Returns them under the form's own field names, e.g. { current: 'Your current password is incorrect.' } (issue #43).
+function fieldErrorsFrom(err, fieldsByApiName) {
+  const found = {};
+  Object.entries(fieldsByApiName).forEach(([apiName, field]) => {
+    const message = err?.details?.[apiName];
+    if (Array.isArray(message) && message[0]) found[field] = message[0];
+  });
+  return found;
+}
+
 export function EditProfileDialog({ open, onClose, onSaved }) {
   const { user, setUser } = useAuth();
   const [fullName, setFullName] = useState(user?.full_name || '');
   const [phone, setPhone] = useState(user?.contact_phone || '');
   const [nameError, setNameError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [apiError, setApiError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -34,6 +46,7 @@ export function EditProfileDialog({ open, onClose, onSaved }) {
     setFullName(user?.full_name || '');
     setPhone(user?.contact_phone || '');
     setNameError('');
+    setPhoneError('');
     setApiError('');
     onClose();
   };
@@ -45,6 +58,7 @@ export function EditProfileDialog({ open, onClose, onSaved }) {
       return;
     }
     setNameError('');
+    setPhoneError('');
     setApiError('');
     setBusy(true);
     try {
@@ -54,7 +68,13 @@ export function EditProfileDialog({ open, onClose, onSaved }) {
       onSaved?.('Profile updated.');
       onClose();
     } catch (err) {
-      setApiError(apiErrorText(err));
+      const found = fieldErrorsFrom(err, { full_name: 'name', contact_phone: 'phone' });
+      if (found.name || found.phone) {
+        setNameError(found.name || '');
+        setPhoneError(found.phone || '');
+      } else {
+        setApiError(apiErrorText(err));
+      }
     } finally {
       setBusy(false);
     }
@@ -101,6 +121,7 @@ export function EditProfileDialog({ open, onClose, onSaved }) {
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
           helper="Only admins and your assigned officer can see it."
+          error={phoneError}
         />
         <ErrorMessage>{apiError}</ErrorMessage>
       </form>
@@ -139,7 +160,9 @@ export function ChangePasswordDialog({ open, onClose, onSaved }) {
       onSaved?.('Password changed.');
       close();
     } catch (err) {
-      setApiError(apiErrorText(err));
+      const found = fieldErrorsFrom(err, { current_password: 'current', new_password: 'next' });
+      if (Object.keys(found).length > 0) setErrors(found);
+      else setApiError(apiErrorText(err));
     } finally {
       setBusy(false);
     }

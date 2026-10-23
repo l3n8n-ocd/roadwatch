@@ -59,13 +59,12 @@ function AdminForm() {
         setMobileOnly(true);
         return;
       }
-      // 401 covers a wrong email or password and a deactivated account (same message on purpose).
-      if (err.status === 401) {
+      // 403 ACCOUNT_DEACTIVATED comes only after the right password (issue #40); 401 is a wrong email or password.
+      if (err.details?.code === 'ACCOUNT_DEACTIVATED') {
+        setBanner({ title: 'Account deactivated', body: 'This account can no longer sign in. Contact another RoadWatch administrator.' });
+      } else if (err.status === 401) {
         setErrors({ password: 'Check your password and try again.' });
-        setBanner({
-          title: "Couldn't log in",
-          body: `${err.message}. Deactivated accounts also can't log in; contact your administrator.`,
-        });
+        setBanner({ title: "Couldn't log in", body: 'Email or password is incorrect. Check both and try again.' });
       } else {
         setBanner({ title: "Couldn't log in", body: err.message });
       }
