@@ -38,6 +38,12 @@ function serialize(report, viewer) {
 
 const escapeLike = (s) => s.replace(/[\\%_]/g, '\\$&');
 
+// A Report ID as people type it: the code shown in the apps (RW-000004, rw4), #4 or plain 4 (issue #39).
+function reportIdFromSearch(text) {
+  const match = /^(?:rw-?|#)?(\d{1,9})$/i.exec(text.replace(/\s+/g, ''));
+  return match ? Number(match[1]) : null;
+}
+
 // FR-11: search and filter by date, location, status, accident type (plus record type and free text).
 function buildWhere(q = {}) {
   const where = {};
@@ -54,7 +60,8 @@ function buildWhere(q = {}) {
   if (q.q) {
     const like = `%${escapeLike(q.q)}%`;
     const or = [{ accident_location: { [Op.like]: like } }, { accident_description: { [Op.like]: like } }];
-    if (/^\d+$/.test(q.q)) or.push({ report_id: Number(q.q) });
+    const reportId = reportIdFromSearch(q.q);
+    if (reportId) or.push({ report_id: reportId });
     where[Op.and] = [{ [Op.or]: or }];
   }
   return where;

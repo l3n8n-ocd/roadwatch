@@ -2,7 +2,7 @@
 
 **Owner:** Pauline (QA). **Status:** draft prepared Oct 21 from the built system for Pauline to review, then run
 on the deployed system around Oct 29 (#14, #23). Fill **Actual** and **Result** (Pass / Fail / Blocked) while
-testing. Log every Fail as a GitHub issue (label `bug`, link the test ID) and re-test it after the fix.
+testing. First run Oct 23: fixes in issues #39 to #44 (APK v1.0.1); re-test those rows after the fix is deployed. Log every Fail as a GitHub issue (label `bug`, link the test ID) and re-test it after the fix.
 
 ## Setup
 
@@ -33,8 +33,8 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 |---|---|---|---|---|
 | TC-02.1 | Mobile: log in as R1, then Settings > Log out > confirm | Home opens; after Log out the login screen shows and the back button does not return to Home | | |
 | TC-02.2 | Mobile: wrong password | "Couldn't log in": "Email or password is incorrect. Check both and try again." No hint about which one was wrong | | |
-| TC-02.3 | Web: sign in as A1 at `/staff/sign-in`, then Log out (confirm dialog) | Dashboard opens; after Log out, `/admin` redirects to sign-in | | |
-| TC-02.4 | Web: sign in as R1 (a reporter) | Refused with the "This account uses the mobile app" state and a Download the app link (WRONG_PLATFORM, #36) | | |
+| TC-02.3 | Web: sign in as A1 at `/staff/sign-in`, then Log out (confirm dialog) | Dashboard opens; Log out lands on the Administrator sign-in page; opening `/admin` again also goes to sign-in | | |
+| TC-02.4 | Web: sign in as R1 (a reporter) | Refused with the "This account uses the mobile app" message and a **Get the Android app** button (WRONG_PLATFORM, #36) | | |
 | TC-02.5 | Mobile: log in as A1 | Refused with "Use the RoadWatch website" | | |
 | TC-02.6 | Mobile: log in as O1 | Officer home opens on **Assigned** (tabs: Assigned, Notifications, Settings) | | |
 
@@ -84,12 +84,13 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | ID | Steps | Expected | Actual | Result |
 |---|---|---|---|---|
 | TC-08.1 | Mark as Verified (confirm dialog) | Status Verified; badge changes from Public submission to **Verified record** (`record_type = verified_record`) | | |
-| TC-08.2 | Try to assign an officer before verifying (another report) | Refused: "Verify the report first..." (#30) | | |
+| TC-08.2 | On a report that is **not yet Verified**, try to assign an officer (screenshot the refusal, not a later successful assignment) | Refused: "Verify the report first..." (#30) | | |
 | TC-08.3 | Set Additional Information Required with remarks (incomplete report) | R1 sees the status and the remarks on tracking | | |
 | TC-08.4 | Reject a duplicate with reason "Duplicate of RW-000xxx" | Reason is required (3+ characters); R1 sees Rejected and the reason | | |
 | TC-08.5 | Assign the verified report to O1 | Status Assigned; O1 gets a notification; O1 sees it in Assigned | | |
 | TC-08.6 | O1: open it, Update status > In Progress with remarks, then Resolved/Closed | Officer can only pick In Progress, Additional Information Required, Resolved/Closed; "Update saved" toast; admin and R1 see the new status | | |
 | TC-08.7 | O1: Open in Maps; Call on the reporter card | Maps app opens at the pin; dialer opens with R1's number | | |
+| TC-08.8 | Admin rejects a report assigned to O1; O1 opens it on the app | Not listed under "All open"; no Update status button, a note says the administrator rejected it (issue #44) | | |
 
 ### FR-09 Notifications (in-app and email)
 
@@ -110,7 +111,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 
 | ID | Steps | Expected | Actual | Result |
 |---|---|---|---|---|
-| TC-11.1 | Reports: search by Report ID, then by a word in the location | Matching rows only; count updates | | |
+| TC-11.1 | Reports: search by Report ID as shown (`RW-000004`, also `#4` or `4`), then by a word in the location | Matching rows only; count updates | | |
 | TC-11.2 | Filter by status, accident type, date range, location | Each filter narrows the list; combined filters work; Clear filters resets | | |
 | TC-11.3 | Filters with no match | "No reports match these filters" state | | |
 

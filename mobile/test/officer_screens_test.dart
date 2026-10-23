@@ -168,23 +168,28 @@ void main() {
     expect(find.text('My reports'), findsNothing);
   });
 
-  testWidgets('O1 hides Resolved/Closed under "All open"; the filter shows them', (tester) async {
+  testWidgets('O1 hides Resolved/Closed and Rejected under "All open"; the filter shows them', (
+    tester,
+  ) async {
     final api = _FakeApi()
       ..assigned = [
         Report.fromJson(_json(128, Statuses.assigned)),
         Report.fromJson(_json(124, Statuses.inProgress, type: 'Hit-and-run')),
         Report.fromJson(_json(101, Statuses.resolved, type: 'Vehicle rollover')),
+        Report.fromJson(_json(99, Statuses.rejected, type: 'Other')),
       ];
     await _pump(tester, const Scaffold(body: AssignedTab()), api);
     expect(find.text('2 open reports, newest first'), findsOneWidget);
     expect(find.text('RW-000101'), findsNothing);
+    expect(find.text('RW-000099'), findsNothing);
 
     await tester.tap(find.text('All open'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('All assigned to me').last);
     await tester.pumpAndSettle();
-    expect(find.text('3 reports, newest first'), findsOneWidget);
+    expect(find.text('4 reports, newest first'), findsOneWidget);
     expect(find.text('RW-000101'), findsOneWidget);
+    expect(find.text('RW-000099'), findsOneWidget);
   });
 
   testWidgets('O1 empty state when nothing is assigned', (tester) async {
@@ -232,6 +237,13 @@ void main() {
     expect(find.text('Update saved'), findsOneWidget);
     expect(find.text('Status is now In Progress. The reporter was notified.'), findsOneWidget);
     expect(find.text('New status'), findsNothing, reason: 'the sheet closed');
+  });
+
+  testWidgets('A Rejected report has no Update status button (issue #44)', (tester) async {
+    final api = _FakeApi()..detail = _json(99, Statuses.rejected);
+    await _pump(tester, const OfficerReportScreen(reportId: 99), api);
+    expect(find.widgetWithText(RwButton, 'Update status'), findsNothing);
+    expect(find.textContaining('An administrator rejected this report'), findsOneWidget);
   });
 
   testWidgets('O3 asks for a change before saving', (tester) async {

@@ -192,22 +192,30 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(RwSpace.s16, RwSpace.s12, RwSpace.s16, RwSpace.s16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      RwButton(
-                        label: 'Update status',
-                        icon: RwIcons.refresh,
-                        onPressed: () => _updateStatus(report),
-                      ),
-                      const SizedBox(height: RwSpace.s8),
-                      Text(
-                        'You can set In Progress, Additional Information Required or Resolved/Closed.',
-                        style: RwType.label.copyWith(color: c.textMuted),
-                      ),
-                    ],
-                  ),
+                  // A rejected report is closed for the officer; the API refuses updates too (issue #44).
+                  child: report.status == Statuses.rejected
+                      ? const RwMetaRow(
+                          icon: RwIcons.info,
+                          text:
+                              'An administrator rejected this report, so it can no longer be updated. '
+                              'Ask the administrator if it should be reopened.',
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            RwButton(
+                              label: 'Update status',
+                              icon: RwIcons.refresh,
+                              onPressed: () => _updateStatus(report),
+                            ),
+                            const SizedBox(height: RwSpace.s8),
+                            Text(
+                              'You can set In Progress, Additional Information Required or Resolved/Closed.',
+                              style: RwType.label.copyWith(color: c.textMuted),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),

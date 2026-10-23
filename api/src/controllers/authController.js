@@ -25,10 +25,14 @@ async function register(req, res) {
 async function login(req, res) {
   const { contact_email, password, platform } = req.body;
   const user = await User.scope('withPassword').findOne({ where: { contact_email }, include: [{ model: Role, as: 'role' }] });
-  // Same message for unknown email, wrong password and deactivated account, so nothing is leaked.
-  const ok = user && user.is_active && (await bcrypt.compare(password, user.password_hash));
+  // Same message for an unknown email and a wrong password, so nothing is leaked.
+  const ok = user && (await bcrypt.compare(password, user.password_hash));
   if (!ok) throw new HttpError(401, 'Invalid email or password');
-  // Checked only after the password, so the platform message never reveals whether an email exists.
+  // Deactivated and wrong-platform answers come only after the right password, so they never reveal
+  // whether an email exists (issue #40, Figma M0/Login/Deactivated).
+  if (!user.is_active) {
+    throw new HttpError(403, 'This account was deactivated. Contact the RoadWatch administrator.', { code: 'ACCOUNT_DEACTIVATED' });
+  }
   const role = user.role.role_name;
   const home = ROLE_PLATFORM[role];
   if (platform !== home) {

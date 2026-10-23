@@ -20,7 +20,7 @@ Values that must match the database exactly:
 | GET `/public/stats` | | Landing stats bar (#40): `{ reports_received, verified_records, cases_resolved, active_officers }`. Counts only, no personal data. Rate limited (60 a minute per IP, `PUBLIC_RATE_LIMIT`), `Cache-Control: max-age=60`. |
 | GET `/public/updates` | | Landing "Public road updates" (#23): up to 20 `verified_record` reports whose accident date is in the last 7 days, newest first. Each item: `report_id`, `accident_type: { type_name }`, `accident_date`, `accident_time`, `accident_location`, `latitude`, `longitude` (numbers or null), `report_status`, `record_type`. Never reporter or contact fields, description, remarks or photos. Same rate limit and cache as `/public/stats`. |
 | POST `/auth/register` | `full_name`, `contact_email`, `password` (8+), `contact_phone?` | Always a Reporter. Returns `{ user, token }`. |
-| POST `/auth/login` | `contact_email`, `password`, `platform` (`web` or `mobile`, required) | Returns `{ token, user: { user_id, full_name, contact_email, contact_phone, role } }`. Use `user.role` for the role-based redirect. Platforms (#36): Reporter and Traffic Officer sign in with `mobile`, Administrator with `web`. A correct password on the wrong platform returns **403** `{ success: false, error, details: { code: "WRONG_PLATFORM", platform } }`, where `details.platform` is the platform the account must use; it is written to the audit log as `auth.login_wrong_platform`. A wrong password always returns 401 first, so the platform message never reveals whether an email exists. A missing or unknown `platform` returns 400. |
+| POST `/auth/login` | `contact_email`, `password`, `platform` (`web` or `mobile`, required) | Returns `{ token, user: { user_id, full_name, contact_email, contact_phone, role } }`. Use `user.role` for the role-based redirect. Platforms (#36): Reporter and Traffic Officer sign in with `mobile`, Administrator with `web`. A correct password on the wrong platform returns **403** `{ success: false, error, details: { code: "WRONG_PLATFORM", platform } }`, where `details.platform` is the platform the account must use; it is written to the audit log as `auth.login_wrong_platform`. A correct password on a deactivated account returns **403** `details.code = "ACCOUNT_DEACTIVATED"` (#40), shown as "Account deactivated" in the apps. A wrong password or unknown email always returns 401 first, so neither message reveals whether an email exists. A missing or unknown `platform` returns 400. |
 | GET `/auth/me` | | Current user |
 | PATCH `/auth/me` | `full_name`, `contact_phone?` (string or `null` to clear) | Edit own profile (#25). Email and role cannot be changed here (extra fields are ignored). Returns `{ user }`. Audit: `account.profile_updated`. |
 | PATCH `/auth/me/password` | `current_password`, `new_password` (8+, different from the current one) | Change own password (#25). A wrong current password is **400** with `details.current_password` (not 401, so the apps keep the session). Rate limited like login. Existing tokens stay valid. Audit: `account.password_changed`. |
@@ -49,13 +49,13 @@ Values that must match the database exactly:
 |---|---|---|
 | GET `/officer/reports` | same filters as the admin list | Only reports assigned to me |
 | GET `/officer/reports/:id` | | Includes reporter contact because it is assigned to me. `statusHistory[].changedBy` is `{ full_name, role: { role_name } }` (also on the other report detail endpoints). |
-| PATCH `/officer/reports/:id` | `status?` one of Additional Information Required, In Progress, Resolved/Closed; `remarks?` (at least one) | Officers cannot review, verify, assign or reject (#30) |
+| PATCH `/officer/reports/:id` | `status?` one of Additional Information Required, In Progress, Resolved/Closed; `remarks?` (at least one) | Officers cannot review, verify, assign or reject (#30). A report the administrator Rejected returns **409** `details.code = "REPORT_REJECTED"` (#44); only an administrator can reopen it. |
 
 ## Administrator
 
 | Method and path | Body or query | Notes |
 |---|---|---|
-| GET `/admin/reports` | `status`, `accident_type_id`, `record_type`, `assigned_officer_id`, `date_from`, `date_to`, `location`, `q` (id, location or description text), `page`, `limit` | FR-11 search and filter |
+| GET `/admin/reports` | `status`, `accident_type_id`, `record_type`, `assigned_officer_id`, `date_from`, `date_to`, `location`, `q` (Report ID as `RW-000004`, `RW4`, `#4` or `4`, or location or description text, #39), `page`, `limit` | FR-11 search and filter |
 | GET `/admin/reports/:id` | | Full detail with history |
 | PATCH `/admin/reports/:id/status` | `status`, `remarks?`, `rejection_reason` (required when `Rejected`) | Not for `Assigned` (use assign). `Verified` sets `record_type = verified_record`. |
 | PATCH `/admin/reports/:id/assign` | `officer_id`, `remarks?` | Sets status `Assigned`. The report must be **Verified** first (#30), or already have an officer (re-assign); never Rejected or Resolved/Closed. The officer must be an active Traffic Officer. |
@@ -67,6 +67,6 @@ Values that must match the database exactly:
 | GET `/admin/audit-logs` | same as `/auth/me/activity`, plus `user_id?` | Action log, "All staff" view (#27): actions by Administrators and Traffic Officers (reporters left out); each row adds `user: { user_id, full_name, role }`. |
 | GET `/dashboard/stats` | | `cards` (total, pending, verified, closed), `by_status`, `by_type`, `trend` (last 30 days), `hotspots`, `map_points`, `recent` |
 | GET `/exports/summary` | `period` = daily, weekly, monthly or annual; `date?` (YYYY-MM-DD) | FR-12 summary JSON |
-| GET `/exports/reports.csv`, GET `/exports/reports.pdf` | same filters as the admin list | File download. Use `fetch` with the token and save the blob (a plain link cannot send the header). |
+| GET `/exports/reports.csv`, GET `/exports/reports.pdf` | same filters as the admin list | File download. Use `fetch` with the token and save the blob (a plain link cannot send the header). The PDF is a landscape A4 table (Report, date and time, type, location, injuries, status, record, reporter, officer) with the filters in the title and "Page X of Y" (#42); description, remarks and contact details are in the CSV. |
 
 Every status change writes `report_status_history`, `audit_logs` and an in-app notification (plus an email to the reporter when Brevo is configured, #37; an assigned officer is told in the app only). Rejection reasons are stored in `official_remarks` as `Rejected: <reason>`.

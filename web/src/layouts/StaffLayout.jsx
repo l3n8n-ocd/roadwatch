@@ -56,13 +56,13 @@ export default function StaffLayout() {
     setDrawerOpen(false);
     setDialog('logout');
   };
-  // One transition for both updates: the router navigates in a transition, so a separate sign-out
-  // would render first and the route guard would send the visitor to the sign-in page instead of home.
+  // Log out ends on the Administrator sign-in page (issue #41). One transition for both updates, so the route
+  // guard never sees the signed-out user on an admin page and remembers it as the page to return to.
   const handleLogout = () => {
     setDialog(null);
     startTransition(() => {
       logout();
-      navigate('/', { replace: true });
+      navigate('/staff/sign-in', { replace: true });
     });
   };
 

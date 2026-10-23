@@ -7,7 +7,7 @@ abstract final class AppConfig {
   static const String apiUrl = String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:5000/api');
 
   /// Shown on Settings > About.
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.1';
 
   /// Render's free tier sleeps when idle, so the first request can take up to a minute.
   static const Duration connectTimeout = Duration(seconds: 60);

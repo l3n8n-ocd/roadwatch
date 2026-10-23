@@ -126,8 +126,10 @@ class AuthProvider extends ChangeNotifier {
       await _startSession(session);
     } on ApiException catch (e) {
       if (e.isWrongPlatform) throw AuthFailure.adminAccount;
+      // 403 ACCOUNT_DEACTIVATED comes only after the right password (issue #40, Figma M0/Login/Deactivated).
+      if (e.code == 'ACCOUNT_DEACTIVATED') throw AuthFailure.deactivated;
       if (e.kind == ApiErrorKind.unauthorized) {
-        // The API uses one message for wrong password and deactivated accounts on purpose.
+        // One message for an unknown email and a wrong password, so neither is revealed.
         throw AuthFailure.invalidCredentials;
       }
       throw _fromApi(e);

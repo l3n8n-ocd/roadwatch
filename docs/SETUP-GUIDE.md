@@ -40,7 +40,7 @@ Parts A and B can run at the same time. Part C needs the Aiven connection detail
 
 ## A1. Install the tools
 1. **Git for Windows** from git-scm.com. In the installer keep "Git Bash" and "Git LFS" selected. Accept the other defaults.
-2. **Node.js 22 LTS** from nodejs.org (needed later for the API).
+2. **Node.js 22 LTS, version 22.23.4 or newer** from nodejs.org (needed later for the API; older 22.x builds have the CVE-2026-111497 Brotli flaw).
 3. **VS Code** (optional, but easiest for editing files with the right line endings).
 4. **GitHub CLI** from cli.github.com (needed once, to create the issues).
 
@@ -51,7 +51,7 @@ git lfs version
 node -v
 gh --version
 ```
-`node -v` must print `v22` or higher.
+`node -v` must print `v22.23.4` or higher (security fix CVE-2026-111497).
 
 ## A2. Protect your email on GitHub (public repo)
 1. GitHub, then your avatar, then **Settings**, then **Emails**.
@@ -192,7 +192,7 @@ Part A is done when: `main` and `dev` exist on GitHub, `api-ci` is green, the 30
 # PART B: Carl creates the Aiven MySQL database and loads the schema
 
 ## B1. Get the code and tools
-1. Install **Node.js 22 LTS** (nodejs.org) and **MySQL Workbench** (or DBeaver Community).
+1. Install **Node.js 22 LTS, 22.23.4 or newer** (nodejs.org) and **MySQL Workbench** (or DBeaver Community).
 2. Get the code from Lenon's public repo. Easiest without Git: open the repo on GitHub, change the branch dropdown from `main` to **`dev`**, click **Code**, then **Download ZIP**, then unzip it (for example to `C:\roadwatch`).
 3. Do not edit the SQL files. They are final for today.
 
@@ -269,7 +269,7 @@ In VS Code open the `roadwatch` folder and use **Terminal, New Terminal**, then:
 cd api
 node -v
 ```
-`node -v` must print `v22` or higher.
+`node -v` must print `v22.23.4` or higher (security fix CVE-2026-111497).
 
 ## C2. Create your `.env`
 ```bash
@@ -410,7 +410,7 @@ Today's date is the Oct 16 milestone. If these are not done tonight, shift the O
 | `Table already exists` | Ran the schema twice | Harmless, the file uses IF NOT EXISTS. Verify with B6 |
 | `check:db` prints `Missing tables` | Schema did not finish | Rerun `schema.sql` (safe to repeat), then `seed.sql` |
 | `users.is_active column: MISSING` | An older schema was loaded | Get the latest `dev` branch ZIP and rerun `schema.sql`. For an existing `users` table ask Lenon before altering anything |
-| `npm install` errors about Node | Node older than 22 | Install Node 22 LTS (C1) |
+| `npm install` errors or warns about Node | Node older than 22.23.4 | Install the latest Node 22 LTS (C1) |
 | `EADDRINUSE` on `npm run dev` | Port 5000 busy | Change `PORT` in `.env` |
 | `api-ci` is red on GitHub | Dependency or test failure | Open the failing step in the Actions log and send it to the team |
 | `.env` shows up in `git status` | It is not being ignored | Stop. Do not commit. Check `.gitignore` still has `.env`, and that the file is named exactly `.env` |
@@ -421,7 +421,7 @@ Today's date is the Oct 16 milestone. If these are not done tonight, shift the O
 
 **Done Oct 20:** API `https://roadwatch-api-gnky.onrender.com`, web `https://roadwatch-theta.vercel.app` (Vercel: root `web`, `VITE_API_URL=https://roadwatch-api-gnky.onrender.com/api`; Render `CLIENT_ORIGIN=https://roadwatch-theta.vercel.app,http://localhost:5173`, applied with "Save and deploy").
 
-The repo has a Render Blueprint, `render.yaml` at the root. It describes one free web service, `roadwatch-api`: Node 22, region Singapore, folder `api/`, `npm ci` then `npm start`, health check `/api/health`, auto-deploy from `main`. It holds setting **names** only. Every secret is typed into the Render dashboard (`sync: false`), and Render makes `JWT_SECRET` itself. Decisions #8 and #39.
+The repo has a Render Blueprint, `render.yaml` at the root. It describes one free web service, `roadwatch-api`: Node 22.23.4 (`NODE_VERSION`, the patched 22.x for CVE-2026-111497), region Singapore, folder `api/`, `npm ci` then `npm start`, health check `/api/health`, auto-deploy from `main`. It holds setting **names** only. Every secret is typed into the Render dashboard (`sync: false`), and Render makes `JWT_SECRET` itself. Decisions #8 and #39.
 
 ## F0. Before you start
 1. **Aiven is ready:** `npm run check:db` on Carl's laptop (with `.env` pointing at Aiven) shows 8 tables, 3 roles, 5 accident types.

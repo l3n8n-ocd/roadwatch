@@ -66,7 +66,7 @@ async function exportCsv(req, res) {
   res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="roadwatch-reports.csv"' }).send(buf);
 }
 async function exportPdf(req, res) {
-  const buf = await pdfBuffer(buildWhere(req.validQuery));
+  const buf = await pdfBuffer(buildWhere(req.validQuery), req.validQuery);
   await recordAudit(req.user.user_id, 'export.pdf');
   res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="roadwatch-reports.pdf"' }).send(buf);
 }
