@@ -44,7 +44,7 @@ async function csvBuffer(where) {
   return Buffer.from(new Parser({ fields }).parse(rows));
 }
 
-// PDF layout (#42): landscape A4, title block, then a table with a navy header row that repeats on every
+// PDF layout (issue #42): landscape A4, title block, then a table with a navy header row that repeats on every
 // page, wrapped cells, zebra rows and "Page X of Y". Description, remarks and contact details stay in the CSV.
 const NAVY = '#0B2545';
 const MUTED = '#5B6B80';

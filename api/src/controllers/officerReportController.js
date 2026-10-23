@@ -26,7 +26,7 @@ async function getOne(req, res) {
 // Update investigation status and/or add official remarks.
 async function update(req, res) {
   const report = await findAssigned(req);
-  // A rejected report is closed for the officer; only an administrator can reopen it (#44).
+  // A rejected report is closed for the officer; only an administrator can reopen it (issue #44).
   if (report.report_status === 'Rejected') {
     throw new HttpError(409, 'This report was rejected by an administrator, so it can no longer be updated.', { code: 'REPORT_REJECTED' });
   }

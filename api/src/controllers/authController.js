@@ -29,7 +29,7 @@ async function login(req, res) {
   const ok = user && (await bcrypt.compare(password, user.password_hash));
   if (!ok) throw new HttpError(401, 'Invalid email or password');
   // Deactivated and wrong-platform answers come only after the right password, so they never reveal
-  // whether an email exists (#40, Figma M0/Login/Deactivated).
+  // whether an email exists (issue #40, Figma M0/Login/Deactivated).
   if (!user.is_active) {
     throw new HttpError(403, 'This account was deactivated. Contact the RoadWatch administrator.', { code: 'ACCOUNT_DEACTIVATED' });
   }

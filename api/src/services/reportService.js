@@ -38,7 +38,7 @@ function serialize(report, viewer) {
 
 const escapeLike = (s) => s.replace(/[\\%_]/g, '\\$&');
 
-// A Report ID as people type it: the code shown in the apps (RW-000004, rw4), #4 or plain 4 (#39).
+// A Report ID as people type it: the code shown in the apps (RW-000004, rw4), #4 or plain 4 (issue #39).
 function reportIdFromSearch(text) {
   const match = /^(?:rw-?|#)?(\d{1,9})$/i.exec(text.replace(/\s+/g, ''));
   return match ? Number(match[1]) : null;
