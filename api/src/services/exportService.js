@@ -44,23 +44,98 @@ async function csvBuffer(where) {
   return Buffer.from(new Parser({ fields }).parse(rows));
 }
 
-async function pdfBuffer(where) {
+// PDF layout (#42): landscape A4, title block, then a table with a navy header row that repeats on every
+// page, wrapped cells, zebra rows and "Page X of Y". Description, remarks and contact details stay in the CSV.
+const NAVY = '#0B2545';
+const MUTED = '#5B6B80';
+const ZEBRA = '#F4F6F9';
+const RULE = '#C9D2DE';
+const PDF_COLUMNS = [
+  { label: 'Report', width: 58, value: (r) => `RW-${String(r.report_id).padStart(6, '0')}` },
+  { label: 'Date and time', width: 78, value: (r) => `${r.accident_date} ${String(r.accident_time || '').slice(0, 5)}` },
+  { label: 'Type', width: 80, value: (r) => r.accident_type },
+  { label: 'Location', width: 160, value: (r) => r.location },
+  { label: 'Injuries', width: 58, value: (r) => r.injury_information.charAt(0).toUpperCase() + r.injury_information.slice(1) },
+  { label: 'Status', width: 92, value: (r) => r.status },
+  { label: 'Record', width: 78, value: (r) => (r.record_type === 'verified_record' ? 'Verified record' : 'Public submission') },
+  { label: 'Reporter', width: 82, value: (r) => r.reporter || '-' },
+  { label: 'Officer', width: 84, value: (r) => r.assigned_officer || 'Unassigned' },
+];
+const PAD = 4;
+
+// "status: Verified, date_from: 2026-10-01" for the title block; paging keys are left out.
+function describeFilters(filters = {}) {
+  const parts = Object.entries(filters)
+    .filter(([key, value]) => value !== undefined && value !== '' && key !== 'page' && key !== 'limit')
+    .map(([key, value]) => `${key.replace(/_/g, ' ')}: ${value}`);
+  return parts.length ? parts.join(', ') : 'none (all reports)';
+}
+
+async function pdfBuffer(where, filters) {
   const rows = await exportRows(where);
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 36, bufferPages: true });
     const chunks = [];
     doc.on('data', (c) => chunks.push(c));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
-    doc.fontSize(18).text('RoadWatch - Accident Report Summary', { align: 'center' }).moveDown(0.5);
-    doc.fontSize(9).text(`Generated: ${new Date().toISOString()}   Reports: ${rows.length}`, { align: 'center' }).moveDown();
-    rows.forEach((r) => {
-      if (doc.y > 700) doc.addPage();
-      doc.fontSize(10).text(`#${r.report_id} | ${r.status} | ${r.record_type === 'verified_record' ? 'VERIFIED RECORD' : 'Public submission'} | ${r.accident_type}`);
-      doc.fontSize(8).text(`${r.accident_date} ${r.accident_time} - ${r.location}`);
-      doc.text(`Injuries: ${r.injury_information} | Reporter: ${r.reporter || 'n/a'} | Officer: ${r.assigned_officer || 'Unassigned'}`);
-      doc.text(String(r.description).slice(0, 400)).moveDown(0.7);
+
+    const left = doc.page.margins.left;
+    const tableWidth = PDF_COLUMNS.reduce((sum, c) => sum + c.width, 0);
+    const bottom = () => doc.page.height - doc.page.margins.bottom - 14; // room for the page number
+
+    const generated = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' });
+    const verified = rows.filter((r) => r.record_type === 'verified_record').length;
+    doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(16).text('RoadWatch - Accident Report Summary', left, doc.y);
+    doc.font('Helvetica').fontSize(9).fillColor(MUTED)
+      .text(`Generated ${generated} (Philippine time)   |   Filters: ${describeFilters(filters)}`)
+      .text(`${rows.length} ${rows.length === 1 ? 'report' : 'reports'}: ${verified} verified records, ${rows.length - verified} public submissions`)
+      .moveDown(0.6);
+
+    const rowHeight = (cells, font) => {
+      doc.font(font).fontSize(8);
+      return Math.max(...cells.map((text, i) => doc.heightOfString(text, { width: PDF_COLUMNS[i].width - PAD * 2 }))) + PAD * 2;
+    };
+    const drawRow = (cells, { header = false, zebra = false } = {}) => {
+      const font = header ? 'Helvetica-Bold' : 'Helvetica';
+      const h = rowHeight(cells, font);
+      const y = doc.y;
+      if (header || zebra) doc.rect(left, y, tableWidth, h).fill(header ? NAVY : ZEBRA);
+      let x = left;
+      cells.forEach((text, i) => {
+        doc.font(font).fontSize(8).fillColor(header ? '#FFFFFF' : NAVY)
+          .text(text, x + PAD, y + PAD, { width: PDF_COLUMNS[i].width - PAD * 2 });
+        x += PDF_COLUMNS[i].width;
+      });
+      doc.moveTo(left, y + h).lineTo(left + tableWidth, y + h).lineWidth(0.5).strokeColor(RULE).stroke();
+      doc.x = left;
+      doc.y = y + h;
+    };
+    const headerCells = PDF_COLUMNS.map((c) => c.label);
+
+    drawRow(headerCells, { header: true });
+    if (!rows.length) {
+      doc.font('Helvetica').fontSize(9).fillColor(MUTED).text('No reports match these filters.', left, doc.y + 8);
+    }
+    rows.forEach((r, i) => {
+      const cells = PDF_COLUMNS.map((c) => String(c.value(r) ?? ''));
+      if (doc.y + rowHeight(cells, 'Helvetica') > bottom()) {
+        doc.addPage();
+        drawRow(headerCells, { header: true });
+      }
+      drawRow(cells, { zebra: i % 2 === 1 });
     });
+
+    // "Page X of Y" in the bottom margin of every page.
+    const range = doc.bufferedPageRange();
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i);
+      const marginBottom = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
+      doc.font('Helvetica').fontSize(8).fillColor(MUTED)
+        .text(`Page ${i + 1} of ${range.count}`, left, doc.page.height - marginBottom - 10, { width: tableWidth, align: 'right', lineBreak: false });
+      doc.page.margins.bottom = marginBottom;
+    }
     doc.end();
   });
 }

@@ -133,6 +133,11 @@ test('database-backed API flow', { skip }, async (t) => {
     await t.test('admin filters, verifies, rejects (reason required) and assigns', async () => {
       const list = await call('GET', `/admin/reports?status=Submitted&q=Malolos&date_from=2026-10-01&date_to=2026-10-31`, { token: admin.token });
       assert.ok(list.body.data.some((r) => r.report_id === reportId));
+      // #39: the Report ID as the apps show it (RW-000004), #4 or 4 all find the report.
+      for (const typed of [`RW-${String(reportId).padStart(6, '0')}`, `rw${reportId}`, `#${reportId}`, String(reportId)]) {
+        const found = await call('GET', `/admin/reports?q=${encodeURIComponent(typed)}`, { token: admin.token });
+        assert.ok(found.body.data.some((r) => r.report_id === reportId), `search "${typed}"`);
+      }
       assert.equal((await call('GET', '/admin/reports?status=Nonsense', { token: admin.token })).status, 400);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Rejected' } })).status, 400);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/status`, { token: admin.token, body: { status: 'Assigned' } })).status, 400);
@@ -182,11 +187,29 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.equal((await call('PATCH', `/admin/reports/${r2}/assign`, { token: admin.token, body: { officer_id: officer.id } })).status, 400);
     });
 
+    await t.test('an officer cannot update a report the administrator rejected (#44)', async () => {
+      const r3 = (await call('POST', '/reports', { token: rep.token, body: report({ accident_location: 'Third location' }) })).body.data.report_id;
+      await call('PATCH', `/admin/reports/${r3}/status`, { token: admin.token, body: { status: 'Verified' } });
+      await call('PATCH', `/admin/reports/${r3}/assign`, { token: admin.token, body: { officer_id: officer.id } });
+      await call('PATCH', `/admin/reports/${r3}/status`, { token: admin.token, body: { status: 'Rejected', rejection_reason: 'Duplicate of RW-000001' } });
+      const blocked = await call('PATCH', `/officer/reports/${r3}`, { token: officer.token, body: { status: 'In Progress' } });
+      assert.equal(blocked.status, 409);
+      assert.equal(blocked.body.details.code, 'REPORT_REJECTED');
+      const still = await call('GET', `/officer/reports/${r3}`, { token: officer.token });
+      assert.equal(still.body.data.report_status, 'Rejected');
+      assert.equal(still.body.data.record_type, 'public_submission');
+    });
+
     await t.test('deactivation blocks login and existing tokens; admin cannot deactivate self; reactivation works', async () => {
       assert.equal((await call('PATCH', `/users/${admin.user.user_id}/active`, { token: admin.token, body: { is_active: false } })).status, 400);
       assert.equal((await call('PATCH', `/users/${officer.id2}/active`, { token: admin.token, body: { is_active: false } })).status, 200);
       assert.equal((await call('GET', '/officer/reports', { token: officer.token2 })).status, 401);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).status, 401);
+      // #40: the right password on a deactivated account says so; a wrong password stays the generic 401.
+      const off = await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } });
+      assert.equal(off.status, 403);
+      assert.equal(off.body.details.code, 'ACCOUNT_DEACTIVATED');
+      assert.equal(off.body.data, undefined, 'no token for a deactivated account');
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: 'Wrong-password-9', platform: 'mobile' } })).status, 401);
       assert.equal((await call('PATCH', `/admin/reports/${reportId}/assign`, { token: admin.token, body: { officer_id: officer.id2 } })).status, 400);
       assert.equal((await call('PATCH', `/users/${officer.id2}/active`, { token: admin.token, body: { is_active: true } })).status, 200);
       assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).status, 200);
