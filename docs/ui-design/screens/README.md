@@ -7,8 +7,8 @@ export it again under the same file name. Node IDs for every frame are in `../fi
 
 | Folder | Frames | Size |
 |---|---|---|
-| `mobile/` | 48: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
-| `web/` | 38: W0 landing, W1 sign-in, W2-W4, W6-W12, Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
+| `mobile/` | 49: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
+| `web/` | 40: W0 landing, W1 sign-in, W2-W4, W6-W12, Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
 
 File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for example
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is
@@ -17,3 +17,7 @@ File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for 
 Figma fixes on Oct 21 (frames re-exported): Edit profile no longer shows the "not built yet" endpoint note,
 Change password's note matches the app, O3 and O4 say only the reporter is notified (as the API does), and the
 W12 500 heading wraps at 390 px.
+
+Added Oct 23 after the first test run (Figma first, then code; DECISIONS #42): `web/w1-login-deactivated-1440.png`,
+`web/w2-change-password-dialog.png`, `mobile/o2-report-details-rejected.png`; `web/w1-login-error-1440.png` re-exported
+with the generic "Email or password is incorrect" copy.

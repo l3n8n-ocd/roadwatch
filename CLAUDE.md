@@ -368,6 +368,7 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 ## 20. Instructions for Claude Code
 
 **Before changing anything**
+- **Figma first, then code (DECISIONS #33; Lenon, Oct 23).** Any change a user can see (new screen, state, message, button, navigation) is drawn or edited in the Figma file first (frames on Mobile/Web, plus the Flows wiring), shown to Lenon, then coded to match. This includes bug fixes that change UI text or behavior. Update `docs/ui-design/figma-index.md` and the PNGs in `docs/ui-design/screens/` in the same change.
 - Inspect the existing files first (`ls`, read the relevant folder, check `package.json`, `database/schema.sql`, `docs/DECISIONS.md`). Do not assume this file is up to date with the repo.
 - Understand the current architecture and reuse existing components, functions, naming and dependencies. Avoid rewrites, duplicate implementations and unrelated edits.
 - Preserve working functionality while adding requirements.

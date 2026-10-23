@@ -125,6 +125,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | O1/Assigned/Default (officer home; GET /officer/reports) | `323:2817` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-2817) |
 | O1/Assigned/Empty | `323:3010` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3010) |
 | O2/Report details/Assigned (full scroll: location + Open in Maps, reporter contact, details, photos, history, sticky Update status) | `324:3382` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=324-3382) |
+| O2/Report details/Rejected (officer, read-only: no Update status, note instead; issue #44, Oct 23) | `366:3848` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=366-3848) |
 | O3/Update status (bottom sheet: status + official remarks) | `325:3328` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=325-3328) |
 | O4/Report details/Update saved (toast) | `325:3567` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=325-3567) |
 | O5/Notifications/Default (officer: assignment alerts) | `323:3085` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3085) |
@@ -144,11 +145,13 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W1/Login/Administrator · Error (1440) | `121:57` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-57) |
 | W1/Login/Administrator · Responsive (390) | `121:126` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-126) |
 | W1/Login/Administrator · Mobile-only account (1440; reporter or officer account on the web, #36) | `321:15655` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=321-15655) |
+| W1/Login/Administrator · Deactivated account (1440; right password on a deactivated account, issue #40, Oct 23) | `363:25944` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=363-25944) |
 | Handoff note/Role-based redirect | `121:182` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-182) |
 | W2/Dashboard (1440) | `123:108` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=123-108) |
 | W2/Dashboard (1440) · Dark theme | `166:4256` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=166-4256) |
 | W2/Dashboard · User menu open (1440) | `196:4514` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=196-4514) |
 | W2/Overlay/Log out (dialog, all staff screens, #40) | `347:36709` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-36709) |
+| W2/Overlay/Change password · Wrong current password (dialog; API field error under the field, issue #43, Oct 23) | `365:16149` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=365-16149) |
 | W3/Report management/Default (1440) | `124:492` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=124-492) |
 | W3/Report management/No results (1440) | `124:1091` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=124-1091) |
 | W3/Report management/Loading (1440) | `124:1321` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=124-1321) |
@@ -225,7 +228,7 @@ Flow F (user menu pages) starts at B2 · W2 Dashboard (the same start as E2): op
 
 Landing page (updated Oct 20, #36): the footer "Staff sign-in" goes to B1 Administrator sign-in. "Get the app" (header) and the two "Download the Android app" buttons open the latest GitHub release (APK). The reporter buttons and the header "Log in" were removed; "Track my report" became "See how it works".
 
-Log out: every signed-in web frame in Flows (B2 to B7, D1 to D5, E2, F1, F2) has a Log out button beside the user menu, wired to 0 · W0 Public landing.
+Log out: every signed-in web frame in Flows (B2 to B7, D1 to D5, E2, F1, F2) has a Log out button beside the user menu, wired to B1 · W1 Administrator sign-in (changed from 0 · W0 Public landing on Oct 23, issue #41).
 
 ## Motion (#41, key frames; spec: `docs/ui-design/motion-spec.md`)
 
