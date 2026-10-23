@@ -13,8 +13,10 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health # answers without touching the database
     envVars:
+      # Minimum patched 22.x: 22.23.4 fixes CVE-2026-111497 ("Node2Shell", Brotli decoder RCE) and the
+      # other Oct 21, 2026 Node.js security fixes. Raise it when a newer 22.x security release ships.
       - key: NODE_VERSION
-        value: "22"
+        value: "22.23.4"
       - key: NODE_ENV
         value: production
       # Browser origins allowed by CORS, comma separated: the deployed web app and the local dev server,
