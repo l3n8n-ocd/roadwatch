@@ -23,3 +23,4 @@ date,member,message,paths,commit
 2026-10-21,"Pauline Lapuz","feat(web): action log paging and labels for profile and password actions; drop the not-built notes (#25, #27)","web/src/api/endpoints.js web/src/layouts/AccountDialogs.jsx web/src/pages/staff/ActionLog.jsx web/CLAUDE.md",850b293
 2026-10-21,"Carl Ernest Santos","feat(api): status history names each actor's role (officer report details, #36)","api/src/services/reportService.js api/tests/api.test.js docs/API.md",0056451
 2026-10-21,"Pauline Lapuz","fix(web): Download the app links to roadwatch.apk in the latest release (#22)","web/src/lib/constants.js web/CLAUDE.md",8047461
+2026-10-23,"Carl Ernest Santos","fix(api): require Node >= 22.23.4 for CVE-2026-111497 (Node2Shell)","api/package.json api/package-lock.json",e781893

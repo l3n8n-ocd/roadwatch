@@ -62,11 +62,11 @@ Objectives (from the course description): web and mobile reporting; quick digita
 |---|---|---|
 | Web | React + Vite + Tailwind CSS. Suggested: react-router-dom, axios, Recharts, leaflet and react-leaflet. Motion: GSAP + ScrollTrigger (#41, spec in `docs/ui-design/motion-spec.md`) | Confirmed (libraries Recommended; GSAP Confirmed Oct 20) |
 | Mobile | Flutter + Dart. Suggested: dio, flutter_map, latlong2, geolocator, image_picker, flutter_secure_storage, provider, video_player | Confirmed (packages Recommended) |
-| API | Node.js (>= 22 in `api/package.json`) + Express | Confirmed |
+| API | Node.js (>= 22.23.4 in `api/package.json`; 22.23.4 fixes CVE-2026-111497 "Node2Shell") + Express | Confirmed |
 | Validation and security libs | zod, helmet, cors, bcrypt, jsonwebtoken, multer | In starter `package.json` |
 | ORM | **Sequelize** (already in starter dependencies). Do not add Prisma | Confirmed |
 | Database | MySQL. Host: **Aiven managed MySQL (TLS)**. Local MySQL optional for dev | Confirmed |
-| API hosting | **Render** (free web service, sleeps when idle). Blueprint `render.yaml` at the repo root (Node 22, Singapore, `rootDir: api`, health `/api/health`, auto-deploy from `main`); service on Lenon's Render account, operated with Carl (#39); steps in `docs/SETUP-GUIDE.md` Part F. **Live since Oct 20: `https://roadwatch-api-gnky.onrender.com`** (health: `/api/health`) | Confirmed |
+| API hosting | **Render** (free web service, sleeps when idle). Blueprint `render.yaml` at the repo root (`NODE_VERSION` 22.23.4, Singapore, `rootDir: api`, health `/api/health`, auto-deploy from `main`); service on Lenon's Render account, operated with Carl (#39); steps in `docs/SETUP-GUIDE.md` Part F. **Live since Oct 20: `https://roadwatch-api-gnky.onrender.com`** (health: `/api/health`) | Confirmed |
 | Web hosting | Vercel (Lenon's account; root folder `web`, env `VITE_API_URL=https://roadwatch-api-gnky.onrender.com/api`). **Live since Oct 20: `https://roadwatch-theta.vercel.app`**, also listed in Render's `CLIENT_ORIGIN` | Confirmed Oct 20 |
 | Domain | Namecheap `.me` from the GitHub Student Developer Pack, claimed by Lenon (DNS). Used for the email sender, the web app, `api.` on Render and the APK link. Name: `roadwatch-ph.me` (#38), claimed; DNS holds the Brevo records (code, DKIM, DMARC, SPF). Vercel and Render custom domains not connected yet | Confirmed Oct 20 |
 | Mobile delivery | Release APK built by GitHub Actions on tag `v*` (tag must match `pubspec.yaml`); mobile-ci publishes a GitHub Release with `roadwatch.apk`, which the web "Download the app" buttons link to (`releases/latest/download/roadwatch.apk`, #22, Oct 21). Debug-signed | Confirmed Oct 21 |
@@ -237,7 +237,7 @@ Rules: every status change writes a `report_status_history` row; important admin
 
 ## 13. Development Environment and Setup
 
-- Tools: Git, Node >= 22, a MySQL client (Workbench, DBeaver or CLI), Flutter SDK, Android tooling for APK.
+- Tools: Git, Node >= 22.23.4, a MySQL client (Workbench, DBeaver or CLI), Flutter SDK, Android tooling for APK.
 - **API:** `cd api`, copy `.env.example` to `.env`, fill values, `npm install`, `npm run dev`.
 - **Aiven TLS:** set `DB_SSL=true` and either `DB_SSL_CA` (certificate text with `\n`) or `DB_SSL_CA_PATH`. `src/config/dbConfig.js` builds the connection settings.
 - **Email (#37):** `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` (Brevo → SMTP & API → API keys; Render env only), `MAIL_FROM` (an address on the project domain verified in Brevo). Locally use `MAIL_PROVIDER=log` (prints emails).
@@ -302,6 +302,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 
 - Fixed in starter v2 (Oct 16): `*.pem` ignored, `api/scripts/check-db.js` added (`npm run check:db`), `is_active` added to schema and ERD, Gmail SMTP defaults in `.env.example` and `mailer.js`. Verified locally only; confirm they exist in the real repo.
 - Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotated (confirmed Oct 20). Brevo works since Oct 21: revoke the old Gmail app password.
+- **CVE-2026-111497 "Node2Shell" (Oct 23):** Brotli decoder out-of-bounds write in Node.js 22.x/24.x/26.x before 22.23.4/24.22.1/26.12.1 (plus the other Oct 21 Node.js security fixes). Patched by pinning Render's `NODE_VERSION` to 22.23.4, `engines` `>=22.23.4`, and `check-latest` in CI. Exposure was low: Express 4 / body-parser 1.x refuse `Content-Encoding: br` (415), so only `fetch` responses from Brevo could reach the decoder. 26/26 API tests pass on 22.23.4. Team machines should update Node too.
 - Render's free tier sleeps when idle. The Aiven free plan limits were not verified in the conversation.
 - Git LFS: the user relies on 1 GB free storage. Bandwidth limits and "Download ZIP" behavior (LFS pointers only) are unverified. Submit the MP4 as a separate file too.
 - An earlier starter had `npm test` set to `node --test tests/`, which fails on Node 22. It was fixed to `node --test`. If an old copy exists, update it.
