@@ -7,8 +7,8 @@ export it again under the same file name. Node IDs for every frame are in `../fi
 
 | Folder | Frames | Size |
 |---|---|---|
-| `mobile/` | 57: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
-| `web/` | 50: W0 landing, W1 sign-in, W2-W4, W6-W12, Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
+| `mobile/` | 58: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
+| `web/` | 51: W0 landing, W1 sign-in, W2-W4, W6-W12, Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
 
 File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for example
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is
@@ -31,3 +31,4 @@ Added Oct 25 for #37, #45 and #46 (Figma approved by Lenon before any code; DECI
   `web/w0-updates-map-full-screen-1440.png`, `web/w2-hotspots-map-full-screen-1440.png`.
 - Re-exported: every frame with a password field (eye button, #45) or a map (Expand map button, #46), the W1 frames
   ("Forgot password?" link) and W6 (Reset password row action).
+- Oct 25, later: "New code sent" state (`mobile/m0-forgot-password-new-code-sent.png`, `web/w1-forgot-password-new-code-sent-1440.png`); `mobile/m3-location-full-screen-map.png` re-exported (button label on one line).
