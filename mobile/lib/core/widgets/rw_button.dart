@@ -18,6 +18,7 @@ class RwButton extends StatelessWidget {
     this.expand = true,
     this.loading = false,
     this.semanticLabel,
+    this.compact = false,
   });
 
   const RwButton.secondary({
@@ -28,6 +29,7 @@ class RwButton extends StatelessWidget {
     this.expand = true,
     this.loading = false,
     this.semanticLabel,
+    this.compact = false,
   }) : variant = RwButtonVariant.secondary;
 
   const RwButton.destructive({
@@ -38,6 +40,7 @@ class RwButton extends StatelessWidget {
     this.expand = true,
     this.loading = false,
     this.semanticLabel,
+    this.compact = false,
   }) : variant = RwButtonVariant.destructive;
 
   /// Describes the action ("Submit report", not "OK").
@@ -56,6 +59,10 @@ class RwButton extends StatelessWidget {
   /// Shows a spinner and blocks taps (e.g. while submitting).
   final bool loading;
   final String? semanticLabel;
+
+  /// 12 px side padding instead of 24, for two buttons side by side on a narrow phone
+  /// (Figma M3 full-screen map: "Use this location" stays on one line at 360 px).
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +119,7 @@ class RwButton extends StatelessWidget {
         return Container(
           constraints: const BoxConstraints(minHeight: RwSize.touch),
           width: expand ? double.infinity : null,
-          padding: const EdgeInsets.symmetric(horizontal: RwSpace.s24, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: compact ? RwSpace.s12 : RwSpace.s24, vertical: 12),
           decoration: BoxDecoration(
             color: bg,
             borderRadius: RwRadius.mdAll,

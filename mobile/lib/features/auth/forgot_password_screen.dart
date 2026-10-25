@@ -112,7 +112,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await context.read<RoadWatchApi>().forgotPassword(email: _email.text.trim());
       if (!mounted) return;
-      setState(() => _serverCodeError = null);
+      // Figma M0/Forgot password/New code sent (419:4438): the code field is empty for the new code.
+      setState(() {
+        _serverCodeError = null;
+        _code.clear();
+      });
       _banner('New code sent', 'Use the newest code. It works for 15 minutes.', type: RwToastType.success);
     } on ApiException catch (e) {
       if (mounted) _banner("Couldn't send the code", e.message);

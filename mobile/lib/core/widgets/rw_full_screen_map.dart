@@ -157,6 +157,7 @@ class _RwFullScreenMapState extends State<RwFullScreenMap> {
                           Expanded(
                             child: RwButton.secondary(
                               label: 'Cancel',
+                              compact: true,
                               onPressed: () => Navigator.of(context).pop(),
                             ),
                           ),
@@ -164,6 +165,7 @@ class _RwFullScreenMapState extends State<RwFullScreenMap> {
                           Expanded(
                             child: RwButton(
                               label: 'Use this location',
+                              compact: true,
                               onPressed: center == null ? null : () => Navigator.of(context).pop(center),
                             ),
                           ),

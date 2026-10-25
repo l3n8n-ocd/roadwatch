@@ -135,6 +135,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.sentTo.length, 2);
     expect(find.text('New code sent'), findsOneWidget);
+    expect(tester.widget<TextField>(fields.at(0)).controller!.text, isEmpty, reason: 'code field cleared');
 
     await tester.enterText(fields.at(0), 'k7q2m9xp');
     await tester.tap(find.text('Change password'));
