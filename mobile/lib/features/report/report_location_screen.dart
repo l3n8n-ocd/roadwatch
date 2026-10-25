@@ -17,7 +17,7 @@ import 'report_draft.dart';
 ///
 /// The typed accident_location is required; the map pin (latitude/longitude) is optional.
 /// "Use my current location" asks geolocator through [LocationService]; tapping the map places
-/// the pin. A new pin fills the location text from OpenStreetMap Nominatim when the reporter has
+/// the pin, and "Expand map" opens the full-screen "Move the pin" view (#46). A new pin fills the location text from OpenStreetMap Nominatim when the reporter has
 /// not typed their own.
 class ReportLocationScreen extends StatefulWidget {
   const ReportLocationScreen({super.key, this.locationService = const LocationService(), this.geocoder});
@@ -102,6 +102,17 @@ class _ReportLocationScreenState extends State<ReportLocationScreen> {
     });
   }
 
+  /// Full-screen "Move the pin" (#46, Figma 406:4431): the reporter drags the map under the pin.
+  Future<void> _moveOnFullMap() async {
+    final picked = await RwFullScreenMap.pick(
+      context,
+      initial: _draft.pin,
+      address: _location.text.trim().isEmpty ? null : _location.text.trim(),
+      geocoder: widget.geocoder ?? _nominatimReverse,
+    );
+    if (picked != null && mounted) _setPin(picked);
+  }
+
   String? _validate() {
     final t = _location.text.trim();
     if (t.isEmpty) return 'Enter where the accident happened.';
@@ -178,6 +189,7 @@ class _ReportLocationScreenState extends State<ReportLocationScreen> {
                   locating: _locating,
                   onPinChanged: (p) => _setPin(p),
                   onLocate: _locate,
+                  onExpand: _moveOnFullMap,
                 ),
                 const SizedBox(height: RwSpace.s16),
                 RwTextField(

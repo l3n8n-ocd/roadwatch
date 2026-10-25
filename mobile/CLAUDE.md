@@ -2,7 +2,8 @@
 
 Project-wide rules live in the root `CLAUDE.md`. This file covers the Flutter app only.
 One app for **Reporters** and **Traffic Officers**; Administrators use the web (#36).
-Login sends `platform: "mobile"`: the API answers 403 `WRONG_PLATFORM` for Administrators (shown as
+Forgot password (#37): Log in → `Routes.forgotPassword` (public; email, then code + new password; pops `true` and
+Log in shows "Password changed"). Login sends `platform: "mobile"`: the API answers 403 `WRONG_PLATFORM` for Administrators (shown as
 "Use the RoadWatch website"). `HomeShell` picks the tabs from the role: reporters Home, My reports,
 Notifications, Settings; officers Assigned, Notifications, Settings (Figma O1-O6, Flow C, Oct 21).
 
@@ -44,20 +45,23 @@ lib/
   core/widgets/              Figma components (import widgets.dart)
   features/<area>/           one file per screen; features/report/report_draft.dart holds the 3-step form;
                              features/officer/ = O1 Assigned tab, O2 details + O3 update sheet + O4 toast
-assets/icons/                56 Figma icons as SVG (stroke recolored by RwIcon)
+assets/icons/                58 Figma icons as SVG (stroke recolored by RwIcon)
 assets/images/               emblem.png, hero-street.jpg, pnp-seal.png, bfp-seal.png
 assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 ```
 
 ## Widgets (lib/core/widgets)
 `RwButton` (primary/secondary/destructive, 48 px, `icon`, `loading`), `RwIconButton` (needs
-`semanticLabel`, light/dark tone, `badgeCount`), `RwTextField` / `RwTextarea`, `RwSelect<T>`,
+`semanticLabel`, light/dark tone, `badgeCount`), `RwTextField` / `RwTextarea`, `RwPasswordField` (eye / eye-off,
+"Show password" / "Hide password", #45: use it for every password), `RwTextLink` (underlined 48 px link), `RwSelect<T>`,
 `RwDateTimeField.date/.time` (YYYY-MM-DD, HH:MM), `RwStatusChip`, `RwRecordBadge`, `RwReportCard`
 (`.fromReport`), `RwTimelineItem`, `RwPhotoTile`, `RwMap` (OSM + attribution; pin / no pin /
-`locating`), `RwToast` + `showRwToast`, `RwEmptyState` (`.noReports/.noResults/.error/.videoComingSoon`),
+`locating`; `onExpand` adds the Expand map button, #46), `RwFullScreenMap` (`.show` read-only with address and optional
+Open in Maps; `.pick` = M3 "Move the pin", returns the LatLng), `RwToast` + `showRwToast`, `RwEmptyState` (`.noReports/.noResults/.error/.videoComingSoon`),
 `RwSkeleton*`, `RwTopBar.home/.inner`, `RwBottomNav` + `RwTab`, `RwNotificationItem`, `RwStepper`,
 `RwSwitch`, `RwSettingsRow` (`.navigation/.toggle/.info/.destructive`), `RwCard`, `RwSectionTitle`, `RwMetaRow`,
-`RwDetailItem`, `RwPhotoViewer` (report detail parts, shared by tracking and officer details), `RwDialog` +
+`RwDetailItem`, `RwPhotoViewer.show(urls:, initialIndex:, captions:)` (full-screen gallery: swipe, zoom, no download, #46;
+report detail parts, shared by tracking and officer details), `RwDialog` +
 `showRwConfirmDialog`, `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
 Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max 8), `RwPulse` (stops after N),
 `RwDrawIn`, `RwSharedAxisPageTransitionsBuilder` (app.dart). All respect `disableAnimations` (short fades).

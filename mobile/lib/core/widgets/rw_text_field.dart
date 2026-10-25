@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../theme/tokens.dart';
 import 'rw_field_parts.dart';
 import 'rw_icon.dart';
+import 'rw_icon_button.dart';
 
 /// Figma "Text field" (97:178): visible label, 48 px box with optional 20 px leading icon,
 /// 16 px value text, helper or error row. Map [label] to the API field in the screen
@@ -203,4 +204,73 @@ class RwTextarea extends RwTextField {
     super.focusNode,
     super.textCapitalization = TextCapitalization.sentences,
   }) : super(minLines: 4, maxLines: 8, textInputAction: TextInputAction.newline);
+}
+
+/// Password [RwTextField] with the eye button (Figma Text field "Show password toggle", #45):
+/// one button per field, icon only ("Show password" / "Hide password" for screen readers), and the
+/// password stays shown until the button is tapped again (no auto-hide).
+class RwPasswordField extends StatefulWidget {
+  const RwPasswordField({
+    super.key,
+    required this.label,
+    this.controller,
+    this.hintText,
+    this.helperText,
+    this.errorText,
+    this.required = false,
+    this.enabled = true,
+    this.focusNode,
+    this.textInputAction,
+    this.autofillHints,
+    this.onChanged,
+    this.onSubmitted,
+    this.maxLength = 128,
+  });
+
+  final String label;
+  final TextEditingController? controller;
+  final String? hintText;
+  final String? helperText;
+  final String? errorText;
+  final bool required;
+  final bool enabled;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  final int? maxLength;
+
+  @override
+  State<RwPasswordField> createState() => _RwPasswordFieldState();
+}
+
+class _RwPasswordFieldState extends State<RwPasswordField> {
+  bool _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return RwTextField(
+      label: widget.label,
+      controller: widget.controller,
+      hintText: widget.hintText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      required: widget.required,
+      enabled: widget.enabled,
+      focusNode: widget.focusNode,
+      leadingIcon: RwIcons.lock,
+      obscureText: _obscure,
+      maxLength: widget.maxLength,
+      textInputAction: widget.textInputAction,
+      autofillHints: widget.autofillHints,
+      onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
+      trailing: RwIconButton(
+        icon: _obscure ? RwIcons.eye : RwIcons.eyeOff,
+        semanticLabel: _obscure ? 'Show password' : 'Hide password',
+        onPressed: widget.enabled ? () => setState(() => _obscure = !_obscure) : null,
+      ),
+    );
+  }
 }

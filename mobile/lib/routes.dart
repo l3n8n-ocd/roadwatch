@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/widgets/rw_bottom_nav.dart';
+import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/home/home_shell.dart';
@@ -26,6 +27,9 @@ import 'features/settings/privacy_screen.dart';
 abstract final class Routes {
   static const login = '/login';
   static const register = '/register';
+
+  /// Forgot password (#37). Argument: the email typed on Log in (String). Pops `true` on success.
+  static const forgotPassword = '/forgot-password';
   static const home = '/home';
   static const reportDetails = '/report/details';
   static const reportLocation = '/report/location';
@@ -53,7 +57,7 @@ abstract final class Routes {
   static const demoVideo = '/settings/demo-video';
 
   /// Reachable without signing in.
-  static const public = {login, register};
+  static const public = {login, register, forgotPassword};
 
   /// Builds the page for [settings]. [signedIn] guards private routes (they fall back to login).
   static Route<dynamic> onGenerateRoute(RouteSettings settings, {required bool signedIn}) {
@@ -64,6 +68,9 @@ abstract final class Routes {
     final Widget page = switch (name) {
       login => const LoginScreen(),
       register => const RegisterScreen(),
+      forgotPassword => ForgotPasswordScreen(
+        initialEmail: settings.arguments is String ? settings.arguments as String : '',
+      ),
       home || '/' => const HomeShell(initialTab: RwTab.home),
       myReports => const HomeShell(initialTab: RwTab.myReports),
       notifications => const HomeShell(initialTab: RwTab.notifications),

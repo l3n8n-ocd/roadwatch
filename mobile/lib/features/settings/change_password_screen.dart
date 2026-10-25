@@ -110,24 +110,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               RwToast(type: RwToastType.error, title: _bannerTitle!, message: _bannerMessage),
               const SizedBox(height: RwSpace.s16),
             ],
-            RwTextField(
+            RwPasswordField(
               label: 'Current password',
               required: true,
               controller: _current,
-              obscureText: true,
-              leadingIcon: RwIcons.lock,
               errorText: _currentError,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.password],
               onChanged: (_) => setState(() => _serverCurrentError = null),
             ),
             const SizedBox(height: RwSpace.s16),
-            RwTextField(
+            RwPasswordField(
               label: 'New password',
               required: true,
               controller: _next,
-              obscureText: true,
-              leadingIcon: RwIcons.lock,
               errorText: _newError,
               helperText: 'Use at least $_minLength characters.',
               textInputAction: TextInputAction.next,
@@ -135,12 +131,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               onChanged: (_) => setState(() => _serverNewError = null),
             ),
             const SizedBox(height: RwSpace.s16),
-            RwTextField(
+            RwPasswordField(
               label: 'Confirm new password',
               required: true,
               controller: _confirm,
-              obscureText: true,
-              leadingIcon: RwIcons.lock,
               errorText: _confirmError,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.newPassword],
