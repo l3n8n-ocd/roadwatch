@@ -37,6 +37,9 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-02.4 | Web: sign in as R1 (a reporter) | Refused with the "This account uses the mobile app" message and a **Get the Android app** button (WRONG_PLATFORM, #36) | | |
 | TC-02.5 | Mobile: log in as A1 | Refused with "Use the RoadWatch website" | | |
 | TC-02.6 | Mobile: log in as O1 | Officer home opens on **Assigned** (tabs: Assigned, Notifications, Settings) | | |
+| TC-02.7 | Mobile (R1, then O1): Log in > **Forgot password?** > email > Send code; type the 8-character code from the email and a new password (#37) | "If ... has a RoadWatch account, we sent it a code"; a wrong code shows "This code is wrong or has expired. Send a new code." under Code; the right code returns to Log in with "Password changed"; the new password works, the old one does not | | |
+| TC-02.8 | Web (A1): `/staff/sign-in` > **Forgot password?**, same steps; then try the same code again, and a code older than 15 minutes (#37) | Same as TC-02.7 on the web; a used or expired code is refused; an unknown email gets the same "we sent it a code" message (nothing reveals whether an account exists) | | |
+| TC-02.9 | Every password field (mobile Log in, Register, Change password, Forgot password; web sign-in, Change password, Create officer, Reset password): press the eye (#45) | The password shows and the icon becomes the crossed eye; it stays shown until pressed again; screen readers hear "Show password" / "Hide password" | | |
 
 ### FR-03 Accident reporting (mobile)
 
@@ -53,6 +56,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-04.1 | Step 2: Use my current location (allow permission) | Pin on the map, coordinates shown, address filled from OpenStreetMap; address stays editable | | |
 | TC-04.2 | Deny location permission; tap the map to place a pin, type a landmark | "Location is off" notice; manual pin and typed location are accepted | | |
 | TC-04.3 | Remove the pin and type only a location | Report submits without coordinates (location text is required, pin is optional) | | |
+| TC-04.4 | Step 2: press **Expand map** (bottom-left), drag the map under the pin, Use this location; repeat with Cancel (#46) | Full-screen "Move the pin" view; Use this location moves the pin and refills the address; Cancel keeps the old pin | | |
 
 ### FR-05 Evidence upload
 
@@ -78,6 +82,9 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-07.1 | A1: Reports, open R1's report | Details, map, photos, history; reporter contact hidden until "Show contact details" | | |
 | TC-07.2 | Set Under Review with remarks | Status and history update; R1 gets an in-app notification | | |
 | TC-07.3 | Open `/admin/reports/999999` | "Report not found" state, no crash | | |
+| TC-07.4 | W4: press the main photo; use the arrows, the arrow keys, + and −, then Esc. Press **Expand map** (#46) | Full-screen photo viewer "Photo 2 of 3", uncropped, zoom works, no download button, Esc closes and focus returns; full-screen map with Close | | |
+| TC-07.5 | Mobile tracking (R1) and officer details (O1): tap a photo, swipe; press Expand map (#46) | Photo viewer with swipe and pinch/double-tap zoom; full-screen map with the address (officer view keeps **Open in Maps**) | | |
+| TC-07.6 | Landing "Public road updates" and W2 "Accident hotspots": press Expand map (#46) | Full-screen map with the list beside it (text alternative); Close or Esc returns | | |
 
 ### FR-08 Report verification
 
@@ -130,6 +137,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-13.3 | Deactivate R2 (confirm dialog), then log in as R2 on mobile | "Account deactivated" message; R2's reports and history remain | | |
 | TC-13.4 | Reactivate R2 | R2 can log in again | | |
 | TC-13.5 | A1 tries to deactivate or change the role of A1's own account | Not offered in the UI ("You can't deactivate your own account"); the API refuses it too | | |
+| TC-13.6 | A1: Users > **Reset password** on R2 (temporary password + confirm), then log in as R2 with it (#37) | "Password reset" toast; R2 gets an email that the password was reset (without the password); R2 logs in with the temporary password; not offered on A1's own row or other administrators | | |
 
 ### FR-14 Audit trail
 
