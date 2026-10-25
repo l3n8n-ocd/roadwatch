@@ -29,3 +29,4 @@ date,member,message,paths,commit
 2026-10-23,"Carl Ernest Santos","chore(api): name the GitHub issues in the new comments","api/src/controllers/authController.js api/src/controllers/officerReportController.js api/src/services/exportService.js api/src/services/reportService.js",8f41a9d
 2026-10-25,"Carl Ernest Santos","feat(api): forgot password with an emailed code, admin password reset (#37)","api docs/API.md",b000567
 2026-10-25,"Pauline Lapuz","feat(web): forgot password, admin password reset, show/hide password, full-screen photo viewer and maps (#37 #45 #46)","web",39a6bb0
+2026-10-25,"Pauline Lapuz","fix(web): clear the code field after sending a new code (Figma 419:40475)","web",f8d84b3
