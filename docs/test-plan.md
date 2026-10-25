@@ -2,7 +2,7 @@
 
 **Owner:** Pauline (QA). **Status:** draft prepared Oct 21 from the built system for Pauline to review, then run
 on the deployed system around Oct 29 (#14, #23). Fill **Actual** and **Result** (Pass / Fail / Blocked) while
-testing. First run Oct 23: fixes in issues #39 to #44 (APK v1.0.1); re-test those rows after the fix is deployed. Log every Fail as a GitHub issue (label `bug`, link the test ID) and re-test it after the fix.
+testing. First run Oct 23: fixes in issues #39 to #44 (APK v1.0.1); re-tested Oct 24-25, all Pass (`docs/test-plan-retest.md`). Log every Fail as a GitHub issue (label `bug`, link the test ID) and re-test it after the fix.
 
 ## Setup
 
