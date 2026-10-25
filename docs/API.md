@@ -24,6 +24,8 @@ Values that must match the database exactly:
 | GET `/auth/me` | | Current user |
 | PATCH `/auth/me` | `full_name`, `contact_phone?` (string or `null` to clear) | Edit own profile (#25). Email and role cannot be changed here (extra fields are ignored). Returns `{ user }`. Audit: `account.profile_updated`. |
 | PATCH `/auth/me/password` | `current_password`, `new_password` (8+, different from the current one) | Change own password (#25). A wrong current password is **400** with `details.current_password` (not 401, so the apps keep the session). Rate limited like login. Existing tokens stay valid. Audit: `account.password_changed`. |
+| POST `/auth/forgot-password` | `contact_email` | Forgot password, step 1 (#37, every role). Always **200** with the same message, whether or not the email has an account (or the account is deactivated). For an active account it emails an 8-character code (letters and digits, no 0/O/1/I/L), valid **15 minutes**. The code is not stored: it is an HMAC of the user id, the current password hash and the minute, keyed with `JWT_SECRET`, so it stops working once the password changes. Rate limited like login. Audit: `auth.password_reset_requested`. |
+| POST `/auth/reset-password` | `contact_email`, `reset_code`, `new_password` (8+) | Forgot password, step 2. Case, spaces and dashes in the code do not matter. A wrong or expired code, an unknown email and a deactivated account all get the same **400** `This code is wrong or has expired. Send a new code.` with `details.reset_code`. Other signed-in devices stay signed in. Emails the user that the password changed. Audit: `account.password_reset`. |
 | GET `/auth/me/activity` | `period` (`7d`, `30d` default, `90d`, `all`), `action?`, `page`, `limit` | Action log, own actions (#27). Rows: `{ log_id, user_id, action_taken, action_details (object), timestamp }` plus `pagination`. `action` matches exactly (`auth.login`) or as a group (`user` matches `user.*`). User ids inside `action_details` come with names (`target_name`, `officer_name`). |
 
 ## Any logged-in user
@@ -64,6 +66,7 @@ Values that must match the database exactly:
 | GET `/users` | `role?` | |
 | PATCH `/users/:id/role` | `role` | Not on yourself |
 | PATCH `/users/:id/active` | `is_active` (boolean) | Deactivate or reactivate. Not on yourself. |
+| PATCH `/users/:id/password` | `new_password` (8+) | Admin reset (#37): sets a temporary password for a Reporter or Traffic Officer, which the admin gives to the person directly. **400** on yourself (use Change password) or on another Administrator (they use Forgot password). The user gets an email that the password was reset, never the password. Audit: `user.password_reset`. |
 | GET `/admin/audit-logs` | same as `/auth/me/activity`, plus `user_id?` | Action log, "All staff" view (#27): actions by Administrators and Traffic Officers (reporters left out); each row adds `user: { user_id, full_name, role }`. |
 | GET `/dashboard/stats` | | `cards` (total, pending, verified, closed), `by_status`, `by_type`, `trend` (last 30 days), `hotspots`, `map_points`, `recent` |
 | GET `/exports/summary` | `period` = daily, weekly, monthly or annual; `date?` (YYYY-MM-DD) | FR-12 summary JSON |

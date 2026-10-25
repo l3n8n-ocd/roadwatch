@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const { User, Role } = require('../models');
 const { recordAudit } = require('../services/auditService');
+const { emailUser } = require('../services/notificationService');
+const { ROLES } = require('../config/constants');
 const HttpError = require('../utils/httpError');
 
 async function roleByName(name) {
@@ -54,4 +56,22 @@ async function setActive(req, res) {
   res.json({ success: true, data: { user_id: user.user_id, is_active: user.is_active } });
 }
 
-module.exports = { create, list, setRole, setActive };
+// Admin reset (#37): set a temporary password for a Reporter or Traffic Officer. The admin gives it to the
+// person directly; the email only says the password was reset (never the password itself).
+async function resetPassword(req, res) {
+  const user = await User.scope('withPassword').findByPk(req.params.id, { include: [{ model: Role, as: 'role' }] });
+  if (!user) throw new HttpError(404, 'User not found');
+  if (user.user_id === req.user.user_id) throw new HttpError(400, 'Use Change password for your own account');
+  if (user.role.role_name === ROLES.ADMIN) {
+    throw new HttpError(400, 'Administrators reset their own password with Forgot password on the sign-in page');
+  }
+  user.password_hash = await bcrypt.hash(req.body.new_password, 12);
+  await user.save();
+  await recordAudit(req.user.user_id, 'user.password_reset', { target_user_id: user.user_id });
+  emailUser(user.user_id, 'RoadWatch: your password was reset',
+    `Hi ${user.full_name},\n\nA RoadWatch administrator reset your password. They will give you the temporary `
+    + 'password in person or by phone. Log in with it, then change it in Settings > Change password.\n\nRoadWatch');
+  res.json({ success: true, data: { user_id: user.user_id } });
+}
+
+module.exports = { create, list, setRole, setActive, resetPassword };

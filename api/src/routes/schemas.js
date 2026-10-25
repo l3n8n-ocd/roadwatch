@@ -30,6 +30,18 @@ const changePassword = z.object({
   new_password: z.string().min(8, 'Password must be at least 8 characters').max(128),
 }).refine((d) => d.current_password !== d.new_password, { message: 'Choose a password different from the current one', path: ['new_password'] });
 
+// Forgot password (#37).
+const forgotPassword = z.object({ contact_email: email });
+const resetPassword = z.object({
+  contact_email: email,
+  reset_code: z.string().trim().min(1, 'Enter the code from the email').max(20),
+  new_password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+});
+// Admin reset (#37): a temporary password for a Reporter or Traffic Officer.
+const adminResetPassword = z.object({
+  new_password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+});
+
 // Action log (#27). action is an exact action ("auth.login") or a group prefix ("user", "export").
 const activityQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -92,6 +104,6 @@ const accidentType = z.object({ type_name: z.string().trim().min(2).max(60) });
 const idParam = z.object({ id });
 
 module.exports = {
-  register, login, updateMe, changePassword, activityQuery, auditLogQuery, createUser, setRole, setActive, listUsersQuery, createReport, listQuery, adminStatus, assign,
+  register, login, updateMe, changePassword, forgotPassword, resetPassword, adminResetPassword, activityQuery, auditLogQuery, createUser, setRole, setActive, listUsersQuery, createReport, listQuery, adminStatus, assign,
   officerUpdate, summaryQuery, accidentType, idParam,
 };

@@ -3,6 +3,8 @@ const { User, Role } = require('../models');
 const { ROLES, ROLE_PLATFORM } = require('../config/constants');
 const { signToken } = require('../middleware/auth');
 const { recordAudit, listAuditLogs } = require('../services/auditService');
+const { makeResetCode, isValidResetCode, CODE_MINUTES } = require('../services/passwordResetService');
+const { sendMail, mailConfigured } = require('../config/mailer');
 const HttpError = require('../utils/httpError');
 
 const publicUser = (u, role) => ({ user_id: u.user_id, full_name: u.full_name, contact_email: u.contact_email, contact_phone: u.contact_phone, role });
@@ -72,10 +74,57 @@ async function changePassword(req, res) {
   res.json({ success: true, data: { message: 'Password changed' } });
 }
 
+// Forgot password, step 1 (#37): email an 8-character code. The answer is the same whether or not the
+// email has an account (or the account is deactivated), and the email is sent in the background,
+// so neither the text nor the timing tells anyone which emails are registered.
+const RESET_SENT = 'If this email has a RoadWatch account, we sent it a code. It works for 15 minutes.';
+async function forgotPassword(req, res) {
+  const user = await User.scope('withPassword').findOne({ where: { contact_email: req.body.contact_email } });
+  if (user && user.is_active) {
+    await recordAudit(user.user_id, 'auth.password_reset_requested');
+    if (mailConfigured()) {
+      const code = makeResetCode(user);
+      sendMail({
+        to: user.contact_email,
+        subject: `RoadWatch: your code is ${code}`,
+        text: `Hi ${user.full_name},\n\nYour RoadWatch code is ${code}. Type it in the app to choose a new password. `
+          + `It works for ${CODE_MINUTES} minutes and only once.\n\nIf you did not ask for this, ignore this email; `
+          + 'your password stays the same.\n\nRoadWatch',
+      }).catch((err) => console.warn('Reset code email not sent:', err.message));
+    } else {
+      console.warn('Reset code requested but email is off (MAIL_PROVIDER).');
+    }
+  }
+  res.json({ success: true, data: { message: RESET_SENT } });
+}
+
+// Forgot password, step 2 (#37): email + code + new password. Other signed-in devices stay signed in.
+const BAD_CODE = 'This code is wrong or has expired. Send a new code.';
+async function resetPassword(req, res) {
+  const { contact_email, reset_code, new_password } = req.body;
+  const user = await User.scope('withPassword').findOne({ where: { contact_email } });
+  // One answer for an unknown email, a deactivated account and a wrong or old code.
+  if (!user || !user.is_active || !isValidResetCode(user, reset_code)) {
+    throw new HttpError(400, BAD_CODE, { reset_code: [BAD_CODE] });
+  }
+  user.password_hash = await bcrypt.hash(new_password, 12);
+  await user.save();
+  await recordAudit(user.user_id, 'account.password_reset');
+  if (mailConfigured()) {
+    sendMail({
+      to: user.contact_email,
+      subject: 'RoadWatch: your password was changed',
+      text: `Hi ${user.full_name},\n\nYour RoadWatch password was changed with a reset code. `
+        + 'If this was not you, contact the RoadWatch administrator.\n\nRoadWatch',
+    }).catch((err) => console.warn('Email not sent:', err.message));
+  }
+  res.json({ success: true, data: { message: 'Password changed. Log in with your new password.' } });
+}
+
 // Action log, own actions (#27).
 async function myActivity(req, res) {
   const result = await listAuditLogs({ ...req.validQuery, userId: req.user.user_id });
   res.json({ success: true, ...result });
 }
 
-module.exports = { register, login, me, updateMe, changePassword, myActivity };
+module.exports = { register, login, me, updateMe, changePassword, forgotPassword, resetPassword, myActivity };
