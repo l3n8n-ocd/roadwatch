@@ -2,6 +2,7 @@
   --font-heading: "Poppins", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --color-brand-navy: var(--rw-brand-navy);
+  --color-dark-bg: var(--rw-dark-bg);
   --color-brand-blue: var(--rw-brand-blue);
   --color-brand-amber: var(--rw-brand-amber);
   --color-brand-success: var(--rw-brand-success);

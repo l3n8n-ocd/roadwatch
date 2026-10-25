@@ -6,6 +6,7 @@ import {
   Button,
   DataTable,
   EmptyState,
+  FullScreenMap,
   MapView,
   RecordBadge,
   ReportCard,
@@ -240,9 +241,64 @@ function TypeBars({ byType, total }) {
 }
 
 function HotspotsCard({ hotspots, mapPoints }) {
+  const [full, setFull] = useState(false);
   const groups = useMemo(() => groupPoints(mapPoints), [mapPoints]);
   const biggest = Math.max(1, ...groups.map((g) => g.count));
   const top = hotspots.slice(0, 5);
+  const mapLabel = 'Map of accident hotspots. The Top locations list has the same data as text.';
+
+  // The same circles in the card and in the full-screen map (#46, Figma 410:17303).
+  const layers = (
+    <>
+      <FitToPoints points={groups} />
+      {groups.map((g) => (
+        <CircleMarker
+          key={g.key}
+          center={[g.lat, g.lng]}
+          radius={8 + 20 * Math.sqrt(g.count / biggest)}
+          pathOptions={{
+            color: 'var(--rw-surface-white)',
+            weight: 2,
+            fillColor: 'var(--rw-brand-blue)',
+            fillOpacity: 0.7,
+          }}
+        >
+          <MapTooltip>
+            {g.location}: {g.count} {g.count === 1 ? 'report' : 'reports'}
+          </MapTooltip>
+        </CircleMarker>
+      ))}
+    </>
+  );
+
+  const topLocations = (
+    <div className="flex min-w-0 flex-col gap-3">
+      <h3 className="type-label text-text-primary">Top locations</h3>
+      {top.length === 0 ? (
+        <p className="type-body-sm text-text-muted">No locations yet.</p>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {top.map((spot, i) => (
+            <li key={spot.accident_location} className="flex items-center gap-3 type-body-sm text-text-primary">
+              <span
+                aria-hidden="true"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-navy-subtle type-label"
+              >
+                {i + 1}
+              </span>
+              <span className="min-w-0 flex-1">{spot.accident_location}</span>
+              <span className="type-label whitespace-nowrap">
+                {numberFmt.format(spot.count)} {spot.count === 1 ? 'report' : 'reports'}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className="type-caption text-text-muted">
+        Circle size = number of reports at that spot. This list carries the same data as text.
+      </p>
+    </div>
+  );
 
   return (
     <section aria-labelledby="hotspots-title" className={`flex flex-col gap-4 ${card}`}>
@@ -250,54 +306,14 @@ function HotspotsCard({ hotspots, mapPoints }) {
         Accident hotspots
       </h2>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,560fr)_minmax(0,462fr)]">
-        <MapView label="Map of accident hotspots. The Top locations list has the same data as text." zoom={12}>
-          <FitToPoints points={groups} />
-          {groups.map((g) => (
-            <CircleMarker
-              key={g.key}
-              center={[g.lat, g.lng]}
-              radius={8 + 20 * Math.sqrt(g.count / biggest)}
-              pathOptions={{
-                color: 'var(--rw-surface-white)',
-                weight: 2,
-                fillColor: 'var(--rw-brand-blue)',
-                fillOpacity: 0.7,
-              }}
-            >
-              <MapTooltip>
-                {g.location}: {g.count} {g.count === 1 ? 'report' : 'reports'}
-              </MapTooltip>
-            </CircleMarker>
-          ))}
+        <MapView label={mapLabel} zoom={12} onExpand={() => setFull(true)}>
+          {layers}
         </MapView>
-
-        <div className="flex min-w-0 flex-col gap-3">
-          <h3 className="type-label text-text-primary">Top locations</h3>
-          {top.length === 0 ? (
-            <p className="type-body-sm text-text-muted">No locations yet.</p>
-          ) : (
-            <ol className="flex flex-col gap-3">
-              {top.map((spot, i) => (
-                <li key={spot.accident_location} className="flex items-center gap-3 type-body-sm text-text-primary">
-                  <span
-                    aria-hidden="true"
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-navy-subtle type-label"
-                  >
-                    {i + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">{spot.accident_location}</span>
-                  <span className="type-label whitespace-nowrap">
-                    {numberFmt.format(spot.count)} {spot.count === 1 ? 'report' : 'reports'}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
-          <p className="type-caption text-text-muted">
-            Circle size = number of reports at that spot. This list carries the same data as text.
-          </p>
-        </div>
+        {topLocations}
       </div>
+      <FullScreenMap open={full} onClose={() => setFull(false)} title="Accident hotspots" zoom={12} label={mapLabel} aside={topLocations}>
+        {layers}
+      </FullScreenMap>
     </section>
   );
 }

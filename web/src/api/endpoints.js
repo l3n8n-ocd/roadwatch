@@ -7,6 +7,9 @@ export const auth = {
   me: () => api.get('/auth/me'),
   updateMe: (body) => api.patch('/auth/me', body), // #25
   changePassword: (body) => api.patch('/auth/me/password', body), // #25
+  // Forgot password (#37): public. The first answer is the same whether or not the email exists.
+  forgotPassword: (contact_email) => api.post('/auth/forgot-password', { contact_email }),
+  resetPassword: (body) => api.post('/auth/reset-password', body), // { contact_email, reset_code, new_password }
   myActivity: (params) => api.get('/auth/me/activity', { params, withPagination: true }), // #27, { data, pagination }
 };
 
@@ -42,6 +45,7 @@ export const users = {
   create: (body) => api.post('/users', body),
   setRole: (id, role) => api.patch(`/users/${id}/role`, { role }),
   setActive: (id, is_active) => api.patch(`/users/${id}/active`, { is_active }),
+  resetPassword: (id, new_password) => api.patch(`/users/${id}/password`, { new_password }), // #37
 };
 
 export const dashboard = {

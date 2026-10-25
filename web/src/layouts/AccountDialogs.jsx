@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Dialog, TextField } from '../components/ui';
+import { Button, Dialog, PasswordField, TextField } from '../components/ui';
 import { auth } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import { HOTLINES } from '../lib/constants';
@@ -186,20 +186,16 @@ export function ChangePasswordDialog({ open, onClose, onSaved }) {
       }
     >
       <form id="change-password-form" onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <TextField
+        <PasswordField
           label="Current password"
-          type="password"
-          icon="lock"
           required
           autoComplete="current-password"
           value={form.current}
           onChange={update('current')}
           error={errors.current}
         />
-        <TextField
+        <PasswordField
           label="New password"
-          type="password"
-          icon="lock"
           required
           autoComplete="new-password"
           value={form.next}
@@ -207,10 +203,8 @@ export function ChangePasswordDialog({ open, onClose, onSaved }) {
           helper="At least 8 characters."
           error={errors.next}
         />
-        <TextField
+        <PasswordField
           label="Confirm new password"
-          type="password"
-          icon="lock"
           required
           autoComplete="new-password"
           value={form.confirm}

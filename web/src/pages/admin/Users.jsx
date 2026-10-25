@@ -6,6 +6,7 @@ import {
   Dialog,
   EmptyState,
   Icon,
+  PasswordField,
   Select,
   Skeleton,
   TextField,
@@ -18,7 +19,8 @@ import { ROLES } from '../../lib/constants';
 import { cx } from '../../lib/cx';
 
 // W6 Users & settings (Figma 128:2944, after deactivation 128:3348, dialog 128:3709).
-// Accounts table (role, deactivate/reactivate), create officer form, accident types.
+// Accounts table (role, reset password, deactivate/reactivate), create officer form, accident types.
+// Reset password (#37, dialog 404:16418, toast 404:16490): Reporters and Traffic Officers only.
 // An administrator cannot change or deactivate their own account (#16); the API also refuses it.
 
 const ROLE_OPTIONS = [ROLES.REPORTER, ROLES.ADMIN, ROLES.OFFICER].map((r) => ({ value: r, label: r }));
@@ -61,11 +63,11 @@ function ActiveStatus({ active }) {
 // Phones: the buttons share the row width with less side padding.
 const ACTION_BTN = 'max-md:min-w-0 max-md:flex-1 max-md:px-3';
 
-function UserActions({ user, isSelf, selfNoteId, onChangeRole, onDeactivate, onReactivate, busy }) {
+function UserActions({ user, isSelf, selfNoteId, onChangeRole, onResetPassword, onDeactivate, onReactivate, busy }) {
   const name = user.full_name;
   if (isSelf) {
     return (
-      <Button variant="destructive" icon="user-x" disabled aria-describedby={selfNoteId} className={ACTION_BTN}>
+      <Button variant="destructive" disabled aria-describedby={selfNoteId} className={ACTION_BTN}>
         Deactivate
       </Button>
     );
@@ -82,7 +84,12 @@ function UserActions({ user, isSelf, selfNoteId, onChangeRole, onDeactivate, onR
       <Button variant="secondary" onClick={() => onChangeRole(user)} className={ACTION_BTN}>
         Change role<span className="sr-only"> for {name}</span>
       </Button>
-      <Button variant="destructive" icon="user-x" onClick={() => onDeactivate(user)} className={ACTION_BTN}>
+      {user.role !== ROLES.ADMIN && (
+        <Button variant="secondary" onClick={() => onResetPassword(user)} className={ACTION_BTN}>
+          Reset password<span className="sr-only"> for {name}</span>
+        </Button>
+      )}
+      <Button variant="destructive" onClick={() => onDeactivate(user)} className={ACTION_BTN}>
         Deactivate<span className="sr-only"> {name}</span>
       </Button>
     </>
@@ -131,6 +138,88 @@ function ChangeRoleDialog({ user, onClose, onSaved }) {
           </Button>
           <Button type="submit" disabled={busy} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
             {busy ? 'Saving…' : 'Save role'}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+// Admin reset (#37): a temporary password the administrator gives to the person directly. The API
+// emails the person that the password was reset, never the password itself.
+function ResetPasswordDialog({ user, onClose, onSaved }) {
+  const firstName = user.full_name.split(' ')[0];
+  const [form, setForm] = useState({ password: '', confirm: '' });
+  const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const set = (key) => (event) => {
+    setForm((f) => ({ ...f, [key]: event.target.value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const save = async (event) => {
+    event.preventDefault();
+    const found = {};
+    if (form.password.length < 8) found.password = `Use at least 8 characters (${form.password.length} so far).`;
+    else if (form.confirm !== form.password) found.confirm = "Passwords don't match.";
+    setErrors(found);
+    if (Object.keys(found).length) {
+      document.getElementById(found.password ? 'reset-password' : 'reset-confirm')?.focus();
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      await users.resetPassword(user.user_id, form.password);
+      onSaved(user);
+    } catch (err) {
+      if (err.details?.new_password) setErrors({ password: [].concat(err.details.new_password)[0] });
+      else setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      title={`Reset the password for ${user.full_name}?`}
+      description={`Type a temporary password and give it to ${firstName} in person or by phone. RoadWatch emails ${firstName} that the password was reset, without the password.`}
+    >
+      <form noValidate onSubmit={save} className="flex flex-col gap-4">
+        <PasswordField
+          id="reset-password"
+          label="Temporary password"
+          required
+          autoComplete="new-password"
+          value={form.password}
+          onChange={set('password')}
+          helper={`At least 8 characters. Ask ${firstName} to change it after logging in.`}
+          error={errors.password}
+          data-autofocus
+        />
+        <PasswordField
+          id="reset-confirm"
+          label="Confirm temporary password"
+          required
+          autoComplete="new-password"
+          value={form.confirm}
+          onChange={set('confirm')}
+          error={errors.confirm}
+        />
+        {error && (
+          <p role="alert" className="type-body-sm text-text-danger">
+            {error}
+          </p>
+        )}
+        <div className="flex flex-wrap justify-end gap-3 pt-2">
+          <Button variant="secondary" onClick={onClose} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
+            Cancel
+          </Button>
+          <Button type="submit" disabled={busy} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
+            {busy ? 'Saving…' : 'Reset password'}
           </Button>
         </div>
       </form>
@@ -232,12 +321,10 @@ function CreateOfficerCard({ onCreated }) {
           onChange={set('contact_phone')}
           error={errors.contact_phone}
         />
-        <TextField
+        <PasswordField
           id="officer-password"
           label="Temporary password"
           required
-          type="password"
-          icon="lock"
           autoComplete="new-password"
           placeholder="At least 8 characters"
           value={form.password}
@@ -360,6 +447,7 @@ export default function Users() {
   const [toast, setToast] = useState(null);
   const [roleTarget, setRoleTarget] = useState(null);
   const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [resetTarget, setResetTarget] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState('');
   const raiseServerError = useServerError();
@@ -431,13 +519,14 @@ export default function Users() {
       header: 'Actions',
       className: 'text-right',
       render: (u) => (
-        <div className="flex gap-2 md:justify-end">
+        <div className="flex flex-wrap gap-2 md:flex-nowrap md:justify-end">
           <UserActions
             user={u}
             isSelf={isSelf(u)}
             selfNoteId={selfNoteId}
             busy={busyId === u.user_id}
             onChangeRole={setRoleTarget}
+            onResetPassword={setResetTarget}
             onDeactivate={(target) => {
               setActionError('');
               setDeactivateTarget(target);
@@ -573,6 +662,20 @@ export default function Users() {
             setRoleTarget(null);
             setToast({ title: 'Role changed', body: `${target.full_name} is now a ${role}.` });
             if (roleFilter && role !== roleFilter) load();
+          }}
+        />
+      )}
+
+      {resetTarget && (
+        <ResetPasswordDialog
+          user={resetTarget}
+          onClose={() => setResetTarget(null)}
+          onSaved={(target) => {
+            setResetTarget(null);
+            setToast({
+              title: 'Password reset',
+              body: `${target.full_name} can log in with the temporary password. We emailed them that it changed.`,
+            });
           }}
         />
       )}

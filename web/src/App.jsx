@@ -8,6 +8,7 @@ import AboutPage from './pages/public/AboutPage';
 import NotFound from './pages/public/NotFound';
 import ServerError from './pages/public/ServerError';
 import StaffSignIn from './pages/auth/StaffSignIn';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import Dashboard from './pages/admin/Dashboard';
 import ReportManagement from './pages/admin/ReportManagement';
 import ReportDetails from './pages/admin/ReportDetails';
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/500" element={<ServerError />} />
         <Route path="/staff/sign-in" element={<StaffSignIn />} />
+        <Route path="/staff/forgot-password" element={<ForgotPassword />} />
         <Route path="/staff/sign-in/*" element={<Navigate to="/staff/sign-in" replace />} />
 
         {/* Administrator */}

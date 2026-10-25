@@ -5,6 +5,8 @@
 :root {
   color-scheme: light;
   --rw-brand-navy: #0B2545;
+  /* Figma primitive dark/bg: the always-dark photo viewer backdrop (same in both themes, #46). */
+  --rw-dark-bg: #0A1628;
   --rw-brand-blue: #4A7FB5;
   --rw-brand-amber: #F2A900;
   --rw-brand-success: #2E9E6B;

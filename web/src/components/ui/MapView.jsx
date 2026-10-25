@@ -9,7 +9,10 @@ import { cx } from '../../lib/cx';
 //
 // position: { lat, lng } or null (no pin). onChange(position): makes the map editable; clicking the
 //   map or using "Use current location" places the pin. Without onChange the map is read-only.
-// size: 'web' (320 px tall) or 'mobile' (280 px). children: extra layers (e.g. CircleMarkers).
+// size: 'web' (320 px tall), 'mobile' (280 px) or 'fill' (the parent's height, for the full-screen
+//   map). children: extra layers (e.g. CircleMarkers).
+// onExpand: shows the bottom-left "Expand map" button that opens the full-screen map (#46, Figma Map
+//   "Show expand"); leave it out inside the full-screen view itself.
 // The map is never the only way to give a location: the coordinates are shown as text, and the
 // accident_location text field stays on the form (Figma note).
 const DEFAULT_CENTER = { lat: 14.8433, lng: 120.8114 }; // Malolos, Bulacan
@@ -49,6 +52,7 @@ export default function MapView({
   size = 'web',
   zoom,
   label = 'Accident location map',
+  onExpand,
   className = '',
   children,
 }) {
@@ -92,13 +96,13 @@ export default function MapView({
   const center = position || DEFAULT_CENTER;
 
   return (
-    <div className={cx('w-full', className)}>
+    <div className={cx('w-full', size === 'fill' && 'h-full', className)}>
       <div
         role="region"
         aria-label={label}
         className={cx(
           'relative isolate w-full overflow-hidden rounded-rw-md border border-border-subtle bg-surface-navy-subtle',
-          size === 'mobile' ? 'h-70' : 'h-80',
+          size === 'mobile' ? 'h-70' : size === 'fill' ? 'h-full rounded-none border-0' : 'h-80',
           // Attribution must stay visible; style it like the Figma caption.
           '[&_.leaflet-control-attribution]:bg-surface-white [&_.leaflet-control-attribution]:px-2 [&_.leaflet-control-attribution]:py-1',
           '[&_.leaflet-control-attribution]:type-caption [&_.leaflet-control-attribution]:text-text-muted',
@@ -165,6 +169,18 @@ export default function MapView({
         >
           <Icon name="locate" size={24} />
         </button>
+
+        {/* Expand map (#46): opens the full-screen view. */}
+        {onExpand && (
+          <button
+            type="button"
+            aria-label="Show the map full screen"
+            onClick={onExpand}
+            className="absolute bottom-9 left-3 z-[1000] flex size-12 items-center justify-center rounded-full bg-surface-white text-text-blue shadow-rw-md hover:bg-surface-light-gray"
+          >
+            <Icon name="maximize" size={24} />
+          </button>
+        )}
 
         {/* No pin yet: instruction chip. */}
         {editable && !hasPin && !locating && (
