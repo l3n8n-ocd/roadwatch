@@ -151,6 +151,8 @@ function CodeStep({ email }) {
     setBanner(null);
     try {
       await auth.forgotPassword(email.trim());
+      // Figma W1/Forgot password/2 New code sent (419:40475): the code field is empty for the new code.
+      setForm((f) => ({ ...f, code: '' }));
       setErrors((e) => ({ ...e, code: undefined }));
       setBanner({ type: 'success', title: 'New code sent', body: 'Use the newest code. It works for 15 minutes.' });
     } catch (err) {
