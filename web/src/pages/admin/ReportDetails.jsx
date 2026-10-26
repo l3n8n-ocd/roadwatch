@@ -5,9 +5,11 @@ import {
   ConfirmDialog,
   Dialog,
   EmptyState,
+  FullScreenMap,
   Icon,
   IconButton,
   MapView,
+  PhotoViewerDialog,
   RecordBadge,
   Select,
   Skeleton,
@@ -26,6 +28,8 @@ import { cx } from '../../lib/cx';
 // W4 Report details (Figma 125:1372, 131:4011 at 390 px). Administrator only (#36): verify / reject,
 // then assign an officer (assigning is locked until Verified, #30). Officers update reports in the mobile app.
 // Below 1024 px the action panels move into dialogs opened from a bottom action bar.
+// Full screen (#46): the map's Expand button opens W4/Overlay/Full-screen map (410:17163); the main
+// photo opens the photo viewer (410:17126).
 
 // ---------- small helpers ----------
 
@@ -166,6 +170,7 @@ function DetailsCard({ report }) {
 }
 
 function LocationCard({ report }) {
+  const [full, setFull] = useState(false);
   const hasPin = report.latitude != null && report.longitude != null;
   const lat = Number(report.latitude);
   const lng = Number(report.longitude);
@@ -192,7 +197,20 @@ function LocationCard({ report }) {
         {hasPin && ` · ${lat.toFixed(4)}, ${lng.toFixed(4)}`}
       </p>
       {hasPin ? (
-        <MapView position={{ lat, lng }} label={`Map of the accident location: ${report.accident_location}`} />
+        <>
+          <MapView
+            position={{ lat, lng }}
+            label={`Map of the accident location: ${report.accident_location}`}
+            onExpand={() => setFull(true)}
+          />
+          <FullScreenMap
+            open={full}
+            onClose={() => setFull(false)}
+            title={`${reportCode(report.report_id)} · ${report.accident_location}`}
+            position={{ lat, lng }}
+            label={`Map of the accident location: ${report.accident_location}`}
+          />
+        </>
       ) : (
         <p className="flex items-start gap-2 type-body-sm text-text-muted">
           <Icon name="info" size={16} className="mt-0.5" />
@@ -206,6 +224,7 @@ function LocationCard({ report }) {
 function PhotoViewer({ report }) {
   const photos = report.photos || [];
   const [index, setIndex] = useState(0);
+  const [full, setFull] = useState(false);
   const code = reportCode(report.report_id);
   const current = photos[Math.min(index, photos.length - 1)];
   const go = (step) => setIndex((i) => (i + step + photos.length) % photos.length);
@@ -226,13 +245,22 @@ function PhotoViewer({ report }) {
         <p className="type-body-sm text-text-muted">No photos were attached to this report.</p>
       ) : (
         <>
-          <div className="flex h-56 items-center justify-center overflow-hidden rounded-rw-md bg-surface-navy-subtle sm:h-75">
-            <img
-              src={current.cloudinary_url}
-              alt={`Photo ${index + 1} of ${photos.length} for ${code}`}
-              className="size-full object-cover"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setFull(true)}
+            aria-label={`Open photo ${index + 1} of ${photos.length} full screen`}
+            className="flex h-56 cursor-zoom-in items-center justify-center overflow-hidden rounded-rw-md bg-surface-navy-subtle sm:h-75"
+          >
+            <img src={current.cloudinary_url} alt="" className="size-full object-cover" />
+          </button>
+          <PhotoViewerDialog
+            open={full}
+            onClose={() => setFull(false)}
+            photos={photos}
+            index={index}
+            onIndexChange={setIndex}
+            reportLabel={code}
+          />
           {photos.length > 1 && (
             <div className="flex items-center gap-2 overflow-x-auto p-1 sm:gap-3">
               <IconButton icon="chevron-left" label="Previous photo" onClick={() => go(-1)} />

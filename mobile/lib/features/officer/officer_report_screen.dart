@@ -278,7 +278,17 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
               if (r.hasLocation) ...[
                 ClipRRect(
                   borderRadius: RwRadius.mdAll,
-                  child: RwMap(pin: LatLng(r.latitude!, r.longitude!), height: 216),
+                  child: RwMap(
+                    pin: LatLng(r.latitude!, r.longitude!),
+                    height: 216,
+                    onExpand: () => RwFullScreenMap.show(
+                      context,
+                      title: '${reportCode(r.reportId)} location',
+                      pin: LatLng(r.latitude!, r.longitude!),
+                      address: r.location,
+                      onOpenInMaps: () => _openInMaps(r),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: RwSpace.s12),
                 RwDetailItem(label: 'Coordinates', value: _coords(r)),
@@ -357,8 +367,12 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
                   semanticLabel: 'Photo ${i + 1} of ${r.photos.length}, opens full size',
                   onTap: () => RwPhotoViewer.show(
                     context,
-                    url: r.photos[i].url,
-                    label: 'Photo ${i + 1} of ${r.photos.length}',
+                    urls: [for (final p in r.photos) p.url],
+                    initialIndex: i,
+                    captions: [
+                      for (final p in r.photos)
+                        p.uploadedAt == null ? null : 'Added ${formatDateTime(p.uploadedAt)}',
+                    ],
                   ),
                 ),
             ],

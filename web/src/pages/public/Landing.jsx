@@ -6,6 +6,7 @@ import {
   Button,
   EmptyState,
   Icon,
+  FullScreenMap,
   MapView,
   RecordBadge,
   Skeleton,
@@ -465,6 +466,7 @@ function typeName(update) {
 function PublicUpdates() {
   const [state, setState] = useState({ status: 'loading', updates: [] });
   const [expanded, setExpanded] = useState(false);
+  const [fullMap, setFullMap] = useState(false); // #46, Figma 410:17216
   const wide = useMediaQuery('(min-width: 768px)');
   const sectionRef = useRef(null);
 
@@ -493,6 +495,43 @@ function PublicUpdates() {
   );
   // Small screens show two records and hide the map until "See all updates on the map".
   const showAll = wide || expanded;
+  const mapLabel = 'Map of verified road updates. The list of records carries the same information.';
+  const pins = (
+    <>
+      {points.map((point, index) => (
+        <Marker key={`${point[0]}-${point[1]}-${index}`} position={point} icon={UPDATE_PIN} keyboard={false} />
+      ))}
+      <FitToPins points={points} />
+    </>
+  );
+
+  // The record cards: under the section map, and beside the full-screen map as its text alternative.
+  const renderUpdates = (items, className, dataAttr = 'data-update-full-list') => (
+    <ul {...{ [dataAttr]: true }} aria-label="Verified records" className={className}>
+      {items.map((update) => (
+        <li
+          key={update.report_id}
+          className="flex flex-col gap-2 rounded-rw-md border border-border-subtle bg-surface-white p-4 sm:p-5"
+        >
+          <div className="flex flex-wrap gap-2">
+            <RecordBadge type="verified_record" />
+            {update.report_status && <StatusChip status={update.report_status} />}
+          </div>
+          <h3 className="type-h3 text-text-primary">
+            {typeName(update)} · {update.accident_location}
+          </h3>
+          <p className="flex items-center gap-2 type-body-sm text-text-muted">
+            <Icon name="calendar" size={16} className="text-text-primary" />
+            <span>
+              <span className="sr-only">Accident date: </span>
+              {formatDate(update.accident_date)}
+            </span>
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+
   const visible = showAll ? updates : updates.slice(0, 2);
   const canExpand = !wide && (updates.length > 2 || points.length > 0);
 
@@ -567,37 +606,22 @@ function PublicUpdates() {
             <div className="grid items-start gap-6 lg:grid-cols-[560px_1fr] lg:gap-8">
               {showAll && points.length > 0 && (
                 <div data-update-map>
-                  <MapView label="Map of verified road updates. The list of records carries the same information." zoom={12}>
-                    {points.map((point, index) => (
-                      <Marker key={`${point[0]}-${point[1]}-${index}`} position={point} icon={UPDATE_PIN} keyboard={false} />
-                    ))}
-                    <FitToPins points={points} />
+                  <MapView label={mapLabel} zoom={12} onExpand={() => setFullMap(true)}>
+                    {pins}
                   </MapView>
+                  <FullScreenMap
+                    open={fullMap}
+                    onClose={() => setFullMap(false)}
+                    title="Public road updates · verified records, last 7 days"
+                    zoom={12}
+                    label={mapLabel}
+                    aside={renderUpdates(updates, 'flex flex-col gap-4')}
+                  >
+                    {pins}
+                  </FullScreenMap>
                 </div>
               )}
-              <ul data-update-list aria-label="Verified records" className={cx('flex flex-col gap-4', points.length === 0 && 'lg:col-span-2')}>
-                {visible.map((update) => (
-                  <li
-                    key={update.report_id}
-                    className="flex flex-col gap-2 rounded-rw-md border border-border-subtle bg-surface-white p-4 sm:p-5"
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      <RecordBadge type="verified_record" />
-                      {update.report_status && <StatusChip status={update.report_status} />}
-                    </div>
-                    <h3 className="type-h3 text-text-primary">
-                      {typeName(update)} · {update.accident_location}
-                    </h3>
-                    <p className="flex items-center gap-2 type-body-sm text-text-muted">
-                      <Icon name="calendar" size={16} className="text-text-primary" />
-                      <span>
-                        <span className="sr-only">Accident date: </span>
-                        {formatDate(update.accident_date)}
-                      </span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              {renderUpdates(visible, cx('flex flex-col gap-4', points.length === 0 && 'lg:col-span-2'), 'data-update-list')}
             </div>
             {canExpand && (
               <button

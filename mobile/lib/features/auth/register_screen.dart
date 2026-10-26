@@ -30,7 +30,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _phoneError;
   String? _passwordError;
   AuthFailure? _failure;
-  bool _obscure = true;
   bool _busy = false;
   bool _tried = false;
 
@@ -179,24 +178,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             const SizedBox(height: RwSpace.s16),
-            RwTextField(
+            RwPasswordField(
               label: 'Password',
               required: true,
               controller: _password,
-              leadingIcon: RwIcons.lock,
               helperText: 'At least 8 characters.',
               errorText: _passwordError,
-              obscureText: _obscure,
-              maxLength: 128,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.newPassword],
               onChanged: revalidate,
               onSubmitted: (_) => _submit(),
-              trailing: RwIconButton(
-                icon: RwIcons.eye,
-                semanticLabel: _obscure ? 'Show password' : 'Hide password',
-                onPressed: () => setState(() => _obscure = !_obscure),
-              ),
             ),
             const SizedBox(height: RwSpace.s16),
             RwButton(label: 'Create account', loading: _busy, onPressed: _submit),

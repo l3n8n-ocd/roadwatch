@@ -70,6 +70,24 @@ class RoadWatchApi {
   }
 
   /// PATCH /auth/me/password (#25). A wrong current password is a 400 with a `current_password` field error.
+  /// Forgot password, step 1 (#37): emails an 8-character code. The API gives the same answer
+  /// whether or not the email has an account.
+  Future<void> forgotPassword({required String email}) async {
+    await client.post('/auth/forgot-password', body: {'contact_email': email.trim()});
+  }
+
+  /// Forgot password, step 2 (#37). A wrong or expired code is a 400 with `details.reset_code`.
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await client.post(
+      '/auth/reset-password',
+      body: {'contact_email': email.trim(), 'reset_code': code.trim(), 'new_password': newPassword},
+    );
+  }
+
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {
     await client.patch(
       '/auth/me/password',
@@ -147,10 +165,7 @@ class RoadWatchApi {
   Future<Report> updateOfficerReport(int reportId, {String? status, String? remarks}) async {
     final body = await client.patch(
       '/officer/reports/$reportId',
-      body: {
-        'status': ?status,
-        if (remarks != null && remarks.trim().isNotEmpty) 'remarks': remarks.trim(),
-      },
+      body: {'status': ?status, if (remarks != null && remarks.trim().isNotEmpty) 'remarks': remarks.trim()},
     );
     return Report.fromJson(body.dataMap);
   }

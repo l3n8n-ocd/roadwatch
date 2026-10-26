@@ -33,6 +33,8 @@ How to read this file:
 | Contrast checks (light) | `94:76` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=94-76) |
 | Contrast checks (dark mode) | `159:2` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=159-2) |
 | Iconography (icon components) | `95:4` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=95-4) |
+| Icon/eye-off (password shown, #45) | `389:3` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=389-3) |
+| Icon/maximize (Expand map, #46) | `389:13` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=389-13) |
 
 Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small; Label/Default, Button, Caption, Overline, Nav. Effect styles: Shadow/sm, md, lg; Focus/ring, Focus/ring-on-dark.
 
@@ -44,7 +46,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Logo/Emblem (from draft) | `96:18` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-18) |
 | Button | `96:193` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-193) |
 | Icon button | `96:261` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-261) |
-| Text field | `97:178` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-178) |
+| Text field (Show password toggle + Toggle icon eye / eye-off, #45) | `97:178` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-178) |
 | Select | `97:279` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-279) |
 | Date time field | `97:411` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-411) |
 | Calendar popover | `97:412` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-412) |
@@ -56,7 +58,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Stat card | `99:431` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=99-431) |
 | Table row | `101:401` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-401) |
 | Photo tile | `101:443` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-443) |
-| Map | `101:649` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-649) |
+| Map (Show expand: bottom-left Expand map button opens the full-screen map, #46; tiles scale on resize) | `101:649` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-649) |
 | Toast | `101:708` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-708) |
 | Empty / error state | `101:760` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-760) |
 | Skeleton | `101:784` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=101-784) |
@@ -130,6 +132,17 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | O4/Report details/Update saved (toast) | `325:3567` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=325-3567) |
 | O5/Notifications/Default (officer: assignment alerts) | `323:3085` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3085) |
 | O6/Settings/Main (Light) (officer) | `323:3198` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=323-3198) |
+| Label/M0 · Forgot password (#37) | `396:4053` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=396-4053) |
+| M0/Forgot password/Enter email (POST /auth/forgot-password; same answer for any email) | `396:4056` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=396-4056) |
+| M0/Forgot password/Enter code (code + new password + confirm; POST /auth/reset-password) | `396:4169` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=396-4169) |
+| M0/Forgot password/Code wrong or expired (new password shown with the eye, #45) | `396:4309` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=396-4309) |
+| M0/Login/Password changed (toast after a reset) | `396:4384` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=396-4384) |
+| M0/Forgot password/New code sent (after "Send a new one": success toast, code field empty) | `419:4438` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=419-4438) |
+| Label/Full-screen photo and map (#46) | `406:4284` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4284) |
+| M6/Photo viewer/Full screen (photo 2 of 3; reporter tracking and officer O2) | `406:4287` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4287) |
+| M6/Map/Full screen (reporter) | `406:4311` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4311) |
+| O2/Map/Full screen (officer, keeps Open in Maps) | `406:4367` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4367) |
+| M3/Location/Full-screen map (move the pin; Cancel / Use this location, 12 px side padding so the label fits at 360) | `406:4431` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4431) |
 | Settings/Demo video/Playing | `119:1923` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1923) |
 | Settings/Demo video/Coming soon (demoVideoUrl = null) | `119:1991` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1991) |
 | Accessibility checklist/Mobile | `120:1977` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=120-1977) |
@@ -179,6 +192,19 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W11/404 Page not found · Responsive (390) | `347:15995` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-15995) |
 | W12/500 Something went wrong (1440) (render errors, API 5xx, /500) | `347:16031` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-16031) |
 | W12/500 Something went wrong · Responsive (390) | `347:16084` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-16084) |
+| Label/W1 · Forgot password (#37) | `403:16259` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=403-16259) |
+| W1/Forgot password/1 Enter email (1440) | `403:16262` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=403-16262) |
+| W1/Forgot password/2 Enter code (1440) | `403:16316` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=403-16316) |
+| W1/Forgot password/2 Enter code · Responsive (390) | `403:16479` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=403-16479) |
+| W1/Forgot password/3 Password changed (1440) | `403:16404` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=403-16404) |
+| W1/Forgot password/2 New code sent (1440) | `419:40475` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=419-40475) |
+| W6/Overlay/Reset password (dialog; admin sets a temporary password, #37) | `404:16418` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=404-16418) |
+| W6/Users & settings/Password reset (1440, toast) | `404:16490` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=404-16490) |
+| Label/Full-screen photo and map (#46) | `410:17123` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17123) |
+| W4/Overlay/Photo viewer (full screen, photo 2 of 3) | `410:17126` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17126) |
+| W4/Overlay/Full-screen map (one report) | `410:17163` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17163) |
+| W0/Overlay/Public road updates map (full screen, list beside it) | `410:17216` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17216) |
+| W2/Overlay/Accident hotspots map (full screen, Top locations beside it) | `410:17303` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17303) |
 | Accessibility checklist/Web | `132:4095` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=132-4095) |
 
 ## Flows (prototype)
@@ -222,9 +248,28 @@ Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Ad
 | E1 · Demo video (mobile, from Settings) | `175:4123` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=175-4123) |
 | E3 · Emergency hotlines (from Settings row or Home "Hotlines") | `256:5755` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=256-5755) |
 | E2 · Demo video (web) | `134:1356` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=134-1356) |
+| G1 · M0 Forgot password, email (from A1 and C1 "Forgot password?"; Send code → G2) | `412:12276` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=412-12276) |
+| G2 · M0 Forgot password, code (Change password → G3) | `412:12286` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=412-12286) |
+| G3 · M0 Login, password changed (Log in → A2) | `412:12299` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=412-12299) |
+| G4 · Photo viewer (from A7 and C3 photo tiles; Close goes back) | `412:12319` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=412-12319) |
+| G5 · O2 Map full screen (from C3 Expand map) | `412:12330` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=412-12330) |
+| G6 · M3 Move the pin (from A4 Expand map) | `412:12337` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=412-12337) |
+| G7 · M0 Forgot password, new code sent (from G2 "Send a new one") | `420:13431` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=420-13431) |
+| H1 · W1 Forgot password, email (from B1 "Forgot password?") | `413:12509` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12509) |
+| H2 · W1 Forgot password, code (Change password → H3) | `413:12524` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12524) |
+| H3 · W1 Password changed (Log in → B2) | `413:12540` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12540) |
+| H4 · Overlay · Reset password (from D1 Liza Manalo "Reset password"; Reset → H5) | `413:12557` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12557) |
+| H5 · W6 Password reset (toast) | `413:12580` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12580) |
+| H6 · Overlay · Photo viewer (from B4 main photo) | `413:12689` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12689) |
+| H7 · Overlay · W4 map (from B4 Expand map) | `413:12702` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12702) |
+| H8 · Overlay · W0 road updates map (from 0 · W0 Expand map) | `413:12708` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12708) |
+| H9 · Overlay · W2 hotspots map (from B2 Expand map) | `413:12749` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=413-12749) |
+| H10 · W1 Forgot password, new code sent (from H2 "Send a new one") | `420:13445` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=420-13445) |
 | Motion and reduced motion notes | `135:3898` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=135-3898) |
 
 Flow F (user menu pages) starts at B2 · W2 Dashboard (the same start as E2): open the user menu, then Action log or About.
+
+Flow G (mobile) and Flow H (web), added Oct 25 for #37 and #46: Forgot password from A1, C1 and B1; the W6 Reset password dialog from D1; full-screen photo and map views from A4, A7, C3, B4, B2 and 0 · W0. Back, Close and Cancel go back to the screen that opened them. D1 and D3 also got the Reset password row action.
 
 Landing page (updated Oct 20, #36): the footer "Staff sign-in" goes to B1 Administrator sign-in. "Get the app" (header) and the two "Download the Android app" buttons open the latest GitHub release (APK). The reporter buttons and the header "Log in" were removed; "Track my report" became "See how it works".
 

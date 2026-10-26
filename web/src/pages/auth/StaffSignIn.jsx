@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Button, TextField, Toast } from '../../components/ui';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Button, PasswordField, TextField, Toast } from '../../components/ui';
 import { useAuth } from '../../context/AuthContext';
 import { APK_URL, homePathFor } from '../../lib/constants';
 import AuthShell, { BackLink } from './AuthShell';
@@ -9,6 +9,8 @@ import AuthShell, { BackLink } from './AuthShell';
 // Administrators only. The client sends platform "web"; the API answers 403 WRONG_PLATFORM for a
 // Reporter or Traffic Officer account, shown as the "Mobile-only account" state (321:15655).
 // This page only routes: the API enforces roles and platforms on every request.
+// "Forgot password?" opens the reset flow (#37, Figma 403:16262); after a reset the page shows the
+// "Password changed" toast (403:16404).
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,6 +29,7 @@ function AdminForm() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({}); // field messages
   const [banner, setBanner] = useState(null); // { title, body }
+  const [changed, setChanged] = useState(Boolean(location.state?.passwordChanged)); // back from Forgot password
   const [mobileOnly, setMobileOnly] = useState(false); // a Reporter or Traffic Officer account
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,6 +47,7 @@ function AdminForm() {
     const found = validate();
     setErrors(found);
     setBanner(null);
+    setChanged(false);
     setMobileOnly(false);
     if (Object.keys(found).length > 0) {
       document.getElementById(found.email ? 'staff-email' : 'staff-password')?.focus();
@@ -81,6 +85,12 @@ function AdminForm() {
       <h1 className="type-h1 text-text-primary">Administrator sign-in</h1>
       <p className="type-body text-text-muted max-sm:hidden">Use the email registered for your administrator account.</p>
 
+      {changed && (
+        <Toast type="success" title="Password changed" onClose={() => setChanged(false)} className="max-w-none!">
+          Sign in with your new password.
+        </Toast>
+      )}
+
       {banner && (
         <Toast type="error" title={banner.title} onClose={() => setBanner(null)} className="max-w-none!">
           {banner.body}
@@ -111,11 +121,9 @@ function AdminForm() {
           onChange={(e) => setEmail(e.target.value)}
           error={errors.email}
         />
-        <TextField
+        <PasswordField
           id="staff-password"
           label="Password"
-          type="password"
-          icon="lock"
           autoComplete="current-password"
           placeholder="At least 8 characters"
           required
@@ -123,11 +131,19 @@ function AdminForm() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
+        <div className="-mt-2 flex justify-end">
+          <Link
+            to="/staff/forgot-password"
+            state={{ email: email.trim() }}
+            className="inline-flex min-h-11 items-center rounded-rw-sm type-label text-text-blue underline underline-offset-2"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <Button type="submit" fullWidth disabled={submitting} className="max-sm:h-12">
           {submitting ? 'Logging in…' : 'Log in'}
         </Button>
       </form>
-      <p className="type-body-sm text-text-muted">Forgot your password? Ask the RoadWatch administrator to reset it.</p>
       <p className="type-body-sm text-text-muted">
         Reporters and Traffic Officers sign in on the RoadWatch Android app. This website is for administrators only.
       </p>

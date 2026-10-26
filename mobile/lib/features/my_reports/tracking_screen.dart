@@ -141,8 +141,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
-  void _openPhoto(ReportPhoto photo, String label) {
-    RwPhotoViewer.show(context, url: photo.url, label: label);
+  void _openPhoto(Report r, int index) {
+    RwPhotoViewer.show(
+      context,
+      urls: [for (final p in r.photos) p.url],
+      initialIndex: index,
+      captions: [
+        for (final p in r.photos) p.uploadedAt == null ? null : 'Added ${formatDateTime(p.uploadedAt)}',
+      ],
+    );
   }
 
   @override
@@ -286,7 +293,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
           const SizedBox(height: RwSpace.s12),
           ClipRRect(
             borderRadius: RwRadius.mdAll,
-            child: RwMap(pin: LatLng(r.latitude!, r.longitude!), height: 200),
+            child: RwMap(
+              pin: LatLng(r.latitude!, r.longitude!),
+              height: 200,
+              onExpand: () => RwFullScreenMap.show(
+                context,
+                title: 'Accident location',
+                pin: LatLng(r.latitude!, r.longitude!),
+                address: r.location,
+              ),
+            ),
           ),
         ],
         if (r.photos.isNotEmpty) ...[
@@ -303,7 +319,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   image: NetworkImage(r.photos[i].url),
                   caption: 'Photo ${i + 1} of ${r.photos.length}',
                   semanticLabel: 'Photo ${i + 1} of ${r.photos.length}, opens full size',
-                  onTap: () => _openPhoto(r.photos[i], 'Photo ${i + 1} of ${r.photos.length}'),
+                  onTap: () => _openPhoto(r, i),
                 ),
             ],
           ),

@@ -102,6 +102,8 @@ function describe(entry) {
       return { icon: 'sliders', label: 'Changed role', details: `${who}: role is now ${d.role || 'updated'}.` };
     case 'user.deactivated':
       return { icon: 'user-x', label: 'Deactivated user', details: `${who} can no longer sign in. Reports and history kept.` };
+    case 'user.password_reset':
+      return { icon: 'lock', label: 'Reset password', details: `${who}: temporary password set. They were emailed (without the password).` };
     case 'user.reactivated':
       return { icon: 'user-check', label: 'Reactivated user', details: `${who} can sign in again.` };
     case 'export.csv':
@@ -115,6 +117,10 @@ function describe(entry) {
       return { icon: 'user', label: 'Updated profile', details: 'Name or mobile number changed.' };
     case 'account.password_changed':
       return { icon: 'lock', label: 'Changed password', details: 'Password changed.' };
+    case 'auth.password_reset_requested':
+      return { icon: 'mail', label: 'Requested a reset code', details: 'Forgot password: a code was emailed.' };
+    case 'account.password_reset':
+      return { icon: 'lock', label: 'Reset password with a code', details: 'Password changed with an emailed code.' };
     case 'account.registered':
       return { icon: 'user', label: 'Registered', details: 'Account created.' };
     default:

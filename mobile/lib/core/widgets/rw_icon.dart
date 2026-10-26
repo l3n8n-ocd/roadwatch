@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Names of the 56 Figma icons (Foundations > Iconography, Lucide-style outline, 2 px stroke).
+/// Names of the 58 Figma icons (Foundations > Iconography, Lucide-style outline, 2 px stroke).
 /// Files live in `assets/icons/<name>.svg` (generated from the Figma icon components).
 abstract final class RwIcons {
   static const alertCircle = 'alert-circle';
@@ -21,6 +21,7 @@ abstract final class RwIcons {
   static const dashboard = 'dashboard';
   static const download = 'download';
   static const eye = 'eye';
+  static const eyeOff = 'eye-off';
   static const fileText = 'file-text';
   static const filter = 'filter';
   static const globe = 'globe';
@@ -37,6 +38,7 @@ abstract final class RwIcons {
   static const mail = 'mail';
   static const map = 'map';
   static const mapPin = 'map-pin';
+  static const maximize = 'maximize';
   static const menu = 'menu';
   static const message = 'message';
   static const minus = 'minus';

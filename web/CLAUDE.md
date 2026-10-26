@@ -39,7 +39,7 @@ src/
   shadows `shadow-rw-sm|md|lg|focus`, sizes `--rw-size-touch-web` (44), `--rw-size-control-height` (48).
 - Type styles are utilities: `type-hero`, `type-display`, `type-h1`, `type-h2`, `type-h3`, `type-stat`,
   `type-body-lg`, `type-body`, `type-body-sm`, `type-label`, `type-button`, `type-caption`, `type-overline`, `type-nav`.
-- Icons: `<Icon name="map-pin" size={20} />` from `components/ui/Icon.jsx` (56 Figma icons, `iconData.js`).
+- Icons: `<Icon name="map-pin" size={20} />` from `components/ui/Icon.jsx` (58 Figma icons, `iconData.js`).
   Figma asset URLs (www.figma.com) cannot be downloaded in this environment: use Icon and the files in
   `assets/images` instead.
 
@@ -51,9 +51,13 @@ src/
   Body text navy; text-only colors `text-text-blue|success|danger`.
 - Charts and maps get a text alternative or a data table. Images have alt text (decorative: `alt=""`).
 - Touch targets at least 44 px. Respect `prefers-reduced-motion`.
+- Password inputs use `PasswordField` (eye / eye-off, "Show password" / "Hide password", #45).
+- Maps: pass `onExpand` to `MapView` and render `FullScreenMap` (title, Close/Esc, `aside` = the text alternative list);
+  photos open in `PhotoViewerDialog` (always dark via `bg-dark-bg`, arrows, +/- zoom, Esc, no download; #46).
 
 ## Routes (#40)
-- Public: `/` landing, `/about` (W10, Meet our team), `/500` (W12), `/staff/sign-in`; any unknown path shows 404 (W11).
+- Public: `/` landing, `/about` (W10, Meet our team), `/500` (W12), `/staff/sign-in`, `/staff/forgot-password`
+  (#37: email, then code + new password, back to sign-in with "Password changed"); any unknown path shows 404 (W11).
 - Administrator: `/admin...`, `/demo-video`, `/action-log`, `/admin/about` (W9, version and server status).
 - Landing section links are `/#how-it-works`, `/#public-updates`, `/#safety-tips`, `/#faq`; Landing scrolls to the hash.
 - Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.

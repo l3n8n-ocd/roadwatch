@@ -34,6 +34,9 @@ const id = validate(s.idParam, 'params');
 // ----- auth (public) -----
 router.post('/auth/register', authLimiter, validate(s.register), wrap(auth.register));
 router.post('/auth/login', authLimiter, validate(s.login), wrap(auth.login));
+// Forgot password (#37): public, rate limited (the limiter also slows down guessing codes).
+router.post('/auth/forgot-password', authLimiter, validate(s.forgotPassword), wrap(auth.forgotPassword));
+router.post('/auth/reset-password', authLimiter, validate(s.resetPassword), wrap(auth.resetPassword));
 router.get('/auth/me', authenticate, wrap(auth.me));
 router.patch('/auth/me', authenticate, validate(s.updateMe), wrap(auth.updateMe));
 // The limiter slows down guessing the current password.
@@ -75,6 +78,7 @@ router.post('/users', allowRoles(ADMIN), validate(s.createUser), wrap(users.crea
 router.get('/users', allowRoles(ADMIN), validate(s.listUsersQuery, 'query'), wrap(users.list));
 router.patch('/users/:id/role', allowRoles(ADMIN), id, validate(s.setRole), wrap(users.setRole));
 router.patch('/users/:id/active', allowRoles(ADMIN), id, validate(s.setActive), wrap(users.setActive));
+router.patch('/users/:id/password', allowRoles(ADMIN), id, validate(s.adminResetPassword), wrap(users.resetPassword));
 
 router.get('/dashboard/stats', allowRoles(ADMIN), wrap(misc.stats));
 router.get('/exports/summary', allowRoles(ADMIN), validate(s.summaryQuery, 'query'), wrap(misc.summary));

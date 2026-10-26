@@ -8,7 +8,8 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/widgets.dart';
 import '../../routes.dart';
 
-/// Log in. Figma (Mobile page 90:4): M0/Login/Default 109:5, Error 109:79, Deactivated account 109:164.
+/// Log in. Figma (Mobile page 90:4): M0/Login/Default 109:5, Error 109:79, Deactivated account 109:164,
+/// Password changed 396:4384 (after Forgot password, #37).
 ///
 /// Navy hero with the street photo at 15 % opacity, then the form. Failed logins and the
 /// one-time AuthProvider.notice (deactivated, session ended, staff account) show in an inline
@@ -28,9 +29,9 @@ class _LoginScreenState extends State<LoginScreen> {
   AuthFailure? _failure;
   String? _emailError;
   String? _passwordError;
-  bool _obscure = true;
   bool _busy = false;
   bool _tried = false;
+  bool _passwordChanged = false;
 
   @override
   void initState() {
@@ -70,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _busy = true;
       _failure = null;
+      _passwordChanged = false;
     });
     try {
       await context.read<AuthProvider>().login(email: _email.text, password: _password.text);
@@ -79,6 +81,18 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) setState(() => _failure = f);
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final changed = await Navigator.of(context)
+        .pushNamed(Routes.forgotPassword, arguments: _email.text.trim());
+    if (changed == true && mounted) {
+      setState(() {
+        _passwordChanged = true;
+        _failure = null;
+        _password.clear();
+      });
     }
   }
 
@@ -103,6 +117,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       header: true,
                       child: Text('Log in', style: RwType.h2.copyWith(color: c.textPrimary)),
                     ),
+                    if (_passwordChanged) ...[
+                      const SizedBox(height: RwSpace.s12),
+                      RwToast(
+                        type: RwToastType.success,
+                        title: 'Password changed',
+                        message: 'Log in with your new password.',
+                        onClose: () => setState(() => _passwordChanged = false),
+                      ),
+                    ],
                     if (_failure != null) ...[
                       const SizedBox(height: RwSpace.s12),
                       RwToast(
@@ -127,26 +150,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       onSubmitted: (_) => _passwordFocus.requestFocus(),
                     ),
                     const SizedBox(height: RwSpace.s12),
-                    RwTextField(
+                    RwPasswordField(
                       label: 'Password',
                       required: true,
                       controller: _password,
                       focusNode: _passwordFocus,
-                      leadingIcon: RwIcons.lock,
                       hintText: 'At least 8 characters',
                       errorText: _passwordError,
-                      obscureText: _obscure,
                       textInputAction: TextInputAction.done,
                       autofillHints: const [AutofillHints.password],
                       onChanged: (_) => _tried ? _validate() : null,
                       onSubmitted: (_) => _submit(),
-                      trailing: RwIconButton(
-                        icon: RwIcons.eye,
-                        semanticLabel: _obscure ? 'Show password' : 'Hide password',
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                      ),
                     ),
                     const SizedBox(height: RwSpace.s12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: RwTextLink(
+                        label: 'Forgot password?',
+                        alignment: Alignment.topRight,
+                        onTap: _busy ? null : _forgotPassword,
+                      ),
+                    ),
                     RwButton(label: 'Log in', loading: _busy, onPressed: _submit),
                     const SizedBox(height: RwSpace.s12),
                     RwButton.secondary(

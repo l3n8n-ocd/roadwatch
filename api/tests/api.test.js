@@ -314,6 +314,55 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.ok(assigned.body.data.some((row) => row.action_details.to === 'Assigned' && row.action_details.officer_name === 'Officer One'));
     });
 
+    await t.test('forgot password with an emailed code; admin resets a password (#37)', async () => {
+      const { makeResetCode } = require('../src/services/passwordResetService');
+      const sent = await call('POST', '/auth/forgot-password', { body: { contact_email: rep.email } });
+      const unknown = await call('POST', '/auth/forgot-password', { body: { contact_email: `nobody.${run}@test.local` } });
+      assert.equal(sent.status, 200);
+      assert.deepEqual(unknown.body, sent.body, 'same answer whether or not the email has an account');
+      assert.equal((await call('POST', '/auth/forgot-password', { body: { contact_email: 'not-an-email' } })).status, 400);
+
+      const repUser = await User.scope('withPassword').findOne({ where: { contact_email: rep.email } });
+      const code = makeResetCode(repUser);
+      assert.match(code, /^[A-Z2-9]{8}$/);
+      const reset = (body) => call('POST', '/auth/reset-password', { body: { contact_email: rep.email, new_password: 'resetpass789', ...body } });
+      const wrong = await reset({ reset_code: code === 'AAAAAAAA' ? 'BBBBBBBB' : 'AAAAAAAA' });
+      assert.equal(wrong.status, 400);
+      assert.ok(wrong.body.details.reset_code, 'the error goes under the code field');
+      const noUser = await call('POST', '/auth/reset-password', { body: { contact_email: `nobody.${run}@test.local`, reset_code: code, new_password: 'resetpass789' } });
+      assert.equal(noUser.status, 400);
+      assert.equal(noUser.body.error, wrong.body.error, 'unknown email gives the same answer as a wrong code');
+      assert.equal((await reset({ reset_code: code, new_password: 'short' })).status, 400);
+
+      const realNow = Date.now;
+      Date.now = () => realNow() + 16 * 60000;
+      try {
+        assert.equal((await reset({ reset_code: code })).status, 400, 'the code expires after 15 minutes');
+      } finally {
+        Date.now = realNow;
+      }
+      const typed = `${code.slice(0, 4).toLowerCase()}-${code.slice(4)}`;
+      assert.equal((await reset({ reset_code: typed })).status, 200, 'case and dashes do not matter');
+      assert.equal((await reset({ reset_code: code })).status, 400, 'a code works once');
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'newpassword456', platform: 'mobile' } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'resetpass789', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('GET', '/auth/me', { token: rep.token })).status, 200, 'other signed-in devices stay signed in');
+      assert.ok(await AuditLog.findOne({ where: { user_id: repUser.user_id, action_taken: 'account.password_reset' } }));
+
+      const path = `/users/${officer.id}/password`;
+      assert.equal((await call('PATCH', path, { token: rep.token, body: { new_password: 'temporary123' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: officer.token, body: { new_password: 'temporary123' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: admin.token, body: { new_password: 'short' } })).status, 400);
+      assert.equal((await call('PATCH', `/users/${admin.user.user_id}/password`, { token: admin.token, body: { new_password: 'temporary123' } })).status, 400, 'not on your own account');
+      const admin2 = await makeStaff('Administrator', 'admin2');
+      assert.equal((await call('PATCH', `/users/${admin2.user.user_id}/password`, { token: admin.token, body: { new_password: 'temporary123' } })).status, 400, 'not on another administrator');
+      assert.equal((await call('PATCH', '/users/99999999/password', { token: admin.token, body: { new_password: 'temporary123' } })).status, 404);
+      const done = await call('PATCH', path, { token: admin.token, body: { new_password: 'temporary123' } });
+      assert.equal(done.status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: 'temporary123', platform: 'mobile' } })).status, 200);
+      assert.ok(await AuditLog.findOne({ where: { user_id: admin.user.user_id, action_taken: 'user.password_reset' } }));
+    });
+
     await t.test('photo upload validates input (Cloudinary itself is not called)', async () => {
       const none = await fetch(`${base}/reports/${reportId}/photos`, { method: 'POST', headers: { Authorization: `Bearer ${rep.token}` }, body: new FormData() });
       assert.equal(none.status, 400);

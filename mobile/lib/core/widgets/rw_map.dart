@@ -26,6 +26,10 @@ class RwMap extends StatefulWidget {
     this.height = 280,
     this.initialZoom = 15,
     this.controller,
+    this.onExpand,
+    this.framed = true,
+    this.centerPin = false,
+    this.onCenterChanged,
   });
 
   /// Current pin, or null for the "No pin" state.
@@ -40,6 +44,18 @@ class RwMap extends StatefulWidget {
   final double height;
   final double initialZoom;
   final MapController? controller;
+
+  /// Bottom-left "Expand map" button (#46, Figma Map "Show expand"): opens the full-screen map.
+  /// Leave it null inside the full-screen view itself.
+  final VoidCallback? onExpand;
+
+  /// Rounded corners and a border (cards). The full-screen map turns it off.
+  final bool framed;
+
+  /// "Move the pin" mode (M3 full screen): the pin stays in the middle and the map moves under it;
+  /// [onCenterChanged] reports the point under the pin.
+  final bool centerPin;
+  final ValueChanged<LatLng>? onCenterChanged;
 
   @override
   State<RwMap> createState() => _RwMapState();
@@ -74,7 +90,8 @@ class _RwMapState extends State<RwMap> {
   @override
   Widget build(BuildContext context) {
     final c = RwColors.of(context);
-    final pin = widget.pin;
+    // In "move the pin" mode the pin is drawn over the middle of the map instead of as a marker.
+    final pin = widget.centerPin ? null : widget.pin;
     final description = widget.locating
         ? 'Map. Finding your location.'
         : pin == null
@@ -83,11 +100,13 @@ class _RwMapState extends State<RwMap> {
 
     return Container(
       height: widget.height,
-      decoration: BoxDecoration(
-        borderRadius: RwRadius.mdAll,
-        border: Border.all(color: c.borderSubtle),
-      ),
-      clipBehavior: Clip.antiAlias,
+      decoration: widget.framed
+          ? BoxDecoration(
+              borderRadius: RwRadius.mdAll,
+              border: Border.all(color: c.borderSubtle),
+            )
+          : null,
+      clipBehavior: widget.framed ? Clip.antiAlias : Clip.none,
       child: Stack(
         children: [
           Semantics(
@@ -101,6 +120,9 @@ class _RwMapState extends State<RwMap> {
                 minZoom: 3,
                 maxZoom: 19,
                 onMapReady: () => _ready = true,
+                onPositionChanged: widget.onCenterChanged == null
+                    ? null
+                    : (camera, _) => widget.onCenterChanged!(camera.center),
                 onTap: widget.onPinChanged == null ? null : (_, latLng) => widget.onPinChanged!(latLng),
                 interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
@@ -139,6 +161,20 @@ class _RwMapState extends State<RwMap> {
               ],
             ),
           ),
+          if (widget.centerPin)
+            // The pin's tip marks the point under it (map center).
+            Center(
+              child: IgnorePointer(
+                child: Transform.translate(
+                  offset: const Offset(0, -24),
+                  child: SizedBox(
+                    width: 40,
+                    height: 48,
+                    child: CustomPaint(painter: _PinPainter(c.brandNavy, c.surfaceWhite)),
+                  ),
+                ),
+              ),
+            ),
           if (pin != null && !widget.locating)
             Positioned(
               left: 11,
@@ -254,6 +290,28 @@ class _RwMapState extends State<RwMap> {
                   ),
                   alignment: Alignment.center,
                   child: RwIcon(RwIcons.locate, size: RwSize.iconLg, color: c.textBlue),
+                ),
+              ),
+            ),
+          if (widget.onExpand != null)
+            Positioned(
+              left: 11,
+              bottom: 37,
+              child: RwPressable(
+                onTap: widget.onExpand,
+                semanticLabel: 'Show the map full screen',
+                excludeChildSemantics: true,
+                borderRadius: RwRadius.fullAll,
+                builder: (context, s) => Container(
+                  width: RwSize.touch,
+                  height: RwSize.touch,
+                  decoration: BoxDecoration(
+                    color: s.active ? c.surfaceNavySubtle : c.surfaceWhite,
+                    shape: BoxShape.circle,
+                    boxShadow: RwShadow.md,
+                  ),
+                  alignment: Alignment.center,
+                  child: RwIcon(RwIcons.maximize, size: RwSize.iconLg, color: c.textBlue),
                 ),
               ),
             ),

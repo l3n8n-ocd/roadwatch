@@ -87,59 +87,191 @@ class RwDetailItem extends StatelessWidget {
   }
 }
 
-/// Full-size photo with pinch zoom and a labelled close button. Open with [show].
-class RwPhotoViewer extends StatelessWidget {
-  const RwPhotoViewer({super.key, required this.url, required this.label});
-  final String url;
-  final String label;
+/// Full-screen photo viewer (#46, Figma M6/Photo viewer/Full screen 406:4287): every photo of the report,
+/// uncropped, "Photo 2 of 3", swipe or previous/next, pinch or double-tap to zoom, close. Always dark
+/// (Figma dark/bg) in both themes. No download (DECISIONS #43). Open with [show].
+class RwPhotoViewer extends StatefulWidget {
+  const RwPhotoViewer({super.key, required this.urls, this.initialIndex = 0, this.captions});
 
-  static Future<void> show(BuildContext context, {required String url, required String label}) =>
-      showDialog<void>(
-        context: context,
-        builder: (_) => RwPhotoViewer(url: url, label: label),
-      );
+  final List<String> urls;
+  final int initialIndex;
+
+  /// Optional line under each photo (e.g. "Added Oct 17, 2026 · 08:42").
+  final List<String?>? captions;
+
+  static Future<void> show(
+    BuildContext context, {
+    required List<String> urls,
+    int initialIndex = 0,
+    List<String?>? captions,
+  }) => Navigator.of(context).push(
+    PageRouteBuilder<void>(
+      opaque: true,
+      transitionDuration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 200),
+      pageBuilder: (_, _, _) => RwPhotoViewer(urls: urls, initialIndex: initialIndex, captions: captions),
+      transitionsBuilder: (_, animation, _, child) => FadeTransition(opacity: animation, child: child),
+    ),
+  );
+
+  @override
+  State<RwPhotoViewer> createState() => _RwPhotoViewerState();
+}
+
+class _RwPhotoViewerState extends State<RwPhotoViewer> {
+  late final _pages = PageController(initialPage: widget.initialIndex);
+  late int _index = widget.initialIndex;
+  final _zoom = TransformationController();
+  bool _zoomed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _zoom.addListener(() {
+      final zoomed = _zoom.value.getMaxScaleOnAxis() > 1.01;
+      if (zoomed != _zoomed) setState(() => _zoomed = zoomed);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    _zoom.dispose();
+    super.dispose();
+  }
+
+  void _go(int step) {
+    final count = widget.urls.length;
+    final next = (_index + step + count) % count;
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    if (reduce) {
+      _pages.jumpToPage(next);
+    } else {
+      _pages.animateToPage(next, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    }
+  }
+
+  void _toggleZoom(TapDownDetails? details) {
+    if (_zoomed) {
+      _zoom.value = Matrix4.identity();
+    } else {
+      final p = details?.localPosition ?? Offset.zero;
+      _zoom.value = Matrix4.identity()
+        ..translateByDouble(-p.dx, -p.dy, 0, 1)
+        ..scaleByDouble(2, 2, 1, 1);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final c = RwColors.of(context);
-    return Dialog.fullscreen(
+    // Always dark, whatever the app theme.
+    const c = RwColors.dark;
+    final count = widget.urls.length;
+    final caption = widget.captions != null && _index < widget.captions!.length
+        ? widget.captions![_index]
+        : null;
+    return Scaffold(
       backgroundColor: c.surfaceLightGray,
-      child: SafeArea(
+      body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: RwSpace.s8, vertical: RwSpace.s8),
+              padding: const EdgeInsets.all(RwSpace.s8),
               child: Row(
                 children: [
+                  RwIconButton(
+                    icon: RwIcons.x,
+                    semanticLabel: 'Close photo viewer',
+                    tone: RwIconButtonTone.dark,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: RwSpace.s8),
-                      child: Semantics(
-                        header: true,
-                        child: Text(label, style: RwType.h3.copyWith(color: c.textPrimary)),
+                    child: Semantics(
+                      header: true,
+                      liveRegion: true,
+                      child: Text(
+                        'Photo ${_index + 1} of $count',
+                        textAlign: TextAlign.center,
+                        style: RwType.button.copyWith(color: c.textInverse),
                       ),
                     ),
                   ),
-                  RwIconButton(
-                    icon: RwIcons.x,
-                    semanticLabel: 'Close photo',
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                  const SizedBox(width: RwSize.touch),
                 ],
               ),
             ),
             Expanded(
-              child: InteractiveViewer(
-                maxScale: 4,
-                child: Center(
-                  child: Image.network(
-                    url,
-                    semanticLabel: 'Accident photo, $label',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) =>
-                        Text("Couldn't load this photo.", style: RwType.body.copyWith(color: c.textMuted)),
+              child: PageView.builder(
+                controller: _pages,
+                itemCount: count,
+                // Swiping turns pages only while the photo is not zoomed in (then a drag pans).
+                physics: _zoomed ? const NeverScrollableScrollPhysics() : null,
+                onPageChanged: (i) => setState(() {
+                  _index = i;
+                  _zoom.value = Matrix4.identity();
+                }),
+                itemBuilder: (context, i) => GestureDetector(
+                  onDoubleTapDown: (d) => _lastTap = d,
+                  onDoubleTap: () => _toggleZoom(_lastTap),
+                  child: InteractiveViewer(
+                    transformationController: i == _index ? _zoom : null,
+                    maxScale: 4,
+                    child: Center(
+                      child: Image.network(
+                        widget.urls[i],
+                        semanticLabel: 'Accident photo ${i + 1} of $count',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => Text(
+                          "Couldn't load this photo.",
+                          style: RwType.body.copyWith(color: c.textInverseMuted),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(RwSpace.s8, RwSpace.s16, RwSpace.s8, RwSpace.s8),
+              child: Row(
+                children: [
+                  if (count > 1)
+                    RwIconButton(
+                      icon: RwIcons.chevronLeft,
+                      semanticLabel: 'Previous photo',
+                      tone: RwIconButtonTone.dark,
+                      onPressed: () => _go(-1),
+                    )
+                  else
+                    const SizedBox(width: RwSize.touch),
+                  Expanded(
+                    child: Text(
+                      caption ?? '',
+                      textAlign: TextAlign.center,
+                      style: RwType.bodySm.copyWith(color: c.textInverse),
+                    ),
+                  ),
+                  if (count > 1)
+                    RwIconButton(
+                      icon: RwIcons.chevronRight,
+                      semanticLabel: 'Next photo',
+                      tone: RwIconButtonTone.dark,
+                      onPressed: () => _go(1),
+                    )
+                  else
+                    const SizedBox(width: RwSize.touch),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(RwSpace.s32, RwSpace.s16, RwSpace.s32, RwSpace.s24),
+              child: Text(
+                count > 1
+                    ? 'Pinch or double-tap to zoom. Swipe for the next photo.'
+                    : 'Pinch or double-tap to zoom.',
+                textAlign: TextAlign.center,
+                style: RwType.bodySm.copyWith(color: c.textInverseMuted),
               ),
             ),
           ],
@@ -147,4 +279,6 @@ class RwPhotoViewer extends StatelessWidget {
       ),
     );
   }
+
+  TapDownDetails? _lastTap;
 }
