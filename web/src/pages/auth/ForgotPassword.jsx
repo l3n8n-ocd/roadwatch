@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, PasswordField, TextField, Toast } from '../../components/ui';
 import { auth } from '../../api/endpoints';
 import AuthShell from './AuthShell';
+import { NOT_STRONG, isStrong } from '../../lib/passwordStrength';
 
 // W1 Forgot password (#37, DECISIONS #43): 1 Enter email (Figma 403:16262), 2 Enter code
 // (403:16316, 390: 403:16479), then back on sign-in with "Password changed" (403:16404).
@@ -114,8 +115,9 @@ function CodeStep({ email }) {
   const validate = () => {
     const found = {};
     if (!form.code.trim()) found.code = 'Enter the code from the email.';
-    if (form.password.length < 8) found.password = `Use at least 8 characters (${form.password.length} so far).`;
-    else if (form.confirm !== form.password) found.confirm = "Passwords don't match.";
+    // #44: the new password must be Strong (the API refuses anything else).
+    if (!isStrong(form.password, { email })) found.password = NOT_STRONG;
+    if (form.confirm !== form.password) found.confirm = "Passwords don't match.";
     return found;
   };
 
@@ -196,8 +198,9 @@ function CodeStep({ email }) {
           autoComplete="new-password"
           value={form.password}
           onChange={set('password')}
-          helper="At least 8 characters."
           error={errors.password}
+          showStrength
+          person={{ email }}
         />
         <PasswordField
           id="reset-confirm"

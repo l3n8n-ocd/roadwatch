@@ -16,6 +16,7 @@ import { admin, lookups, users } from '../../api/endpoints';
 import useServerError from '../../lib/useServerError';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../lib/constants';
+import { NOT_STRONG, isStrong } from '../../lib/passwordStrength';
 import { cx } from '../../lib/cx';
 
 // W6 Users & settings (Figma 128:2944, after deactivation 128:3348, dialog 128:3709).
@@ -149,6 +150,7 @@ function ChangeRoleDialog({ user, onClose, onSaved }) {
 // emails the person that the password was reset, never the password itself.
 function ResetPasswordDialog({ user, onClose, onSaved }) {
   const firstName = user.full_name.split(' ')[0];
+  const person = { name: user.full_name, email: user.contact_email };
   const [form, setForm] = useState({ password: '', confirm: '' });
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
@@ -162,8 +164,9 @@ function ResetPasswordDialog({ user, onClose, onSaved }) {
   const save = async (event) => {
     event.preventDefault();
     const found = {};
-    if (form.password.length < 8) found.password = `Use at least 8 characters (${form.password.length} so far).`;
-    else if (form.confirm !== form.password) found.confirm = "Passwords don't match.";
+    // #44: a temporary password must be Strong too (the API refuses anything else).
+    if (!isStrong(form.password, person)) found.password = NOT_STRONG;
+    if (form.confirm !== form.password) found.confirm = "Passwords don't match.";
     setErrors(found);
     if (Object.keys(found).length) {
       document.getElementById(found.password ? 'reset-password' : 'reset-confirm')?.focus();
@@ -196,8 +199,10 @@ function ResetPasswordDialog({ user, onClose, onSaved }) {
           autoComplete="new-password"
           value={form.password}
           onChange={set('password')}
-          helper={`At least 8 characters. Ask ${firstName} to change it after logging in.`}
+          helper={`Ask ${firstName} to change it after logging in.`}
           error={errors.password}
+          showStrength
+          person={person}
           data-autofocus
         />
         <PasswordField
@@ -235,7 +240,7 @@ function validate(form) {
   const errors = {};
   if (!form.full_name.trim()) errors.full_name = 'Enter the officer’s full name.';
   if (!EMAIL_RE.test(form.contact_email.trim())) errors.contact_email = 'Enter a valid email address.';
-  if (form.password.length < 8) errors.password = 'Use at least 8 characters.';
+  if (!isStrong(form.password, { name: form.full_name, email: form.contact_email })) errors.password = NOT_STRONG;
   return errors;
 }
 
@@ -331,6 +336,8 @@ function CreateOfficerCard({ onCreated }) {
           onChange={set('password')}
           helper="Share it privately; the officer should change it."
           error={errors.password}
+          showStrength
+          person={{ name: form.full_name, email: form.contact_email }}
         />
         <Select
           id="officer-role"

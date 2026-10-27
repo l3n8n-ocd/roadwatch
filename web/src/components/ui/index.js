@@ -8,6 +8,7 @@ export { default as IconButton } from './IconButton';
 export { default as Field } from './Field';
 export { default as TextField } from './TextField';
 export { default as PasswordField } from './PasswordField';
+export { default as PasswordStrength } from './PasswordStrength';
 export { default as Select } from './Select';
 export { default as DateTimeField } from './DateTimeField';
 export { default as Textarea } from './Textarea';
