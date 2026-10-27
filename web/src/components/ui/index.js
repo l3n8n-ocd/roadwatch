@@ -38,3 +38,4 @@ export { default as UserMenu } from './UserMenu';
 export { default as useFocusTrap } from './useFocusTrap';
 export { STATUS_META, statusMeta } from './statusMeta';
 export { default as BuiltWith } from './BuiltWith';
+export { default as VideoPlayer } from './VideoPlayer';

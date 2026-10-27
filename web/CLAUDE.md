@@ -25,6 +25,7 @@ src/
                        NotificationsBell (officers only, #47: GET /notifications, mark read, open the report),
                        PublicLayout (public header with Light/Dark switch + footer; landing, /about, 404, 500)
   components/ErrorBoundary.jsx  shows the 500 page (W12) when a page crashes
+  components/ui/VideoPlayer.jsx native <video controls> + Transcript (details); tone="dark" on the landing band (#48)
   lib/useServerError.js         a page's main request with a 5xx re-throws into the ErrorBoundary
   pages/<area>/        one file per screen; App.jsx holds every route
   assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png, team/ (photos, lib/team.js)
@@ -67,6 +68,9 @@ src/
 - Traffic Officer (#52): `/officer` (W5 Assigned to me), `/officer/reports/:id` (`ReportDetails mode="officer"`), `/officer/about`.
 - Both staff roles: `/demo-video`, `/action-log` (the All staff view is admin-only).
 - Landing section links are `/#how-it-works`, `/#public-updates`, `/#safety-tips`, `/#faq`; Landing scrolls to the hash.
+- Videos (#48): `/demo-video` shows the Administrator and Traffic Officer clips from `GET /app-info` `demoVideos` (own role
+  first, "Clip coming soon" without a URL); the landing "Watch the video" section (`/#video`, after How it works) and the
+  footer link appear only when `promoVideo.url` is set. `/app` on Vercel redirects to the newest APK (`vercel.json`).
 - Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.
 
 ## Motion (#41, docs/ui-design/motion-spec.md)

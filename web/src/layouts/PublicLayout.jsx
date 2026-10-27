@@ -143,15 +143,15 @@ export function PublicHeader() {
 }
 
 export function PublicFooter() {
-  const [demoVideoUrl, setDemoVideoUrl] = useState(null);
+  const [hasVideo, setHasVideo] = useState(false);
 
-  // The demo video link appears once DEMO_VIDEO_URL is set on the API.
+  // "Watch the video" appears once PROMO_VIDEO_URL is set on the API (#48); it opens the landing's video section.
   useEffect(() => {
     let cancelled = false;
     publicApi
       .appInfo()
       .then((info) => {
-        if (!cancelled) setDemoVideoUrl(info?.demoVideoUrl || null);
+        if (!cancelled) setHasVideo(Boolean(info?.promoVideo?.url));
       })
       .catch(() => {});
     return () => {
@@ -180,11 +180,11 @@ export function PublicFooter() {
                   </Link>
                 </li>
               ))}
-              {demoVideoUrl && (
+              {hasVideo && (
                 <li>
-                  <a href={demoVideoUrl} target="_blank" rel="noreferrer" className={footerLink}>
-                    Demo video<span className="sr-only"> (opens in a new tab)</span>
-                  </a>
+                  <Link to="/#video" className={footerLink}>
+                    Watch the video
+                  </Link>
                 </li>
               )}
             </ul>

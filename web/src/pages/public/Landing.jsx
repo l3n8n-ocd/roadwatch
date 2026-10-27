@@ -13,6 +13,7 @@ import {
   StatusChip,
   Timeline,
   TimelineItem,
+  VideoPlayer,
 } from '../../components/ui';
 import { publicApi } from '../../api/endpoints';
 import PublicLayout from '../../layouts/PublicLayout';
@@ -149,6 +150,7 @@ export default function Landing() {
         <Hero />
         <StatsBar />
         <HowItWorks />
+        <WatchTheVideo />
         <PublicUpdates />
         <SafetyTips />
         <About />
@@ -412,6 +414,62 @@ function HowItWorks() {
             </li>
           ))}
         </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Watch the video (#48; Figma 489:21200, 390: 489:21224) ---------- */
+
+// The promotional video, from GET /app-info (PROMO_VIDEO_URL on the API). Hidden until the URL is set.
+const VIDEO_ROLES = ['Reporter app', 'Administrator', 'Traffic Officer'];
+
+function WatchTheVideo() {
+  const [video, setVideo] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    publicApi
+      .appInfo()
+      .then((info) => {
+        if (!cancelled && info?.promoVideo?.url) setVideo(info.promoVideo);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!video) return null;
+  return (
+    <section id="video" aria-labelledby="video-title" className={cx(SECTION, 'scroll-mt-20 bg-brand-navy')}>
+      <div className={cx(WRAP, 'flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-16')}>
+        <div className="flex flex-col gap-4 lg:w-100 lg:shrink-0">
+          <p className="type-overline text-brand-amber uppercase">Watch the video</p>
+          <h2 id="video-title" className="type-h2 text-text-inverse sm:type-h1">
+            See RoadWatch in three minutes
+          </h2>
+          <p className="type-body text-text-inverse-muted sm:type-body-lg">
+            <span className="sm:hidden">
+              A reporter sends an accident, the administrator verifies and assigns it, and an officer closes the case.
+            </span>
+            <span className="max-sm:hidden">
+              The team walks through the whole system: a reporter sends an accident from the app, the administrator
+              verifies and assigns it, and a traffic officer closes the case. We also show how RoadWatch was built.
+            </span>
+          </p>
+          <ul aria-label="Roles shown" className="flex flex-wrap gap-2 max-sm:hidden">
+            {VIDEO_ROLES.map((role) => (
+              <li key={role} className="rounded-full bg-surface-navy-hover px-3 py-1.5 type-label text-text-inverse">
+                {role}
+              </li>
+            ))}
+          </ul>
+          <p className="type-body-sm text-text-inverse-muted max-sm:hidden">
+            Captions are on in the player{video.transcript ? ', and a transcript is below the video' : ''}.
+          </p>
+        </div>
+        <VideoPlayer src={video.url} label="RoadWatch promotional video" transcript={video.transcript} tone="dark" className="min-w-0 flex-1" />
       </div>
     </section>
   );

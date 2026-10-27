@@ -1,3 +1,10 @@
 {
+  "redirects": [
+    {
+      "source": "/app",
+      "destination": "https://github.com/l3n8n-ocd/roadwatch/releases/latest/download/roadwatch.apk",
+      "permanent": false
+    }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

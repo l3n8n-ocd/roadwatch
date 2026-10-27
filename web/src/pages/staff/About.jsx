@@ -8,8 +8,8 @@ import { TEAM } from '../../lib/team';
 // privacy summary, team (photos, #48), Built with logos (#49) and credits. Opened from the user menu (#27);
 // Administrators at /admin/about, Traffic Officers at /officer/about (#52).
 
-// Shown as "1.0.0 (web) · Oct 2026". Update with each release tag (v*).
-const APP_VERSION = '1.0.0';
+// Shown as "1.1.0 (web) · Oct 2026". Update with each release tag (v*).
+const APP_VERSION = '1.1.0';
 const RELEASE_MONTH = 'Oct 2026';
 
 const PRIVACY = [
