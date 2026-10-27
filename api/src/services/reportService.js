@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 const { Report, User, Role, AccidentType, ReportPhoto, ReportStatusHistory } = require('../models');
 const { STATUSES, ROLES } = require('../config/constants');
 
-// Reporter contact details are restricted (course UI spec): only the reporter, an Administrator,
+// Reporter contact details are restricted (UI spec): only the reporter, an Administrator,
 // or the Traffic Officer assigned to the report can see them.
 const reporterAttrs = ['user_id', 'full_name', 'contact_email', 'contact_phone'];
 

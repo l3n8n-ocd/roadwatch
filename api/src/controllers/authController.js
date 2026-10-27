@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { User, Role } = require('../models');
-const { ROLES, ROLE_PLATFORM } = require('../config/constants');
+const { ROLES, ROLE_PLATFORMS } = require('../config/constants');
 const { signToken } = require('../middleware/auth');
 const { recordAudit, listAuditLogs } = require('../services/auditService');
 const { makeResetCode, isValidResetCode, CODE_MINUTES } = require('../services/passwordResetService');
@@ -38,8 +38,9 @@ async function login(req, res) {
     throw new HttpError(403, 'This account was deactivated. Contact the RoadWatch administrator.', { code: 'ACCOUNT_DEACTIVATED' });
   }
   const role = user.role.role_name;
-  const home = ROLE_PLATFORM[role];
-  if (platform !== home) {
+  const homes = ROLE_PLATFORMS[role];
+  if (!homes.includes(platform)) {
+    const [home] = homes;
     await recordAudit(user.user_id, 'auth.login_wrong_platform', { platform });
     const message = home === 'mobile'
       ? `${role} accounts sign in on the RoadWatch Android app.`

@@ -21,9 +21,10 @@ const OFFICER_STATUSES = ['Additional Information Required', 'In Progress', 'Res
 
 const INJURY_VALUES = ['none', 'injuries', 'fatalities', 'unknown'];
 
-// Which client each role signs in from (docs/DECISIONS.md #36): Reporters and Traffic Officers
-// use the mobile app, Administrators use the web dashboard. Each client sends its platform at login.
+// Which clients each role signs in from (docs/DECISIONS.md #36, #45): Reporters use the mobile app,
+// Administrators the web dashboard, and Traffic Officers either one (#52). Each client sends its platform
+// at login.
 const PLATFORMS = ['web', 'mobile'];
-const ROLE_PLATFORM = { [ROLES.REPORTER]: 'mobile', [ROLES.OFFICER]: 'mobile', [ROLES.ADMIN]: 'web' };
+const ROLE_PLATFORMS = { [ROLES.REPORTER]: ['mobile'], [ROLES.OFFICER]: ['web', 'mobile'], [ROLES.ADMIN]: ['web'] };
 
-module.exports = { ROLES, STATUSES, VERIFIED_STATUSES, OFFICER_STATUSES, INJURY_VALUES, PLATFORMS, ROLE_PLATFORM };
+module.exports = { ROLES, STATUSES, VERIFIED_STATUSES, OFFICER_STATUSES, INJURY_VALUES, PLATFORMS, ROLE_PLATFORMS };

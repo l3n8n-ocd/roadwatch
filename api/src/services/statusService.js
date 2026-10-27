@@ -16,7 +16,7 @@ async function changeStatus({ report, status, actor, remarks, assignedOfficerId,
   try {
     report.report_status = status;
     if (assignedOfficerId) report.assigned_officer_id = assignedOfficerId;
-    // Course rule: public submissions and officially verified records must be clearly different.
+    // Product rule: public submissions and officially verified records must be clearly different.
     if (VERIFIED_STATUSES.includes(status)) report.record_type = 'verified_record';
     if (status === 'Rejected') report.record_type = 'public_submission';
     if (status === 'Rejected') report.official_remarks = `Rejected: ${rejectionReason}`;

@@ -136,6 +136,10 @@ test('database-backed API flow', { skip }, async (t) => {
       const other = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer Two', contact_email: `off2.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
       officer.token2 = (await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).body.data.token;
       officer.id2 = other.body.data.user_id;
+      // Traffic Officers sign in on the web portal as well as the app (#52, DECISIONS #45)
+      const onWeb = await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: pw, platform: 'web' } });
+      assert.equal(onWeb.status, 200);
+      assert.equal(onWeb.body.data.user.role, 'Traffic Officer');
     });
 
     await t.test('admin filters, verifies, rejects (reason required) and assigns', async () => {
