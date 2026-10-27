@@ -2,6 +2,7 @@
 library;
 
 export 'rw_bottom_nav.dart';
+export 'rw_built_with.dart';
 export 'rw_button.dart';
 export 'rw_detail_parts.dart';
 export 'rw_dialog.dart';

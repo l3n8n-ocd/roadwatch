@@ -64,6 +64,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/logos/
 
   # Bundled fonts (no runtime download). Source: @expo-google-fonts/inter 0.4.2 and
   # @expo-google-fonts/poppins 0.4.1 (Google Fonts TTFs, SIL OFL 1.1; licenses in assets/fonts).

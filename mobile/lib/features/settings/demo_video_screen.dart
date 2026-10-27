@@ -100,10 +100,7 @@ class _DemoVideoScreenState extends State<DemoVideoScreen> {
           const SizedBox(height: RwSpace.s16),
           _DemoPlayer(url: _url!),
           const SizedBox(height: RwSpace.s16),
-          Text(
-            'RoadWatch demo · IT 305, BSIT 3I-G1 · Bulacan State University',
-            style: RwType.label.copyWith(color: c.textPrimary),
-          ),
+          Text('RoadWatch product demo', style: RwType.label.copyWith(color: c.textPrimary)),
         ],
       );
     }

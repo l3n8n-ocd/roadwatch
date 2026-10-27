@@ -191,7 +191,7 @@ class _SettingsTabState extends State<SettingsTab> {
               RwSettingsRow.navigation(
                 icon: RwIcons.info,
                 label: 'About RoadWatch',
-                description: 'Version ${AppConfig.appVersion} · IT 305 project',
+                description: 'Version ${AppConfig.appVersion}',
                 onTap: () => _push(Routes.about),
               ),
             ],

@@ -9,7 +9,8 @@ import '../../core/widgets/widgets.dart';
 /// About RoadWatch. Figma (Mobile page 90:4): Settings/About 164:2646.
 ///
 /// Logo and description, then a definition list: version (AppConfig.appVersion), server status
-/// (GET /health, as on the web W9 About page), privacy, map data and icon credits.
+/// (GET /health, as on the web W9 About page), privacy, map data and icon credits, then the
+/// "Built with" logo card (#49, [RwBuiltWith]).
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
 
@@ -91,8 +92,8 @@ class _AboutScreenState extends State<AboutScreen> {
                 const SizedBox(height: RwSpace.s12),
                 Text(
                   'RoadWatch helps the public report road accidents everywhere and follow each report '
-                  'until it is closed. A student project for IT 305 Advanced Web Development, BSIT 3I-G1, '
-                  'Bulacan State University. It does not replace official emergency services.',
+                  'until it is closed. RoadWatch does not replace official emergency services. In an '
+                  'emergency, call 911.',
                   style: RwType.body.copyWith(color: c.textPrimary),
                 ),
               ],
@@ -117,6 +118,25 @@ class _AboutScreenState extends State<AboutScreen> {
                     onRetry: items[i].$1 == 'Server status' && _server == _Server.offline ? _check : null,
                   ),
                 ],
+              ],
+            ),
+          ),
+          const SizedBox(height: RwSpace.s16),
+          Container(
+            padding: const EdgeInsets.fromLTRB(RwSpace.s16, RwSpace.s16, RwSpace.s16, RwSpace.s16),
+            decoration: BoxDecoration(
+              color: c.surfaceWhite,
+              borderRadius: RwRadius.mdAll,
+              border: Border.all(color: c.borderSubtle),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text('Built with', style: RwType.h3.copyWith(color: c.textPrimary)),
+                ),
+                const RwBuiltWith(),
               ],
             ),
           ),

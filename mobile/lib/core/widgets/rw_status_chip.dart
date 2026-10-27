@@ -101,7 +101,7 @@ class RwStatusChip extends StatelessWidget {
 }
 
 /// Figma "Record badge" (99:272): navy "Verified record" vs dashed "Public submission".
-/// Course rule: public submissions must be clearly distinct from verified records.
+/// Product rule: public submissions must be clearly distinct from verified records.
 class RwRecordBadge extends StatelessWidget {
   const RwRecordBadge({super.key, required this.verified});
 

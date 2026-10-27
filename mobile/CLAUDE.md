@@ -1,7 +1,7 @@
 # mobile/CLAUDE.md: RoadWatch mobile (Flutter, Android)
 
 Project-wide rules live in the root `CLAUDE.md`. This file covers the Flutter app only.
-One app for **Reporters** and **Traffic Officers**; Administrators use the web (#36).
+One app for **Reporters** and **Traffic Officers**; Administrators use the web (#36). Officers can also use the web portal (#52).
 Forgot password (#37): Log in → `Routes.forgotPassword` (public; email, then code + new password; pops `true` and
 Log in shows "Password changed"). Login sends `platform: "mobile"`: the API answers 403 `WRONG_PLATFORM` for Administrators (shown as
 "Use the RoadWatch website"). `HomeShell` picks the tabs from the role: reporters Home, My reports,
@@ -46,6 +46,7 @@ lib/
   features/<area>/           one file per screen; features/report/report_draft.dart holds the 3-step form;
                              features/officer/ = O1 Assigned tab, O2 details + O3 update sheet + O4 toast
 assets/icons/                58 Figma icons as SVG (stroke recolored by RwIcon)
+assets/logos/                Built with logos (#49), SVG/PNG, "-dark" twins for one-color logos
 assets/images/               emblem.png, hero-street.jpg, pnp-seal.png, bfp-seal.png
 assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 ```
@@ -63,7 +64,7 @@ Open in Maps; `.pick` = M3 "Move the pin", returns the LatLng), `RwToast` + `sho
 `RwSwitch`, `RwSettingsRow` (`.navigation/.toggle/.info/.destructive`), `RwCard`, `RwSectionTitle`, `RwMetaRow`,
 `RwDetailItem`, `RwPhotoViewer.show(urls:, initialIndex:, captions:)` (full-screen gallery: swipe, zoom, no download, #46;
 report detail parts, shared by tracking and officer details), `RwDialog` +
-`showRwConfirmDialog`, `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
+`showRwConfirmDialog`, `RwBuiltWith` (About "Built with" logo tiles, #49; logos in `assets/logos/`, `-dark` twins for dark mode), `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
 Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max 8), `RwPulse` (stops after N),
 `RwDrawIn`, `RwSharedAxisPageTransitionsBuilder` (app.dart). All respect `disableAnimations` (short fades).
 
