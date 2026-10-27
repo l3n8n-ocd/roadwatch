@@ -11,6 +11,7 @@ Menu names on GitHub and Aiven change over time. If a label differs slightly, lo
 | D | Lenon | Verify Carl's evidence and commit his work under his name | 15 min |
 | E | Both | Troubleshooting | as needed |
 | F | Lenon + Carl | Deploy the API to Render with the Blueprint (`render.yaml`), added Oct 20 | 30-45 min |
+| G | Lenon | Connect the domain `roadwatch-ph.me` to Vercel (web) and Render (`api.`), added Oct 27 | 30 min + DNS wait |
 
 Parts A and B can run at the same time. Part C needs the Aiven connection details from Part B. Part D needs Parts A and C.
 
@@ -481,7 +482,100 @@ Register a reporter on the phone, submit a report with a photo, then refresh the
 | Health check failing but no error | The service is still starting or asleep | Wait two minutes and reload `/api/health` |
 | Browser console: `CORS` error | The web address is not in `CLIENT_ORIGIN` | Add it exactly (scheme, host, port), comma separated, then let Render redeploy |
 | Login answers 400 `platform must be 'web' or 'mobile'` | An old web or mobile build | Rebuild from the latest `dev` |
-| Login answers 403 "sign in on the RoadWatch Android app" on the web | A reporter or officer account on the web | Expected (#36): only administrators use the web |
+| Login answers 403 "sign in on the RoadWatch Android app" on the web | A reporter account on the web | Expected (#36, #45): reporters use the app; administrators and traffic officers use the web |
+
+---
+
+# PART G: Connect the domain `roadwatch-ph.me` (added Oct 27, DECISIONS #38)
+
+Goal: `https://roadwatch-ph.me` opens the website (Vercel), `https://www.roadwatch-ph.me` redirects to it, and
+`https://api.roadwatch-ph.me/api/health` answers from Render. The old addresses (`roadwatch-theta.vercel.app`,
+`roadwatch-api-gnky.onrender.com`) keep working, so nothing breaks while DNS updates, and APKs already installed keep
+working too (they call the Render address).
+
+**Do not touch the Brevo records.** The domain already holds the records that let Brevo send `no-reply@roadwatch-ph.me`:
+the `brevo-code` TXT, the DKIM records (`brevo1._domainkey` / `brevo2._domainkey` CNAMEs, or a `mail._domainkey` TXT,
+whichever Brevo gave you), the `_dmarc` TXT and the SPF TXT on `@` (`v=spf1 include:spf.brevo.com ~all`). Leave every one
+of them exactly as it is. Only add the records below, and only delete Namecheap's parking records.
+
+## G1. Add the domain in Vercel (web)
+1. Vercel, project **roadwatch**, **Settings**, **Domains**, **Add Domain**. Type `roadwatch-ph.me`.
+2. Choose the option that makes **`roadwatch-ph.me` the main address and redirects `www.roadwatch-ph.me` to it**
+   (shorter for the APK link and the QR code). Attach it to the **Production** environment (branch `main`).
+3. Vercel now shows "Invalid Configuration" and the DNS values it wants. **Copy the values Vercel shows** (they differ
+   per project). Usually:
+
+   | Type | Host | Value |
+   |---|---|---|
+   | A | `@` | the IP Vercel shows (for example `76.76.21.21` or `216.198.79.1`) |
+   | CNAME | `www` | the target Vercel shows (for example `cname.vercel-dns.com.` or a `....vercel-dns-0xx.com.` name) |
+
+## G2. Add the API subdomain in Render
+1. Render, service **roadwatch-api**, **Settings**, **Custom Domains**, **Add Custom Domain**: `api.roadwatch-ph.me`.
+2. Render asks for a CNAME: host `api`, value **`roadwatch-api-gnky.onrender.com`** (use the exact value Render shows).
+
+## G3. Namecheap: Advanced DNS
+Namecheap, **Domain List**, `roadwatch-ph.me`, **Manage**, **Advanced DNS**, **Host records**:
+1. **Delete** the parking records Namecheap adds by itself, if they are there: the `URL Redirect Record` on `@` and the
+   `CNAME www` pointing to `parkingpage.namecheap.com`. Nothing else.
+2. **Add** (TTL Automatic):
+
+   | Type | Host | Value | For |
+   |---|---|---|---|
+   | A Record | `@` | the IP from G1 | website |
+   | CNAME Record | `www` | the target from G1 | `www` redirect |
+   | CNAME Record | `api` | `roadwatch-api-gnky.onrender.com.` | API on Render |
+
+3. Check that the Brevo records from the box above are still listed. There must be **one** SPF TXT record on `@` only
+   (an A record and a TXT record on `@` live together fine).
+4. **Save all changes** (the green tick).
+
+DNS usually updates in 5 to 30 minutes (up to 48 hours). Check from Git Bash:
+```bash
+nslookup roadwatch-ph.me
+nslookup -type=CNAME www.roadwatch-ph.me
+nslookup -type=CNAME api.roadwatch-ph.me
+nslookup -type=TXT roadwatch-ph.me          # the Brevo SPF is still there
+```
+Then press **Refresh** (Vercel, Domains) and **Verify** (Render, Custom Domains). Both issue the HTTPS certificate
+themselves; wait until both show the domain as valid / certificate issued.
+
+## G4. Point the apps at the new addresses
+1. **Render** (roadwatch-api, **Environment**): set `CLIENT_ORIGIN` to all the web addresses, comma separated:
+   `https://roadwatch-ph.me,https://www.roadwatch-ph.me,https://roadwatch-theta.vercel.app,http://localhost:5173`
+   (keep any other address already in the list, such as the Vercel preview). **Save and deploy.**
+2. **Vercel** (roadwatch, **Settings**, **Environment Variables**, Production): set
+   `VITE_API_URL=https://api.roadwatch-ph.me/api`. Optional: `VITE_APK_URL=https://roadwatch-ph.me/app` (the `/app`
+   address redirects to the newest APK, `web/vercel.json`). Then **Deployments**, the latest Production deployment,
+   **Redeploy** (Vite reads these values at build time, so a redeploy is required).
+3. **APK builds** (from the next tag): GitHub, repo **Settings**, **Secrets and variables**, **Actions**, **Variables**,
+   **New repository variable** `API_URL` = `https://api.roadwatch-ph.me/api`. `mobile-ci` already prefers this variable
+   over the Render address. Skip this step if you want the APK to keep calling the Render address directly (it works
+   even if the domain ever lapses after the free first year).
+
+## G5. Check it works
+1. `https://api.roadwatch-ph.me/api/health` shows `{"status":"ok","service":"roadwatch-api"}` (wait a minute if Render
+   is asleep).
+2. `https://roadwatch-ph.me` opens the landing page with the padlock; `https://www.roadwatch-ph.me` and
+   `http://roadwatch-ph.me` both end up on `https://roadwatch-ph.me`.
+3. On the landing page, the stats bar shows numbers. In the browser DevTools, **Network**: the requests go to
+   `api.roadwatch-ph.me` with no CORS error.
+4. Sign in as the administrator at `https://roadwatch-ph.me/staff/sign-in`.
+5. `https://roadwatch-ph.me/app` downloads `roadwatch.apk`.
+6. Brevo, **Senders, Domains & Dedicated IPs**, **Domains**: `roadwatch-ph.me` is still **Authenticated**. Use Forgot
+   password once and check the email arrives.
+
+Then tell Claude it works: the README, `CLAUDE.md`, the test plan links and (if you chose it) the `mobile-ci` default
+switch to the new addresses in one commit.
+
+| Problem | Fix |
+|---|---|
+| Vercel stays "Invalid Configuration" | The A or `www` record differs from what Vercel shows, or the parking records are still there |
+| Render "Verification failed" | The `api` CNAME is missing or has a typo; wait 10 minutes and press Verify again |
+| Website loads but every request fails with CORS | `CLIENT_ORIGIN` does not have the exact address (scheme, no trailing slash); fix and Save and deploy |
+| Website still calls the old API | Vercel was not redeployed after changing `VITE_API_URL` |
+| Emails stop arriving | A Brevo record was deleted or edited; restore it from Brevo, Domains, the domain's DNS records |
+| Domain renewal | Free for the first year only (#38). Turn auto-renew off in Namecheap before year 2 unless the team decides to pay |
 
 ---
 

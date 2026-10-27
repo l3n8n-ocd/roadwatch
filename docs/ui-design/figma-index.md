@@ -148,6 +148,8 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | M3/Location/Full-screen map (move the pin; Cancel / Use this location, 12 px side padding so the label fits at 360) | `406:4431` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4431) |
 | Settings/Demo video/Playing | `119:1923` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1923) |
 | Settings/Demo video/Coming soon (demoVideoUrl = null) | `119:1991` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1991) |
+| Settings/Demo video/Per role, Reporter view (#48: Reporter clip, 30 s; replaces Playing and Coming soon) | `493:4668` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=493-4668) |
+| Settings/Demo video/Per role, Traffic Officer view (scrolls; Traffic Officer clip first, then Reporter) | `493:4718` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=493-4718) |
 | Accessibility checklist/Mobile | `120:1977` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=120-1977) |
 
 ## Web (1440 desktop, 390 responsive)
@@ -155,6 +157,8 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Frame / asset | Node ID | Link |
 |---|---|---|
 | W0/Landing/Default (1440) (#40: Light/Dark switch, FAQ nav link, stats bar, full hotlines card, Meet the team link, FAQ chat, QR placeholder) | `137:4095` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=137-4095) |
+| W0 Watch the video (section, 1440; #48, id="video", hidden while promoVideoUrl is null; footer link "Watch the video") | `489:21200` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=489-21200) |
+| W0 Watch the video (section, 390) | `489:21224` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=489-21224) |
 | W0/Landing/Responsive (390) (#40; FAQ shows 4 then "Show 4 more questions"; no QR on phones) | `139:4275` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=139-4275) |
 | Handoff note/Public updates endpoint (confirmed) | `139:4434` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=139-4434) |
 | W1/Login/Administrator (1440) | `121:5` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-5) |
@@ -189,6 +193,9 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W9/About (staff console: /admin/about and /officer/about; team photos #48, Built with logos 212:5835 #49) | `212:5577` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=212-5577) |
 | Demo video/Web/Playing (1440) | `127:2829` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=127-2829) |
 | Demo video/Web/Coming soon (1440) | `127:2974` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=127-2974) |
+| Demo video/Web/Per role, Administrator view (1440) (#48: Administrator and Traffic Officer clips, your role first) | `492:21204` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=492-21204) |
+| Demo video/Web/Per role, Traffic Officer view (1440) | `492:21788` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=492-21788) |
+| Demo video/Web/Clip card, coming soon (clip URL is null; same on mobile) | `493:48058` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=493-48058) |
 | W10/About/Public (1440) (/about, Meet our team with photos, Built with, #40, #48, #49) | `345:15810` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=345-15810) |
 | W10/About/Public · Responsive (390) | `346:15885` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=346-15885) |
 | W11/404 Page not found (1440) | `347:15949` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-15949) |
@@ -345,5 +352,6 @@ Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69Rky
 - Endpoints approved in design but not built (Carl): `GET /api/public/updates` (#23), update own profile and change own password (#25). Proposed, needs approval: a read-only endpoint for the user's own Action log (#27), with `action_type` and period filters and pagination; W8 is designed against it. W9 About reads the server state from `GET /api/health`; the version is static in the web build.
 - Officer mobile screens O1 to O6 approved by the team on Oct 20 (#36), including "Call reporter" on O2 (opens the phone dialer). In the prototype, Update status sits at the end of the scrolling C3 screen because the plugin API cannot pin it; the app keeps it fixed at the bottom.
 - The APK download buttons open the latest GitHub release; switch them to `roadwatch-ph.me/app` once the domain is live (#38).
-- The demo video needs a WebVTT caption file and a transcript (WCAG 1.2.2), as promised on the Demo video screens.
+- The videos have burned-in captions and a transcript under each player (WCAG 1.2.2; transcripts in `api/src/config/videos.js`, #48).
+- Oct 27 (#48): the per-role Demo video frames and the landing "Watch the video" section were added on the Mobile and Web pages; the Flows copies (0 · W0, E1, E2) still show the earlier single video.
 - The draft emblem raster has a baked-in white haze; a transparent PNG or SVG export would render more cleanly.

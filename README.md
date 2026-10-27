@@ -24,6 +24,14 @@ Report an accident from the Android app with its location and photos, then follo
 
 > RoadWatch does not replace official emergency services. In an emergency, call 911.
 
+## Watch the video
+
+<a href="https://roadwatch-theta.vercel.app/#video"><img src="docs/ui-design/screens/web/w0-watch-the-video-1440.png" alt="Watch the RoadWatch video on the website" width="720"></a>
+
+The promotional video (about 3 minutes) plays on the [website](https://roadwatch-theta.vercel.app/#video); the file is
+`docs/video/roadwatch-promo.mp4`. Each app also has a 30-second demo clip for its roles (Settings > Demo video in the
+Android app, Demo video in the staff website).
+
 ## Screenshots
 
 | Public website | Administrator dashboard | Traffic Officer portal |
@@ -116,7 +124,7 @@ One REST API serves both apps. Photos go through the API to Cloudinary and only 
    npm run seed:admin       # creates the first Administrator (ADMIN_PASSWORD must be Strong)
    npm run dev              # http://localhost:5000/api/health
    ```
-   Environment variables (names only): `PORT`, `CLIENT_ORIGIN`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_SSL`, `DB_SSL_CA` or `DB_SSL_CA_PATH`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLOUDINARY_URL`, `MAIL_PROVIDER` (`brevo`, or `log` for local work), `MAIL_FROM`, `BREVO_API_KEY`, `DEMO_VIDEO_URL`.
+   Environment variables (names only): `PORT`, `CLIENT_ORIGIN`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_SSL`, `DB_SSL_CA` or `DB_SSL_CA_PATH`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLOUDINARY_URL`, `MAIL_PROVIDER` (`brevo`, or `log` for local work), `MAIL_FROM`, `BREVO_API_KEY`, `PROMO_VIDEO_URL`, `DEMO_VIDEO_REPORTER_URL`, `DEMO_VIDEO_OFFICER_URL`, `DEMO_VIDEO_ADMIN_URL`.
 3. **Website.**
    ```bash
    cd web

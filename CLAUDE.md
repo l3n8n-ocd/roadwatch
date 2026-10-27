@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions (planning conversation Oct 12-15, 2026, and later answers recorded in `docs/DECISIONS.md`). Last updated Oct 27, 2026 (officer web portal #45, product wording and Built with #46, officer notification bell #47; course and school details removed from the CLAUDE.md files, #48).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions (planning conversation Oct 12-15, 2026, and later answers recorded in `docs/DECISIONS.md`). Last updated Oct 27, 2026 (officer web portal #45, product wording and Built with #46, officer notification bell #47; course and school details removed from the CLAUDE.md files, #48; per-role demo clips, promo video, v1.1.0, domain steps and course work, DECISIONS #48).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Always inspect the real files before relying on any path or detail here; the repo is the source of truth for code.
 
@@ -95,7 +95,7 @@ Clients ─► OpenStreetMap tiles and Nominatim directly
 
 - One REST API serves both clients. JWT access tokens, roles: `reporter`, `admin`, `officer`. Platforms (#36, #52): `reporter` signs in on mobile only, `admin` on web only, `officer` on either; each app sends `platform` (`web` or `mobile`) at login and the API answers 403 `WRONG_PLATFORM` for the wrong one (API, web and mobile done Oct 20; officer mobile screens O1-O6 added Oct 21).
 - Photos are uploaded through the API (multer) to Cloudinary; only URLs go to MySQL.
-- The demo video is uploaded to Cloudinary. Both clients read its URL from `GET /api/app-info` (`DEMO_VIDEO_URL` env var on Render). Do not bundle the video into `web/public` or Flutter assets.
+- The videos are uploaded to Cloudinary (DECISIONS #48): a promotional video (3 min or more) and a 30-second demo clip per role. Both clients read the URLs and transcripts from `GET /api/app-info` (Render: `PROMO_VIDEO_URL`, `DEMO_VIDEO_REPORTER_URL`, `DEMO_VIDEO_OFFICER_URL`, `DEMO_VIDEO_ADMIN_URL`; transcripts in `api/src/config/videos.js`). The app shows the Reporter clip (officers also the Officer clip, first); the web staff Demo video page shows the Administrator and Officer clips; the landing shows the promo in "Watch the video". Do not bundle videos into `web/public` or Flutter assets.
 - Render's free tier sleeps when idle. Warm the API before demos and recordings.
 
 **API groups (implemented Oct 16 from Carl's backend; contract in `docs/API.md`):**
@@ -243,7 +243,7 @@ Rules: every status change writes a `report_status_history` row; important admin
 - **Email (#37):** `MAIL_PROVIDER=brevo`, `BREVO_API_KEY` (Brevo → SMTP & API → API keys; Render env only), `MAIL_FROM` (an address on the project domain verified in Brevo). Locally use `MAIL_PROVIDER=log` (prints emails).
 - **Web:** `cd web && npm install && npm run dev`. Env: `VITE_API_URL=http://localhost:5000/api`.
 - **Mobile:** `cd mobile && flutter pub get && flutter run --dart-define=API_URL=http://10.0.2.2:5000/api` (see `mobile/CLAUDE.md`).
-- Env variable names live in `api/.env.example` (PORT, CLIENT_ORIGIN, DB_*, JWT_*, ADMIN_*, CLOUDINARY_URL, MAIL_PROVIDER, MAIL_FROM, BREVO_API_KEY, DEMO_VIDEO_URL). Never put real values in the repo.
+- Env variable names live in `api/.env.example` (PORT, CLIENT_ORIGIN, DB_*, JWT_*, ADMIN_*, CLOUDINARY_URL, MAIL_PROVIDER, MAIL_FROM, BREVO_API_KEY, PROMO_VIDEO_URL, DEMO_VIDEO_REPORTER_URL, DEMO_VIDEO_OFFICER_URL, DEMO_VIDEO_ADMIN_URL). Never put real values in the repo.
 
 ---
 
@@ -262,17 +262,18 @@ Rules: every status change writes a `report_status_history` row; important admin
 | repo | `bash scripts/commit-as.sh <member> "<message>" [paths]` | commits on behalf of a member (Git Bash) |
 | repo | `bash scripts/create-issues.sh` | already run once (Oct 16); never run it again |
 
-Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-api"}`; `GET /api/app-info` returns `{"demoVideoUrl": ...}`.
+Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-api"}`; `GET /api/app-info` returns `{ demoVideoUrl, promoVideo, demoVideos: { reporter, officer, admin } }` (each `{ url, transcript }`).
 
 ---
 
 ## 15. Testing and Quality Assurance
 
-- Automated API tests: **32** (Oct 27): JWT guard, health/app-info, login platform validation, Brevo mailer unit tests with a mocked `fetch`, reset-code and password-strength unit tests, and a database flow (register, roles, the platform check including officers on the web, report lifecycle with verify-before-assign #30, officer scoping, deactivation, notifications, dashboard, exports, public updates, own profile and password, action log, forgot/reset password, upload validation). The database flow runs only with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Mobile: 48 widget tests. Web: lint and build (no unit tests).
+- Automated API tests: **33** (Oct 27): JWT guard, health/app-info (video clips and transcripts), login platform validation, Brevo mailer unit tests with a mocked `fetch`, reset-code and password-strength unit tests, and a database flow (register, roles, the platform check including officers on the web, report lifecycle with verify-before-assign #30, officer scoping, deactivation, notifications, dashboard, exports, public updates, own profile and password, action log, forgot/reset password, upload validation). The database flow runs only with `RUN_DB_TESTS=true` and a local database; CI runs it against a MySQL 8 service. Mobile: 49 widget tests. Web: lint and build (no unit tests).
 - Pauline owns a manual test plan (`docs/test-plan.md`, drafted Oct 21 from the built system for her review, #14): one test case per FR-01 to FR-15 (steps, expected, actual, pass/fail), executed on the deployed system around Oct 29. Add accessibility checks for the WCAG AA target (keyboard-only pass, contrast check, screen-reader labels, phone-width layout).
 - **First full manual run (Oct 23, Pauline, live system, APK v1.0.0):** 5 Fails plus 2 problems seen in the evidence, filed as issues #39 to #44 and fixed the same day (DECISIONS #42; API, web, and APK v1.0.1). TC-02.4 was a wording mismatch (the button says "Get the Android app"); TC-08.2's evidence showed a later assignment, not the refusal. Re-tested Oct 24-25 on the live system with APK v1.0.1 (released Oct 24): all 10 Pass, issues closed (`docs/test-plan-retest.md`). First-run gaps closed Oct 25: TC-08.7 and 09.3 Pass (Lenon); TC-03.3, 06.1, 06.2 confirmed by Lenon and checked by Claude on local builds (admin report page shows Injuries Unknown in Chromium; My reports list, status filter and role-only history in Flutter renders and widget tests). Admin password changed during TC-14.3. #23 closed. Features #37 (Forgot password, all roles, plus admin reset), #45 (show/hide password) and #46 (full-screen photo and map) were decided Oct 25 (DECISIONS #43), drawn in Figma, approved by Lenon, then coded (API 30/30 tests incl. the reset flow and 2 code unit tests; web checked in Chromium on a local API; mobile v1.0.2, 44 widget tests). New manual cases TC-02.7 to 02.9, 04.4, 07.4 to 07.6, 13.6 in `docs/test-plan.md` all passed on the live system (Lenon, Oct 26, after PR #47 merged); issues #37, #45, #46 closed. APK v1.0.2 comes from the `v1.0.2` tag.
 - **Password strength meter (#44, Oct 27):** Figma approved by Lenon, then coded: API 32/32 tests on Node 22.23.4 + local MariaDB 10.11 (strength unit tests and Strong checks on register, create officer, change, reset and admin reset); web lint, build and a Chromium check against a local API (every level, the error, the name check, screen-reader wiring); mobile v1.0.3, `flutter analyze` clean, 46 widget tests. Not yet checked on the live system or a phone.
 - **Officer web portal, product wording, Built with logos, README (#52, #48, #49, #50; Oct 27, DECISIONS #45, #46):** Figma approved by Lenon, then coded: API 32/32 tests on Node 22.23.4 + local MariaDB 10.11 (officer web login added); web lint, build and a Chromium walk-through against a local API (role chooser, wrong role, reporter refused, officer queue, officer status update, Action log without All staff, About pages light/dark at 1440 and 390, admin path unchanged); mobile `flutter analyze` clean, 48 widget tests (Built with), About rendered light/dark. README rewritten, LICENSE all rights reserved. Not yet checked on the live system or a phone.
+- **Per-role demo clips and promo video, v1.1.0 (DECISIONS #48, Oct 27):** Figma approved by Lenon, then coded: API 33/33 tests on Node 22.23.4 + local MariaDB 10.11 (app-info shape, transcript only with a URL); web lint, build and a Chromium check against a local API with video URLs set (landing "Watch the video" at 1440 and 390, footer link, Demo video as Administrator and as Traffic Officer with own role first, Clip coming soon, Transcript); mobile `flutter analyze` clean, 49 widget tests (reporter view, officer order, transcript), screen rendered light/dark. No real video yet: playback of Cloudinary files not checked.
 - CI runs lint, test and build per folder on PRs and pushes to `dev` and `main`.
 - `mailer.js` (Brevo) is unit-tested with a mocked `fetch`, ran in log mode during the database flow, and sent a real email from Render on Oct 21 (reported by Lenon).
 - Always report tests you could not run.
@@ -293,7 +294,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 **Not verified:** either app against the real API, map tiles and Nominatim (blocked in the build environment), camera/GPS on a device, the release APK (no Android SDK in the build environment).
 **Deployment (Oct 20):** API on Render at `https://roadwatch-api-gnky.onrender.com` (Blueprint `render.yaml`, Part F; `/api/health` answers, reported by Lenon) and web on Vercel at `https://roadwatch-theta.vercel.app`, both deploying from `main`. Not yet checked end to end: admin sign-in on the live site, a reporter submitting from a phone, Cloudinary uploads (the build environment cannot reach either host). **Prototype revisions #40 (Oct 20, coded):** web landing (Light/Dark switch, live stats bar from `GET /api/public/stats`, full hotlines card, FAQ chat, QR placeholder), public `/about` with Meet our team, 404 and 500 pages (error boundary + 5xx on a page's main request), admin About at `/admin/about`, log-out confirmation (web and mobile), Register note. Verified with lint, build, a Playwright smoke test on a mocked API (1440 and 390, dark mode), 18/18 API tests on local MariaDB, and `flutter analyze` + `flutter test`; not yet checked on the live site. **Motion #41 (Oct 21, coded):** GSAP + ScrollTrigger on the public web pages (road-and-pin hero, parallax, sticky shrinking header, count-ups, reveals, FAQ chat), subtle admin motion (count-ups, chart draw, CSS entrances), Flutter motion helpers (`rw_motion.dart`: entrances, pulses, shared-axis page transitions, press scale, pin drop); reduce motion gives short fades everywhere. Verified with lint, build, Playwright (1440/390, reduced motion) and `flutter test` (29 pass); not yet seen on a real phone. **Officer mobile screens (Oct 21, #36, Figma O1-O6):** officers sign in on the app and get Assigned (filter, empty state), report details (map, Open in Maps, reporter contact with Call, details, photos, history with staff names), the Update status sheet (In Progress, Additional Information Required, Resolved/Closed + remarks) and its saved toast, officer Notifications and Settings (New assignments alert). Verified with `flutter analyze`, 37 widget tests (7 officer) and light/dark screenshots compared with Figma; not yet on a phone or against the live API. **Oct 21:** the endpoints the UI already called were added to the API (`GET /public/updates`, `PATCH /auth/me`, `PATCH /auth/me/password`, `GET /auth/me/activity`, `GET /admin/audit-logs`); checked locally with the real web pages (landing updates, Action log) against local MariaDB, not yet on the live site.
 
-**Setup status (Oct 27):** public repo with `main` and `dev`, `members.conf` filled, GitHub issues created (Oct 16); Aiven MySQL live with the schema and seed; API on Render, web on Vercel, APK releases v1.0.0 to v1.0.2 on GitHub (v1.0.3 waits for PR #53 and its tag).
+**Setup status (Oct 27):** public repo with `main` and `dev`, `members.conf` filled, GitHub issues created (Oct 16); Aiven MySQL live with the schema and seed; API on Render, web on Vercel, APK releases v1.0.0 to v1.0.2 on GitHub; the final version is **v1.1.0** (app 1.1.0+5, web About), released from the `v1.1.0` tag after PR #53 merges (`docs/RELEASE-CHECKLIST.md`).
 
 ---
 
@@ -332,17 +333,17 @@ Do not do the following without the user's approval:
 ## 19. Pending Tasks and Priorities
 
 **Open decisions (only these remain)**
-- **Domain:** `roadwatch-ph.me` (Namecheap `.me`, Lenon) is claimed (#38); connecting it to Vercel and Render is still to do.
+- **Domain:** `roadwatch-ph.me` (Namecheap `.me`, Lenon) is claimed (#38); Lenon connects it now (#48) with `docs/SETUP-GUIDE.md` Part G (Vercel apex + `www`, Render `api.`, Brevo records kept). Once it works, the README, CLAUDE.md links and (optionally) the `API_URL` repo variable for the APK switch to it; `roadwatch-ph.me/app` already redirects to the newest APK (`web/vercel.json`).
 - **Separate READMEs** in `api/`, `web/`, `mobile/`, and a GIF in the README (#50): not decided.
 - **Aiven free-plan limits:** not verified.
 
-**Decided:** Oct 15: Sequelize, Render, `is_active`, full responsive and WCAG AA. Oct 20: anonymous reporting not required (#35); platforms per role (#36, updated by #45); Brevo email API (#37); `.me` domain (#38); phase plan (#39). Oct 25-27: forgot password, show/hide password, full screen (#43); password strength (#44); officer web portal (#45); product wording, Built with, README, LICENSE (#46); officer notification bell (#47). Oct 27: the demo video stays as recorded; Play Store (#51) waits until after Nov 2; the CLAUDE.md files drop the course details.
+**Decided:** Oct 15: Sequelize, Render, `is_active`, full responsive and WCAG AA. Oct 20: anonymous reporting not required (#35); platforms per role (#36, updated by #45); Brevo email API (#37); `.me` domain (#38); phase plan (#39). Oct 25-27: forgot password, show/hide password, full screen (#43); password strength (#44); officer web portal (#45); product wording, Built with, README, LICENSE (#46); officer notification bell (#47). Oct 27: Play Store (#51) waits until after Nov 2; the CLAUDE.md files drop the course details; videos per role plus a promo, final version v1.1.0, domain now, PPT draft, no per-folder READMEs (#48).
 
 **Immediate next steps (in order)**
-1. Lenon: merge PR #53 (`dev` to `main`, merge commit), then push the `v1.0.3` tag so mobile-ci builds the APK.
-2. Pauline and Lenon: run the new test cases on the live system and a phone (TC-01.4, TC-02.10 to 02.12, TC-08.9, TC-09.4, TC-13.7, TC-P.5, TC-P.6).
-3. All: record the demo video (#28) and publish it (#29, `DEMO_VIDEO_URL` on Render); bug fixes only after Oct 30 (#24); freeze and final tag (#25).
-4. Princess: PowerPoint user guide (#26) and contribution report (#27); Lenon: final submission check (#30, Nov 2).
+1. Lenon: merge PR #53 (`dev` to `main`, merge commit), then push the `v1.1.0` tag so mobile-ci builds the APK (`docs/RELEASE-CHECKLIST.md`). Connect the domain (SETUP-GUIDE Part G).
+2. Pauline and Lenon: run the new test cases on the live system and a phone (TC-01.4, TC-02.10 to 02.12, TC-08.9, TC-09.4, TC-13.7, TC-P.3, TC-P.5 to TC-P.7).
+3. All: record the promo and the three 30-second clips (#28, `docs/video/PRODUCTION-GUIDE.md`) and publish them (#29, the four URLs on Render); bug fixes only after Oct 30 (#24); freeze and final tag (#25).
+4. Princess: edit the drafted PowerPoint user guide (`docs/user-guide/RoadWatch-User-Guide.pptx`, #26) and finish the contribution report in the Google Doc (#27: set the FR and Status chips on the new rows, sections V to VIII per member); Lenon: final submission check (#30, Nov 2, `docs/SUBMISSION-CHECKLIST.md`).
 
 **Build order (30-step tracker; owners and dates are Recommended internal checkpoints, fixed dates are Oct 12, Oct 30, Nov 2)**
 
@@ -357,7 +358,7 @@ Do not do the following without the user's approval:
 
 Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a reporter submits on mobile and an admin sees it on web; Oct 26 the full lifecycle works and emails send.
 
-**Video (Confirmed):** due **Oct 30** (Confirmed Oct 20: tracker step 20 in Phase 4, owner All; `docs/DECISIONS.md` #34). MP4, any length (Documentation Lead decides), covering technologies, demo, database and architecture, and challenges; every member participates. Stored at `docs/video/roadwatch-demo.mp4` (Git LFS) and shown inside web and mobile via `/api/app-info`.
+**Video (Confirmed):** due **Oct 30** (Confirmed Oct 20: tracker step 20 in Phase 4, owner All; `docs/DECISIONS.md` #34, #48). A promotional video of **3 minutes or more** covering technologies, demo, database and architecture, and challenges, with every member speaking, plus three **30-second** demo clips (Reporter, Traffic Officer, Administrator). Stored in `docs/video/` (Git LFS: `roadwatch-promo.mp4`, `demo-reporter.mp4`, `demo-officer.mp4`, `demo-admin.mp4`) and shown via `/api/app-info`. Guide and scripts: `docs/video/PRODUCTION-GUIDE.md`.
 
 ---
 
@@ -400,4 +401,4 @@ Done-when targets: Oct 16 the DB has 8 tables and API health passes; Oct 21 a re
 | Column types, ENUM values, nullable choices | Proposed during planning, loaded as is |
 | Aiven free-plan limits | Not verified |
 | Git LFS bandwidth and ZIP behavior | Not verified |
-| Live checks of the Oct 27 work (officer portal, bell, strength meter, About pages) | Not yet run on the live system or a phone |
+| Live checks of the Oct 27 work (officer portal, bell, strength meter, About pages, videos) | Not yet run on the live system or a phone |

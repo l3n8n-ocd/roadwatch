@@ -50,3 +50,10 @@ Added Oct 27 for #48, #49 and #52 (Figma approved by Lenon before any code; DECI
 - Officer bell (#47): `web/w5-notifications-open-1440.png`, `web/w5-notifications-panel-empty.png`. The bell was removed from every
   Administrator frame, so `w2-*`, `w3-*`, `w4-report-*` (admin), `w6-*`, `w7-*`, `w8-action-log-1440.png`, `w8-action-log-all-staff-1440.png`,
   `w9-admin-about-1440.png` and `demo-video-*` were re-exported; `w8-action-log-empty-1440.png` is an officer frame and keeps the bell.
+
+Added Oct 27 for the per-role demo clips and the promotional video (#48, DECISIONS #48; Figma approved by Lenon before any code):
+- Web: `demo-video-per-role-admin-1440.png`, `demo-video-per-role-officer-1440.png`, `demo-video-clip-coming-soon.png`,
+  `w0-watch-the-video-1440.png`, `w0-watch-the-video-390.png`; `w0-landing-1440.png` and `w0-landing-390.png` re-exported
+  (new section after How it works; footer link "Watch the video").
+- Mobile: `demo-video-per-role-reporter.png`, `demo-video-per-role-officer.png`. The older `settings-demo-video-*.png` and
+  `demo-video-playing-1440.png` / `demo-video-coming-soon-1440.png` show the single video used before v1.1.0.

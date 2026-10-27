@@ -167,10 +167,11 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 |---|---|---|---|---|
 | TC-P.1 | Open the landing page signed out | Stats bar, public road updates (verified records only, no reporter names), hotlines, FAQ | | |
 | TC-P.2 | Download the app on an Android phone | `roadwatch.apk` downloads and installs | | |
-| TC-P.3 | Demo video on web (`/demo-video`) and mobile (Settings > Demo video) | Plays from `DEMO_VIDEO_URL`, or shows "Video coming soon" if not set | | |
+| TC-P.3 | Demo video on web (`/demo-video`) as an Administrator and as a Traffic Officer (#48) | Two cards, Administrator and Traffic Officer, 30 seconds each; the signed-in role comes first with "Your role"; a clip plays from its Render URL with captions, "Transcript" opens the text; a clip without a URL says "Clip coming soon" | | |
 | TC-P.4 | Open `/does-not-exist` | 404 page with Go back home | | |
 | TC-P.5 | Web: landing footer and About block, `/about`, and the staff About (`/admin/about`, `/officer/about`), in Light and Dark (#48, #49) | No school, course or section wording anywhere; team shown with photos and titles (Project Lead & Mobile, Web & QA, Backend & Database, Documentation); "Built with" shows 29 logos in 6 groups, each with its name; one-color logos (Express, JWT, Vercel, Render, GitHub, PDFKit, Aiven text) stay visible in Dark | | |
-| TC-P.6 | Mobile: Settings (version row), Settings > About RoadWatch, Settings > Demo video, in Light and Dark (#48, #49) | Version row says only "Version 1.0.3"; About has the 911 disclaimer and the Built with card (3 tiles per row); the demo caption is "RoadWatch product demo" | | |
+| TC-P.6 | Mobile: Settings (version row), Settings > About RoadWatch, Settings > Demo video, in Light and Dark (#48, #49) | Version row says only "Version 1.1.0"; About has the 911 disclaimer and the Built with card (3 tiles per row); Settings > Demo video shows the Reporter clip with "Your role" (a Traffic Officer sees the Traffic Officer clip first, then the Reporter clip); "Read the transcript" opens the text; a clip without a URL says "Clip coming soon" (#48) | | |
+| TC-P.7 | Landing page with and without `PROMO_VIDEO_URL` on Render, at 1440 and on a phone (#48) | Without it: no "Watch the video" section and no footer link. With it: a navy "Watch the video" section after How it works plays the promo (captions on, Transcript when `PROMO_VIDEO_TRANSCRIPT` is set); the footer link "Watch the video" scrolls to it | | |
 
 ## Accessibility (WCAG 2.1 AA target)
 
