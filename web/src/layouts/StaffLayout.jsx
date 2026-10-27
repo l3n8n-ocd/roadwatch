@@ -6,6 +6,7 @@ import { ROLES, homePathFor } from '../lib/constants';
 import { reportCode } from '../lib/format';
 import { DUR, gsap, useGSAP } from '../lib/motion';
 import { ChangePasswordDialog, ContactSupportDialog, EditProfileDialog } from './AccountDialogs';
+import NotificationsBell from './NotificationsBell';
 
 // Staff shell for Administrators and Traffic Officers (#52) (Figma W2 123:108, W5 465:18031): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
 // Log out). Below 1024 px the sidebar becomes a drawer opened from the menu button (131:3837).
@@ -136,6 +137,8 @@ export default function StaffLayout() {
           className="sticky top-0 z-[1100]"
         >
           <ThemeSwitch />
+          {/* Officers only: administrators get no in-app notifications (Figma top bar "Bell" property). */}
+          {role === ROLES.OFFICER && <NotificationsBell />}
           {/* Full trigger on desktop, avatar only below lg (the drawer has Log out). */}
           <UserMenu user={user} groups={menuGroups} className="hidden lg:block" />
           <UserMenu user={user} groups={menuGroups} compact className="lg:hidden" />

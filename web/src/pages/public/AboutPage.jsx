@@ -108,7 +108,7 @@ export default function AboutPage() {
                   <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
                     <h3 className="type-h3 text-text-primary">{member.name}</h3>
                     <p className="rounded-full bg-surface-blue-subtle px-3 py-1 type-caption text-text-blue">{member.title}</p>
-                    <p className="type-body text-text-muted">{member.bio}</p>
+                    <p className="type-body text-text-muted max-sm:line-clamp-2">{member.bio}</p>
                   </div>
                 </li>
               ))}

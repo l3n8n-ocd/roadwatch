@@ -19,9 +19,10 @@ src/
   api/endpoints.js     one function per docs/API.md endpoint ("not built yet" ones are marked)
   context/             AuthContext (staff login with platform "web" + expected role, logout), ThemeContext
   lib/constants.js     ROLES, STATUSES, ADMIN_STATUSES, INJURY_OPTIONS, HOTLINES, homePathFor(), APK_URL
-  lib/format.js        formatDate, formatDateTime, reportCode (RW-000128)
+  lib/format.js        formatDate, formatDateTime, formatRelative ("5 min ago"), reportCode (RW-000128)
   components/ui/       Figma Components page, one file per component (Button.jsx, StatusChip.jsx...)
   layouts/             StaffLayout (sidebar + top bar + user menu, Log out confirm), AccountDialogs,
+                       NotificationsBell (officers only, #47: GET /notifications, mark read, open the report),
                        PublicLayout (public header with Light/Dark switch + footer; landing, /about, 404, 500)
   components/ErrorBoundary.jsx  shows the 500 page (W12) when a page crashes
   lib/useServerError.js         a page's main request with a 5xx re-throws into the ErrorBoundary
@@ -83,6 +84,8 @@ src/
   Reporter, shown as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default:
   `roadwatch.apk` from the latest GitHub release, #22; switch to roadwatch-ph.me/app once the domain is live, #38).
 - Roles are enforced by the API; `RequireRole` only routes.
+- Officers see a notification bell in the top bar (assignment alerts; Figma top bar "Bell" property, panel 481:20505,
+  empty 483:21192). Administrators get no in-app notifications, so their top bar has no bell (#47).
 - Reporter contact details only on screens the API returns them for (admin, assigned officer).
 - Public updates, edit profile, change password, action log and admin audit logs exist on the API since Oct 21
   (#23, #25, #27). Pages still show their designed empty/error state when a request fails.

@@ -729,6 +729,7 @@ function EmergencyCard() {
 
 /* ---------- About ---------- */
 
+// Phone width (Figma 139:4275): only the heading, the 911 disclaimer and the link to /about, which has the full text.
 function About() {
   return (
     <section id="about" aria-labelledby="about-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-white')}>
@@ -738,7 +739,7 @@ function About() {
             About RoadWatch
           </h2>
           <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
-          <p className="type-body text-text-primary sm:type-body-lg">
+          <p className="type-body text-text-primary max-sm:hidden sm:type-body-lg">
             RoadWatch is a web and mobile road accident reporting system. It makes it easier for the public to submit
             accident information, and helps administrators and traffic officers review, verify and manage every report
             in one place.
@@ -754,7 +755,7 @@ function About() {
             <Icon name="chevron-right" size={20} />
           </Link>
         </div>
-        <div data-reveal className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 sm:p-8">
+        <div data-reveal className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 max-sm:hidden sm:p-8">
           <h3 className="type-h3 text-text-primary">What RoadWatch supports</h3>
           <ul data-ticks className="flex flex-col gap-4">
             {SUPPORTS.map((item) => (
