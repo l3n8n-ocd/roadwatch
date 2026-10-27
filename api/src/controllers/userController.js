@@ -4,6 +4,7 @@ const { recordAudit } = require('../services/auditService');
 const { emailUser } = require('../services/notificationService');
 const { ROLES } = require('../config/constants');
 const HttpError = require('../utils/httpError');
+const { assertStrongPassword } = require('../utils/passwordStrength');
 
 async function roleByName(name) {
   const role = await Role.findOne({ where: { role_name: name } });
@@ -15,6 +16,7 @@ async function roleByName(name) {
 async function create(req, res) {
   const { full_name, contact_email, contact_phone, password, role } = req.body;
   if (await User.findOne({ where: { contact_email } })) throw new HttpError(409, 'Email is already registered');
+  assertStrongPassword(password, { name: full_name, email: contact_email }, 'password');
   const r = await roleByName(role);
   const user = await User.create({
     role_id: r.role_id, full_name, contact_email, contact_phone: contact_phone || null,
@@ -65,6 +67,7 @@ async function resetPassword(req, res) {
   if (user.role.role_name === ROLES.ADMIN) {
     throw new HttpError(400, 'Administrators reset their own password with Forgot password on the sign-in page');
   }
+  assertStrongPassword(req.body.new_password, { name: user.full_name, email: user.contact_email }, 'new_password');
   user.password_hash = await bcrypt.hash(req.body.new_password, 12);
   await user.save();
   await recordAudit(req.user.user_id, 'user.password_reset', { target_user_id: user.user_id });

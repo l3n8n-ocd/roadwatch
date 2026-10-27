@@ -29,7 +29,7 @@ test('database-backed API flow', { skip }, async (t) => {
   const server = app.listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api`;
   const run = Date.now();
-  const pw = 'password123';
+  const pw = 'Sunflower7!';
 
   const call = async (method, path, { token, body } = {}) => {
     const res = await fetch(base + path, {
@@ -64,6 +64,12 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.equal(dup.status, 409);
       const weak = await call('POST', '/auth/register', { body: { full_name: 'Weak', contact_email: `weak.${run}@test.local`, password: 'short' } });
       assert.equal(weak.status, 400);
+      // #44: a new password must be Strong (Good is not enough), and must not contain the name or email.
+      const good = await call('POST', '/auth/register', { body: { full_name: 'Weak', contact_email: `weak.${run}@test.local`, password: 'Sunflower7' } });
+      assert.equal(good.status, 400);
+      assert.equal(good.body.details.password[0], 'Make the password Strong to save it.');
+      const named = await call('POST', '/auth/register', { body: { full_name: 'Maria Santos', contact_email: `weak.${run}@test.local`, password: 'Santos#2026x' } });
+      assert.equal(named.status, 400);
     });
 
     const rep = { email: `rep.${run}@test.local` };
@@ -121,6 +127,8 @@ test('database-backed API flow', { skip }, async (t) => {
     await t.test('admin creates a Traffic Officer; cannot create with bad data', async () => {
       const bad = await call('POST', '/users', { token: admin.token, body: { full_name: 'X', contact_email: 'x@test.local', password: pw, role: 'Superuser' } });
       assert.equal(bad.status, 400);
+      const notStrong = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer One', contact_email: `off1.${run}@test.local`, password: 'Sunflower7', role: 'Traffic Officer' } });
+      assert.equal(notStrong.status, 400, 'an officer password must be Strong too (#44)');
       const ok = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer One', contact_email: `off1.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
       assert.equal(ok.status, 201);
       officer.id = ok.body.data.user_id;
@@ -281,13 +289,16 @@ test('database-backed API flow', { skip }, async (t) => {
       const cleared = await call('PATCH', '/auth/me', { token: rep.token, body: { full_name: 'Rep Renamed', contact_phone: null } });
       assert.equal(cleared.body.data.user.contact_phone, null);
 
-      const wrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: 'not-it-123', new_password: 'newpassword456' } });
+      const wrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: 'not-it-123', new_password: 'Lantern#456b' } });
       assert.equal(wrong.status, 400, 'a wrong current password is 400, not 401, so the apps keep the session');
       assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'short' } })).status, 400);
       assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: pw } })).status, 400);
-      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'newpassword456' } })).status, 200);
+      const notStrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'Sunflower8' } });
+      assert.equal(notStrong.status, 400);
+      assert.equal(notStrong.body.details.new_password[0], 'Make the password Strong to save it.');
+      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'Lantern#456b' } })).status, 200);
       assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw, platform: 'mobile' } })).status, 401);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'newpassword456', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'Lantern#456b', platform: 'mobile' } })).status, 200);
     });
 
     await t.test('action log: own actions for anyone, all staff for admins only (#27)', async () => {
@@ -325,14 +336,17 @@ test('database-backed API flow', { skip }, async (t) => {
       const repUser = await User.scope('withPassword').findOne({ where: { contact_email: rep.email } });
       const code = makeResetCode(repUser);
       assert.match(code, /^[A-Z2-9]{8}$/);
-      const reset = (body) => call('POST', '/auth/reset-password', { body: { contact_email: rep.email, new_password: 'resetpass789', ...body } });
+      const reset = (body) => call('POST', '/auth/reset-password', { body: { contact_email: rep.email, new_password: 'Harbor$789k', ...body } });
       const wrong = await reset({ reset_code: code === 'AAAAAAAA' ? 'BBBBBBBB' : 'AAAAAAAA' });
       assert.equal(wrong.status, 400);
       assert.ok(wrong.body.details.reset_code, 'the error goes under the code field');
-      const noUser = await call('POST', '/auth/reset-password', { body: { contact_email: `nobody.${run}@test.local`, reset_code: code, new_password: 'resetpass789' } });
+      const noUser = await call('POST', '/auth/reset-password', { body: { contact_email: `nobody.${run}@test.local`, reset_code: code, new_password: 'Harbor$789k' } });
       assert.equal(noUser.status, 400);
       assert.equal(noUser.body.error, wrong.body.error, 'unknown email gives the same answer as a wrong code');
       assert.equal((await reset({ reset_code: code, new_password: 'short' })).status, 400);
+      const notStrong = await reset({ reset_code: code, new_password: 'Sunflower8' });
+      assert.equal(notStrong.status, 400);
+      assert.ok(notStrong.body.details.new_password, 'a right code with a not-Strong password: the error is on the password');
 
       const realNow = Date.now;
       Date.now = () => realNow() + 16 * 60000;
@@ -344,22 +358,25 @@ test('database-backed API flow', { skip }, async (t) => {
       const typed = `${code.slice(0, 4).toLowerCase()}-${code.slice(4)}`;
       assert.equal((await reset({ reset_code: typed })).status, 200, 'case and dashes do not matter');
       assert.equal((await reset({ reset_code: code })).status, 400, 'a code works once');
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'newpassword456', platform: 'mobile' } })).status, 401);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'resetpass789', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'Lantern#456b', platform: 'mobile' } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'Harbor$789k', platform: 'mobile' } })).status, 200);
       assert.equal((await call('GET', '/auth/me', { token: rep.token })).status, 200, 'other signed-in devices stay signed in');
       assert.ok(await AuditLog.findOne({ where: { user_id: repUser.user_id, action_taken: 'account.password_reset' } }));
 
       const path = `/users/${officer.id}/password`;
-      assert.equal((await call('PATCH', path, { token: rep.token, body: { new_password: 'temporary123' } })).status, 403);
-      assert.equal((await call('PATCH', path, { token: officer.token, body: { new_password: 'temporary123' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: rep.token, body: { new_password: 'Temp-Key-2026x' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: officer.token, body: { new_password: 'Temp-Key-2026x' } })).status, 403);
       assert.equal((await call('PATCH', path, { token: admin.token, body: { new_password: 'short' } })).status, 400);
-      assert.equal((await call('PATCH', `/users/${admin.user.user_id}/password`, { token: admin.token, body: { new_password: 'temporary123' } })).status, 400, 'not on your own account');
+      const tempNotStrong = await call('PATCH', path, { token: admin.token, body: { new_password: 'Sunflower8' } });
+      assert.equal(tempNotStrong.status, 400, 'a temporary password must be Strong too (#44)');
+      assert.ok(tempNotStrong.body.details.new_password);
+      assert.equal((await call('PATCH', `/users/${admin.user.user_id}/password`, { token: admin.token, body: { new_password: 'Temp-Key-2026x' } })).status, 400, 'not on your own account');
       const admin2 = await makeStaff('Administrator', 'admin2');
-      assert.equal((await call('PATCH', `/users/${admin2.user.user_id}/password`, { token: admin.token, body: { new_password: 'temporary123' } })).status, 400, 'not on another administrator');
-      assert.equal((await call('PATCH', '/users/99999999/password', { token: admin.token, body: { new_password: 'temporary123' } })).status, 404);
-      const done = await call('PATCH', path, { token: admin.token, body: { new_password: 'temporary123' } });
+      assert.equal((await call('PATCH', `/users/${admin2.user.user_id}/password`, { token: admin.token, body: { new_password: 'Temp-Key-2026x' } })).status, 400, 'not on another administrator');
+      assert.equal((await call('PATCH', '/users/99999999/password', { token: admin.token, body: { new_password: 'Temp-Key-2026x' } })).status, 404);
+      const done = await call('PATCH', path, { token: admin.token, body: { new_password: 'Temp-Key-2026x' } });
       assert.equal(done.status, 200);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: 'temporary123', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: 'Temp-Key-2026x', platform: 'mobile' } })).status, 200);
       assert.ok(await AuditLog.findOne({ where: { user_id: admin.user.user_id, action_taken: 'user.password_reset' } }));
     });
 

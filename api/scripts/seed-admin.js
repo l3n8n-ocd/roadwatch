@@ -4,6 +4,7 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2/promise');
 const { getDbConfig } = require('../src/config/dbConfig');
+const { checkPassword } = require('../src/utils/passwordStrength');
 
 (async () => {
   const { ADMIN_NAME = 'System Administrator', ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
@@ -11,8 +12,10 @@ const { getDbConfig } = require('../src/config/dbConfig');
     console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD in .env first.');
     process.exit(1);
   }
-  if (ADMIN_PASSWORD.length < 8) {
-    console.error('ADMIN_PASSWORD must be at least 8 characters.');
+  // Same rule as every new password in the apps (#44): it must be Strong.
+  const strength = checkPassword(ADMIN_PASSWORD, { name: ADMIN_NAME, email: ADMIN_EMAIL });
+  if (strength.level !== 'strong') {
+    console.error(`ADMIN_PASSWORD is ${strength.level}, and it must be strong. ${strength.tip}`);
     process.exit(1);
   }
   const conn = await mysql.createConnection(getDbConfig());

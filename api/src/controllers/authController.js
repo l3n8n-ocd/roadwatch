@@ -6,6 +6,7 @@ const { recordAudit, listAuditLogs } = require('../services/auditService');
 const { makeResetCode, isValidResetCode, CODE_MINUTES } = require('../services/passwordResetService');
 const { sendMail, mailConfigured } = require('../config/mailer');
 const HttpError = require('../utils/httpError');
+const { assertStrongPassword } = require('../utils/passwordStrength');
 
 const publicUser = (u, role) => ({ user_id: u.user_id, full_name: u.full_name, contact_email: u.contact_email, contact_phone: u.contact_phone, role });
 
@@ -14,6 +15,7 @@ const publicUser = (u, role) => ({ user_id: u.user_id, full_name: u.full_name, c
 async function register(req, res) {
   const { full_name, contact_email, contact_phone, password } = req.body;
   if (await User.findOne({ where: { contact_email } })) throw new HttpError(409, 'Email is already registered');
+  assertStrongPassword(password, { name: full_name, email: contact_email }, 'password');
   const role = await Role.findOne({ where: { role_name: ROLES.REPORTER } });
   if (!role) throw new HttpError(500, 'Roles are not seeded. Run database/seed.sql first.');
   const user = await User.create({
@@ -68,6 +70,7 @@ async function changePassword(req, res) {
   if (!(await bcrypt.compare(req.body.current_password, user.password_hash))) {
     throw new HttpError(400, 'Your current password is incorrect.', { current_password: ['Your current password is incorrect.'] });
   }
+  assertStrongPassword(req.body.new_password, { name: user.full_name, email: user.contact_email }, 'new_password');
   user.password_hash = await bcrypt.hash(req.body.new_password, 12);
   await user.save();
   await recordAudit(user.user_id, 'account.password_changed');
@@ -107,6 +110,8 @@ async function resetPassword(req, res) {
   if (!user || !user.is_active || !isValidResetCode(user, reset_code)) {
     throw new HttpError(400, BAD_CODE, { reset_code: [BAD_CODE] });
   }
+  // Checked after the code, so a weak password never reveals whether the email has an account.
+  assertStrongPassword(new_password, { name: user.full_name, email: user.contact_email }, 'new_password');
   user.password_hash = await bcrypt.hash(new_password, 12);
   await user.save();
   await recordAudit(user.user_id, 'account.password_reset');
