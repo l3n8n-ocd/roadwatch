@@ -193,8 +193,7 @@ export function PublicFooter() {
         <hr className="border-0 border-t border-surface-navy-hover" />
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
           <p className="min-w-0 flex-1 type-body-sm text-text-inverse-muted">
-            <span className="max-md:hidden">IT 305 · BSIT 3I-G1 · Bulacan State University · 2026 · </span>
-            Map data © OpenStreetMap contributors
+            © 2026 RoadWatch · Map data © OpenStreetMap contributors
           </p>
           <Link
             to="/staff/sign-in"

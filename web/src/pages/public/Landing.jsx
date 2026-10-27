@@ -110,7 +110,7 @@ const FAQ = [
   },
   {
     q: 'How do traffic officers get an account?',
-    a: 'The RoadWatch administrator creates traffic officer accounts. Officers then sign in on the same Android app.',
+    a: 'The RoadWatch administrator creates traffic officer accounts. Officers then sign in on the Android app or on this website.',
   },
   { q: 'Is there an iPhone app?', a: 'Not yet. RoadWatch is a free Android app (APK) for now.' },
 ];
@@ -207,8 +207,8 @@ function Hero() {
             </a>
           </div>
           <p data-hero-fade className="type-body-sm text-text-inverse-muted max-sm:hidden">
-            Free Android app (APK). Reporters and traffic officers use the app; this website is for browsing and for
-            administrators.
+            Free Android app (APK). Reporters and traffic officers use the app; administrators and traffic officers can
+            also sign in on this website.
           </p>
           <p
             data-hero-fade
@@ -739,12 +739,13 @@ function About() {
           </h2>
           <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
           <p className="type-body text-text-primary sm:type-body-lg">
-            RoadWatch is a web and mobile road accident reporting system made by BSIT 3I-G1 students at Bulacan State
-            University for IT 305 Advanced Web Development. It makes it easier for the public to submit accident
-            information, and helps administrators and traffic officers review, verify and manage every report in one
-            place.
+            RoadWatch is a web and mobile road accident reporting system. It makes it easier for the public to submit
+            accident information, and helps administrators and traffic officers review, verify and manage every report
+            in one place.
           </p>
-          <p className="type-body-sm text-text-muted">A student project. It does not replace official emergency services.</p>
+          <p className="type-body-sm text-text-muted">
+            RoadWatch does not replace official emergency services. In an emergency, call 911.
+          </p>
           <Link
             to="/about"
             className="flex min-h-12 items-center gap-2 self-start rounded-rw-sm type-button text-text-blue underline underline-offset-2 sm:min-h-11"

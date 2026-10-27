@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, PasswordField, TextField, Toast } from '../../components/ui';
 import { auth } from '../../api/endpoints';
 import AuthShell from './AuthShell';
+import { FORMS } from './staffForms';
 import { NOT_STRONG, isStrong } from '../../lib/passwordStrength';
 
 // W1 Forgot password (#37, DECISIONS #43): 1 Enter email (Figma 403:16262), 2 Enter code
 // (403:16316, 390: 403:16479), then back on sign-in with "Password changed" (403:16404).
 // The API answers step 1 the same way whether or not the email has an account, so this page never
-// says whether an account exists. Reporters and Traffic Officers reset in the Android app.
+// says whether an account exists. Opened from a staff form (state.role: admin or officer, #52), it returns
+// to that form. Reporters reset in the Android app.
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const firstError = (value) => (Array.isArray(value) ? value[0] : value);
@@ -18,22 +20,21 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState(location.state?.email || '');
   const [step, setStep] = useState('email'); // 'email' | 'code'
 
+  const roleKey = FORMS[location.state?.role] ? location.state.role : 'admin';
+  const form = FORMS[roleKey];
+  const signInPath = `/staff/sign-in/${roleKey}`;
   return (
-    <AuthShell
-      title="Review, verify and assign accident reports everywhere."
-      mobileTitle="Review, verify and assign accident reports."
-      subtitle="Administrator console"
-    >
+    <AuthShell title={form.title} mobileTitle={form.mobileTitle} subtitle={form.subtitle}>
       {step === 'email' ? (
-        <EmailStep email={email} setEmail={setEmail} onSent={() => setStep('code')} />
+        <EmailStep email={email} setEmail={setEmail} signInPath={signInPath} onSent={() => setStep('code')} />
       ) : (
-        <CodeStep email={email} />
+        <CodeStep email={email} signInPath={signInPath} />
       )}
     </AuthShell>
   );
 }
 
-function EmailStep({ email, setEmail, onSent }) {
+function EmailStep({ email, setEmail, signInPath, onSent }) {
   const [error, setError] = useState('');
   const [banner, setBanner] = useState('');
   const [busy, setBusy] = useState(false);
@@ -64,7 +65,7 @@ function EmailStep({ email, setEmail, onSent }) {
     <>
       <h1 className="type-h1 text-text-primary">Reset your password</h1>
       <p className="type-body text-text-muted">
-        Enter the email of your administrator account. We'll email you an 8-character code that works for 15 minutes.
+        Enter the email of your staff account. We'll email you an 8-character code that works for 15 minutes.
       </p>
       {banner && (
         <Toast type="error" title="Couldn't send the code" onClose={() => setBanner('')} className="max-w-none!">
@@ -88,18 +89,18 @@ function EmailStep({ email, setEmail, onSent }) {
           {busy ? 'Sending…' : 'Send code'}
         </Button>
       </form>
-      <Link to="/staff/sign-in" className="inline-flex min-h-11 items-center self-start rounded-rw-sm type-label text-text-blue underline underline-offset-2">
+      <Link to={signInPath} className="inline-flex min-h-11 items-center self-start rounded-rw-sm type-label text-text-blue underline underline-offset-2">
         Back to sign-in
       </Link>
       <p className="type-body-sm text-text-muted">
-        For your privacy, RoadWatch shows the same message whether or not this email has an account. Reporters and
-        Traffic Officers reset their password in the Android app.
+        For your privacy, RoadWatch shows the same message whether or not this email has an account. Reporters reset
+        their password in the Android app.
       </p>
     </>
   );
 }
 
-function CodeStep({ email }) {
+function CodeStep({ email, signInPath }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ code: '', password: '', confirm: '' });
   const [errors, setErrors] = useState({});
@@ -134,7 +135,7 @@ function CodeStep({ email }) {
     setBusy(true);
     try {
       await auth.resetPassword({ contact_email: email.trim(), reset_code: form.code, new_password: form.password });
-      navigate('/staff/sign-in', { replace: true, state: { email: email.trim(), passwordChanged: true } });
+      navigate(signInPath, { replace: true, state: { email: email.trim(), passwordChanged: true } });
     } catch (err) {
       setBusy(false);
       const d = err.details || {};

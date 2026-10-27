@@ -17,7 +17,7 @@ Project-wide rules live in the root `CLAUDE.md`. This file covers the web app on
 src/
   api/client.js        axios instance (unwraps { success, data }), token storage, downloadFile()
   api/endpoints.js     one function per docs/API.md endpoint ("not built yet" ones are marked)
-  context/             AuthContext (Administrator login with platform "web", logout), ThemeContext
+  context/             AuthContext (staff login with platform "web" + expected role, logout), ThemeContext
   lib/constants.js     ROLES, STATUSES, ADMIN_STATUSES, INJURY_OPTIONS, HOTLINES, homePathFor(), APK_URL
   lib/format.js        formatDate, formatDateTime, reportCode (RW-000128)
   components/ui/       Figma Components page, one file per component (Button.jsx, StatusChip.jsx...)
@@ -26,7 +26,8 @@ src/
   components/ErrorBoundary.jsx  shows the 500 page (W12) when a page crashes
   lib/useServerError.js         a page's main request with a 5xx re-throws into the ErrorBoundary
   pages/<area>/        one file per screen; App.jsx holds every route
-  assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png
+  assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png, team/ (photos, lib/team.js)
+  assets/logos/        Built with logos (#49; a "-dark" twin for one-color logos), listed in lib/builtWith.js, drawn by BuiltWith
   styles/tokens.css    generated from Figma variables (light + dark); styles/theme.css maps them to Tailwind
 ```
 
@@ -58,9 +59,12 @@ src/
   photos open in `PhotoViewerDialog` (always dark via `bg-dark-bg`, arrows, +/- zoom, Esc, no download; #46).
 
 ## Routes (#40)
-- Public: `/` landing, `/about` (W10, Meet our team), `/500` (W12), `/staff/sign-in`, `/staff/forgot-password`
-  (#37: email, then code + new password, back to sign-in with "Password changed"); any unknown path shows 404 (W11).
-- Administrator: `/admin...`, `/demo-video`, `/action-log`, `/admin/about` (W9, version and server status).
+- Public: `/` landing, `/about` (W10, Meet our team, Built with), `/500` (W12), `/staff/sign-in` (role chooser, #52),
+  `/staff/sign-in/admin` and `/staff/sign-in/officer` (forms; copy in `pages/auth/staffForms.js`), `/staff/forgot-password`
+  (#37: email, then code + new password, back to the form it came from with "Password changed"); any unknown path shows 404 (W11).
+- Administrator: `/admin...`, `/admin/about` (W9, version and server status).
+- Traffic Officer (#52): `/officer` (W5 Assigned to me), `/officer/reports/:id` (`ReportDetails mode="officer"`), `/officer/about`.
+- Both staff roles: `/demo-video`, `/action-log` (the All staff view is admin-only).
 - Landing section links are `/#how-it-works`, `/#public-updates`, `/#safety-tips`, `/#faq`; Landing scrolls to the hash.
 - Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.
 
@@ -72,10 +76,11 @@ src/
 - Admin: CSS `starting:` entrances (rows, bars, dialogs, menus, toasts) and `AnimatedNumber`; no scroll effects.
 
 ## Data and roles
-- The web is for Administrators only (#36). Reporters and Traffic Officers use the Android app; their old
-  web screens (R0-R6, W5, officer W4) were removed on Oct 20 and live on the Figma Archive page.
-- Login sends `platform: "web"`. The API answers 403 `details.code = WRONG_PLATFORM` for other roles, shown
-  as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default:
+- The web is for staff: Administrators and, since Oct 27 (#52, DECISIONS #45), Traffic Officers (who can also use the app).
+  Reporters use the Android app; the reporter web screens (R0-R6) stay on the Figma Archive page.
+- Login sends `platform: "web"` and the role chosen on the chooser; a staff account on the other role's form is signed
+  out again with "This is a ... account" (Figma 465:17972). The API answers 403 `details.code = WRONG_PLATFORM` for a
+  Reporter, shown as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default:
   `roadwatch.apk` from the latest GitHub release, #22; switch to roadwatch-ph.me/app once the domain is live, #38).
 - Roles are enforced by the API; `RequireRole` only routes.
 - Reporter contact details only on screens the API returns them for (admin, assigned officer).

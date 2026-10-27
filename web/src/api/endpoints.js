@@ -2,7 +2,7 @@ import { api } from './client';
 
 // Thin wrappers over docs/API.md.
 export const auth = {
-  // The web signs in Administrators only; the API refuses other roles on "web" (#36).
+  // The web signs in staff: Administrators and Traffic Officers (#36, #52). Reporters get 403 WRONG_PLATFORM.
   login: (contact_email, password) => api.post('/auth/login', { contact_email, password, platform: 'web' }),
   me: () => api.get('/auth/me'),
   updateMe: (body) => api.patch('/auth/me', body), // #25
@@ -28,6 +28,13 @@ export const notifications = {
   list: () => api.get('/notifications'),
   read: (id) => api.patch(`/notifications/${id}/read`),
   readAll: () => api.patch('/notifications/read-all'),
+};
+
+// Traffic Officer web portal (#52): only reports assigned to the signed-in officer.
+export const officer = {
+  list: (params) => api.get('/officer/reports', { params }),
+  get: (id) => api.get(`/officer/reports/${id}`),
+  update: (id, body) => api.patch(`/officer/reports/${id}`, body), // { status?, remarks? }
 };
 
 export const admin = {

@@ -4,7 +4,7 @@ import SidebarItem from './SidebarItem';
 import { ROLES } from '../../lib/constants';
 import { cx } from '../../lib/cx';
 
-// Administrator navy sidebar (Figma 105:1211), 264 px wide. Officers use the mobile app (#36).
+// Staff navy sidebar (Figma 105:1211), 264 px wide: Administrator console or Traffic Officer console (#52).
 // pathname: the current route, used to mark the active item (none on Action log and About).
 // showLogOut: only when the sidebar is the 390 px drawer (the top bar has Log out on desktop).
 const SIDEBAR_ITEMS = {
@@ -15,10 +15,15 @@ const SIDEBAR_ITEMS = {
     { to: '/admin/summaries', label: 'Summaries', icon: 'bar-chart', match: (p) => p.startsWith('/admin/summaries') },
     { to: '/demo-video', label: 'Demo video', icon: 'play-circle', match: (p) => p.startsWith('/demo-video') },
   ],
+  [ROLES.OFFICER]: [
+    { to: '/officer', label: 'Assigned to me', icon: 'list', match: (p) => p === '/officer' || p.startsWith('/officer/reports') },
+    { to: '/demo-video', label: 'Demo video', icon: 'play-circle', match: (p) => p.startsWith('/demo-video') },
+  ],
 };
 
 const CONSOLE_NAME = {
   [ROLES.ADMIN]: 'Administrator console',
+  [ROLES.OFFICER]: 'Traffic Officer console',
 };
 
 // Decorative background: road-safety icons at 7% opacity, tilted, repeating every 160 px.

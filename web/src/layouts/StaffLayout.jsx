@@ -7,22 +7,25 @@ import { reportCode } from '../lib/format';
 import { DUR, gsap, useGSAP } from '../lib/motion';
 import { ChangePasswordDialog, ContactSupportDialog, EditProfileDialog } from './AccountDialogs';
 
-// Staff shell (Figma W2 123:108): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
+// Staff shell for Administrators and Traffic Officers (#52) (Figma W2 123:108, W5 465:18031): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
 // Log out). Below 1024 px the sidebar becomes a drawer opened from the menu button (131:3837).
 
 // Breadcrumb for the current route ("Reports / RW-000128", "Help / About").
 function breadcrumbsFor(pathname) {
   const detail = pathname.match(/^\/admin\/reports\/(\d+)/);
   if (detail) return [{ label: 'Reports', to: '/admin/reports' }, { label: reportCode(detail[1]) }];
+  const assigned = pathname.match(/^\/officer\/reports\/(\d+)/);
+  if (assigned) return [{ label: 'Assigned to me', to: '/officer' }, { label: reportCode(assigned[1]) }];
   const pages = {
     '/admin': 'Dashboard',
     '/admin/reports': 'Reports',
     '/admin/users': 'Users & settings',
     '/admin/summaries': 'Summaries',
+    '/officer': 'Assigned to me',
     '/demo-video': 'Demo video',
   };
   if (pathname === '/action-log') return [{ label: 'Account' }, { label: 'Action log' }];
-  if (pathname === '/admin/about') return [{ label: 'Help' }, { label: 'About' }];
+  if (pathname === '/admin/about' || pathname === '/officer/about') return [{ label: 'Help' }, { label: 'About' }];
   return [{ label: pages[pathname] || 'RoadWatch' }];
 }
 
@@ -56,16 +59,17 @@ export default function StaffLayout() {
     setDrawerOpen(false);
     setDialog('logout');
   };
-  // Log out ends on the Administrator sign-in page (issue #41). One transition for both updates, so the route
+  // Log out ends on the staff sign-in page (issue #41). One transition for both updates, so the route
   // guard never sees the signed-out user on an admin page and remembers it as the page to return to.
   const handleLogout = () => {
     setDialog(null);
     startTransition(() => {
       logout();
-      navigate('/staff/sign-in', { replace: true });
+      navigate(user?.role === ROLES.OFFICER ? '/staff/sign-in/officer' : '/staff/sign-in/admin', { replace: true });
     });
   };
 
+  const aboutPath = user?.role === ROLES.OFFICER ? '/officer/about' : '/admin/about';
   const menuGroups = [
     {
       label: 'Account',
@@ -79,7 +83,7 @@ export default function StaffLayout() {
       label: 'Help',
       items: [
         { key: 'support', label: 'Contact support', icon: 'mail', onSelect: () => setDialog('support') },
-        { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate('/admin/about') },
+        { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate(aboutPath) },
       ],
     },
   ];
