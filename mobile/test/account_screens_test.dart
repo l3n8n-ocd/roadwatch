@@ -348,11 +348,19 @@ void main() {
     await tester.enterText(fields.at(1), 'abcdef');
     await tester.enterText(fields.at(2), 'abcde');
     await tester.pump();
+    // The meter explains the rule while typing (#44); the error waits for Update password.
     expect(find.text('Use at least 8 characters (6 so far).'), findsOneWidget);
     expect(find.text("Passwords don't match."), findsOneWidget);
 
-    await tester.enterText(fields.at(1), 'abcdefgh');
-    await tester.enterText(fields.at(2), 'abcdefgh');
+    await tester.enterText(fields.at(1), 'Sunflower7');
+    await tester.enterText(fields.at(2), 'Sunflower7');
+    await tester.tap(find.text('Update password'));
+    await tester.pumpAndSettle();
+    expect(find.text('Make the password Strong to save it.'), findsOneWidget, reason: 'Good is not enough');
+    expect(find.text('Good'), findsOneWidget);
+
+    await tester.enterText(fields.at(1), 'Sunflower7!');
+    await tester.enterText(fields.at(2), 'Sunflower7!');
     await tester.tap(find.text('Update password'));
     await tester.pumpAndSettle();
     expect(find.text("Couldn't update your password"), findsOneWidget);

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/api/api_exception.dart';
 import '../../core/api/roadwatch_api.dart';
+import '../../core/password_strength.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/widgets.dart';
 
@@ -24,8 +25,6 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  static const _minLength = 8;
-
   late final _email = TextEditingController(text: widget.initialEmail);
   final _code = TextEditingController();
   final _next = TextEditingController();
@@ -54,12 +53,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   String? get _codeError =>
       _serverCodeError ?? (_submitted && _code.text.trim().isEmpty ? 'Enter the code from the email.' : null);
 
+  /// While typing, the strength meter explains the rule; the error appears on Change password (#44).
   String? get _newError {
     if (_serverNewError != null) return _serverNewError;
-    final n = _next.text.length;
-    if (n == 0) return _submitted ? 'Enter a new password.' : null;
-    if (n < _minLength) return 'Use at least $_minLength characters ($n so far).';
-    return null;
+    if (!_submitted) return null;
+    if (_next.text.isEmpty) return 'Enter a new password.';
+    return checkPassword(_next.text, email: _email.text.trim()).isStrong ? null : notStrongMessage;
   }
 
   String? get _confirmError {
@@ -231,8 +230,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 label: 'New password',
                 required: true,
                 controller: _next,
-                helperText: 'At least $_minLength characters.',
                 errorText: _newError,
+                showStrength: true,
+                strengthEmail: _email.text.trim(),
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
                 onChanged: (_) => setState(() => _serverNewError = null),

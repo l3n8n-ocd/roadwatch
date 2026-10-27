@@ -174,9 +174,15 @@ void main() {
     await tester.enterText(fields.at(3), '123456');
     await tester.tap(find.widgetWithText(RwButton, 'Create account'));
     await tester.pump();
-    expect(find.text('Use at least 8 characters (6 so far).'), findsOneWidget);
+    expect(find.text('Make the password Strong to save it.'), findsOneWidget);
+    expect(find.text('Use at least 8 characters (6 so far).'), findsOneWidget, reason: 'the meter tip');
 
-    await tester.enterText(fields.at(3), '12345678');
+    await tester.enterText(fields.at(3), 'Juan#2026x');
+    await tester.tap(find.widgetWithText(RwButton, 'Create account'));
+    await tester.pump();
+    expect(find.text("Don't use your name or email in the password."), findsOneWidget);
+
+    await tester.enterText(fields.at(3), 'Sunflower7!');
     await tester.tap(find.widgetWithText(RwButton, 'Create account'));
     await tester.pumpAndSettle();
     expect(find.text('An account with this email already exists. Log in instead.'), findsOneWidget);

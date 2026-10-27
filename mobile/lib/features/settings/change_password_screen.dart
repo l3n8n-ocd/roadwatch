@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../core/api/api_exception.dart';
 import '../../core/api/roadwatch_api.dart';
+import '../../core/password_strength.dart';
+import '../../core/state/auth_provider.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/widgets.dart';
 
@@ -18,8 +20,6 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  static const _minLength = 8;
-
   final _current = TextEditingController();
   final _next = TextEditingController();
   final _confirm = TextEditingController();
@@ -41,13 +41,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   String? get _currentError =>
       _serverCurrentError ?? (_submitted && _current.text.isEmpty ? 'Enter your current password.' : null);
 
-  /// Shown as soon as typing starts, like the Figma "(6 so far)" state.
+  /// While typing, the strength meter explains the rule; the error appears on Update password (#44).
   String? get _newError {
     if (_serverNewError != null) return _serverNewError;
-    final n = _next.text.length;
-    if (n == 0) return _submitted ? 'Enter a new password.' : null;
-    if (n < _minLength) return 'Use at least $_minLength characters ($n so far).';
-    return null;
+    if (!_submitted) return null;
+    if (_next.text.isEmpty) return 'Enter a new password.';
+    final user = context.read<AuthProvider>().user;
+    final strong = checkPassword(_next.text, name: user?.fullName, email: user?.contactEmail).isStrong;
+    return strong ? null : notStrongMessage;
   }
 
   String? get _confirmError {
@@ -125,7 +126,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               required: true,
               controller: _next,
               errorText: _newError,
-              helperText: 'Use at least $_minLength characters.',
+              showStrength: true,
+              strengthName: context.read<AuthProvider>().user?.fullName,
+              strengthEmail: context.read<AuthProvider>().user?.contactEmail,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.newPassword],
               onChanged: (_) => setState(() => _serverNewError = null),

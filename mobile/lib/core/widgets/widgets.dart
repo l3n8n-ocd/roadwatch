@@ -14,6 +14,7 @@ export 'rw_full_screen_map.dart';
 export 'rw_map.dart';
 export 'rw_motion.dart';
 export 'rw_notification_item.dart';
+export 'rw_password_strength.dart';
 export 'rw_photo_tile.dart';
 export 'rw_pressable.dart';
 export 'rw_report_card.dart';

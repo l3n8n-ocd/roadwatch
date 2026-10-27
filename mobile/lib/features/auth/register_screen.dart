@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/password_strength.dart';
 import '../../core/state/auth_provider.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/widgets.dart';
@@ -57,9 +58,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ? 'Enter a valid email, like name@example.com.'
                 : null);
       _phoneError = phone.length > 20 ? 'Use at most 20 characters.' : null;
+      // #44: the password must be Strong (the API refuses anything else); the meter shows why.
       _passwordError = pw.isEmpty
           ? 'Enter a password.'
-          : (pw.length < 8 ? 'Use at least 8 characters (${pw.length} so far).' : null);
+          : (checkPassword(pw, name: name, email: email).isStrong ? null : notStrongMessage);
     });
     return _nameError == null && _emailError == null && _phoneError == null && _passwordError == null;
   }
@@ -182,8 +184,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Password',
               required: true,
               controller: _password,
-              helperText: 'At least 8 characters.',
               errorText: _passwordError,
+              showStrength: true,
+              strengthName: _name.text,
+              strengthEmail: _email.text,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.newPassword],
               onChanged: revalidate,

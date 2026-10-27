@@ -5,6 +5,7 @@ import '../theme/tokens.dart';
 import 'rw_field_parts.dart';
 import 'rw_icon.dart';
 import 'rw_icon_button.dart';
+import 'rw_password_strength.dart';
 
 /// Figma "Text field" (97:178): visible label, 48 px box with optional 20 px leading icon,
 /// 16 px value text, helper or error row. Map [label] to the API field in the screen
@@ -209,6 +210,8 @@ class RwTextarea extends RwTextField {
 /// Password [RwTextField] with the eye button (Figma Text field "Show password toggle", #45):
 /// one button per field, icon only ("Show password" / "Hide password" for screen readers), and the
 /// password stays shown until the button is tapped again (no auto-hide).
+/// [showStrength] adds the strength meter under a field that sets a new password (#44); [strengthName]
+/// and [strengthEmail] let it flag a password that contains the account's name or email.
 class RwPasswordField extends StatefulWidget {
   const RwPasswordField({
     super.key,
@@ -225,6 +228,9 @@ class RwPasswordField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.maxLength = 128,
+    this.showStrength = false,
+    this.strengthName,
+    this.strengthEmail,
   });
 
   final String label;
@@ -240,6 +246,9 @@ class RwPasswordField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final int? maxLength;
+  final bool showStrength;
+  final String? strengthName;
+  final String? strengthEmail;
 
   @override
   State<RwPasswordField> createState() => _RwPasswordFieldState();
@@ -247,10 +256,38 @@ class RwPasswordField extends StatefulWidget {
 
 class _RwPasswordFieldState extends State<RwPasswordField> {
   bool _obscure = true;
+  String _typed = '';
+
+  String get _password => widget.controller?.text ?? _typed;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller?.addListener(_onText);
+  }
+
+  @override
+  void didUpdateWidget(RwPasswordField old) {
+    super.didUpdateWidget(old);
+    if (old.controller != widget.controller) {
+      old.controller?.removeListener(_onText);
+      widget.controller?.addListener(_onText);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller?.removeListener(_onText);
+    super.dispose();
+  }
+
+  void _onText() {
+    if (widget.showStrength) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    return RwTextField(
+    final field = RwTextField(
       label: widget.label,
       controller: widget.controller,
       hintText: widget.hintText,
@@ -264,13 +301,26 @@ class _RwPasswordFieldState extends State<RwPasswordField> {
       maxLength: widget.maxLength,
       textInputAction: widget.textInputAction,
       autofillHints: widget.autofillHints,
-      onChanged: widget.onChanged,
+      onChanged: (value) {
+        if (widget.controller == null && widget.showStrength) setState(() => _typed = value);
+        widget.onChanged?.call(value);
+      },
       onSubmitted: widget.onSubmitted,
       trailing: RwIconButton(
         icon: _obscure ? RwIcons.eye : RwIcons.eyeOff,
         semanticLabel: _obscure ? 'Show password' : 'Hide password',
         onPressed: widget.enabled ? () => setState(() => _obscure = !_obscure) : null,
       ),
+    );
+    if (!widget.showStrength) return field;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        field,
+        const SizedBox(height: RwSpace.s12),
+        RwPasswordStrength(password: _password, name: widget.strengthName, email: widget.strengthEmail),
+      ],
     );
   }
 }
