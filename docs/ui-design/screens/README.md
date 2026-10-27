@@ -32,3 +32,10 @@ Added Oct 25 for #37, #45 and #46 (Figma approved by Lenon before any code; DECI
 - Re-exported: every frame with a password field (eye button, #45) or a map (Expand map button, #46), the W1 frames
   ("Forgot password?" link) and W6 (Reset password row action).
 - Oct 25, later: "New code sent" state (`mobile/m0-forgot-password-new-code-sent.png`, `web/w1-forgot-password-new-code-sent-1440.png`); `mobile/m3-location-full-screen-map.png` re-exported (button label on one line).
+
+Re-exported Oct 27 for the password strength meter (#44, Figma approved by Lenon before any code; DECISIONS #44):
+- Mobile: `m0-register-default.png`, `m0-register-validation.png`, `settings-change-password.png`, `m0-forgot-password-code.png`,
+  `m0-forgot-password-code-wrong.png`, `m0-forgot-password-new-code-sent.png`.
+- Web: `w6-users-1440.png`, `w6-users-after-deactivation-1440.png`, `w6-users-password-reset-1440.png`, `w6-reset-password-dialog.png`,
+  `w2-change-password-dialog.png`, `w1-forgot-password-code-1440.png`, `w1-forgot-password-code-390.png`,
+  `w1-forgot-password-new-code-sent-1440.png`.

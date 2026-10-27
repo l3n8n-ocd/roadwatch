@@ -8,5 +8,6 @@ API conventions. Project-wide rules stay in the root `CLAUDE.md`. Endpoint contr
 - Every status change goes through `services/statusService.js` (history + audit + notification in one transaction).
 - Validation is zod in `routes/schemas.js`. Role checks use `allowRoles(...)` in `routes/index.js`. The user is re-loaded from the database on every request (deactivation is immediate).
 - Return `{ success, data }` or throw `HttpError(status, message)`.
+- New passwords must be Strong (#44): call `assertStrongPassword(password, { name, email }, field)` from `utils/passwordStrength.js` in any endpoint that sets one. Keep the web and Dart copies in step.
 - Tests: `npm test`. Database tests run only with `RUN_DB_TESTS=true` and a local DB (never Aiven; the test refuses non-local hosts).
 - Never print or commit values from `.env`.

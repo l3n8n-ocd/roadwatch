@@ -47,6 +47,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Button | `96:193` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-193) |
 | Icon button | `96:261` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-261) |
 | Text field (Show password toggle + Toggle icon eye / eye-off, #45) | `97:178` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-178) |
+| Password strength (Empty, Weak, Fair, Good, Strong; #44, under every field that sets a new password) | `422:4211` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=422-4211) |
 | Select | `97:279` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-279) |
 | Date time field | `97:411` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-411) |
 | Calendar popover | `97:412` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-412) |

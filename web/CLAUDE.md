@@ -51,7 +51,9 @@ src/
   Body text navy; text-only colors `text-text-blue|success|danger`.
 - Charts and maps get a text alternative or a data table. Images have alt text (decorative: `alt=""`).
 - Touch targets at least 44 px. Respect `prefers-reduced-motion`.
-- Password inputs use `PasswordField` (eye / eye-off, "Show password" / "Hide password", #45).
+- Password inputs use `PasswordField` (eye / eye-off, "Show password" / "Hide password", #45). Fields that set a new
+  password add `showStrength` and `person` ({ name, email }) for the meter, and the form refuses `!isStrong(...)` with
+  `NOT_STRONG` from `lib/passwordStrength.js` (#44; same rules as the API).
 - Maps: pass `onExpand` to `MapView` and render `FullScreenMap` (title, Close/Esc, `aside` = the text alternative list);
   photos open in `PhotoViewerDialog` (always dark via `bg-dark-bg`, arrows, +/- zoom, Esc, no download; #46).
 

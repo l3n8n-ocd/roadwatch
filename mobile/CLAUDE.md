@@ -53,7 +53,8 @@ assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 ## Widgets (lib/core/widgets)
 `RwButton` (primary/secondary/destructive, 48 px, `icon`, `loading`), `RwIconButton` (needs
 `semanticLabel`, light/dark tone, `badgeCount`), `RwTextField` / `RwTextarea`, `RwPasswordField` (eye / eye-off,
-"Show password" / "Hide password", #45: use it for every password), `RwTextLink` (underlined 48 px link), `RwSelect<T>`,
+"Show password" / "Hide password", #45: use it for every password; `showStrength` + `strengthName`/`strengthEmail` add
+`RwPasswordStrength` under fields that set a new password, #44, rules in `core/password_strength.dart`, save only when `isStrong`), `RwTextLink` (underlined 48 px link), `RwSelect<T>`,
 `RwDateTimeField.date/.time` (YYYY-MM-DD, HH:MM), `RwStatusChip`, `RwRecordBadge`, `RwReportCard`
 (`.fromReport`), `RwTimelineItem`, `RwPhotoTile`, `RwMap` (OSM + attribution; pin / no pin /
 `locating`; `onExpand` adds the Expand map button, #46), `RwFullScreenMap` (`.show` read-only with address and optional

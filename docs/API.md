@@ -11,6 +11,17 @@ Values that must match the database exactly:
 - **Injury:** `none`, `injuries`, `fatalities`, `unknown`
 - **record_type:** `public_submission` or `verified_record` (the response also has `is_verified_record`; show a clear Verified/Public badge)
 
+**Password strength (#44, DECISIONS #44).** Every endpoint that sets a new password (register, `POST /users`,
+change password, reset password, admin reset) refuses a password that is not **Strong** with **400**
+`"Make the password Strong to save it."` under the password field (`details.password` or `details.new_password`).
+Kinds of character: lowercase, uppercase, number, symbol. Weak: under 8 characters, one kind, a common password
+(`password`, `qwerty`, `12345678`, also with numbers or symbols added at the end or look-alike swaps such as `P@ssw0rd`),
+or containing the account's name or email. Fair: 8+ with 2 kinds. Good: 8+ with 3 kinds, or 12+ with 2. **Strong: 8+
+with all 4 kinds, or 12+ with 3.** The rule lives in `api/src/utils/passwordStrength.js`; the web
+(`web/src/lib/passwordStrength.js`) and the app (`mobile/lib/core/password_strength.dart`) use the same rules for the
+meter. Login is unchanged, so existing passwords keep working. `npm run seed:admin` refuses a non-Strong `ADMIN_PASSWORD`.
+
+
 ## Public
 
 | Method and path | Body | Notes |
@@ -19,13 +30,13 @@ Values that must match the database exactly:
 | GET `/app-info` | | `{"demoVideoUrl": string or null}` |
 | GET `/public/stats` | | Landing stats bar (#40): `{ reports_received, verified_records, cases_resolved, active_officers }`. Counts only, no personal data. Rate limited (60 a minute per IP, `PUBLIC_RATE_LIMIT`), `Cache-Control: max-age=60`. |
 | GET `/public/updates` | | Landing "Public road updates" (#23): up to 20 `verified_record` reports whose accident date is in the last 7 days, newest first. Each item: `report_id`, `accident_type: { type_name }`, `accident_date`, `accident_time`, `accident_location`, `latitude`, `longitude` (numbers or null), `report_status`, `record_type`. Never reporter or contact fields, description, remarks or photos. Same rate limit and cache as `/public/stats`. |
-| POST `/auth/register` | `full_name`, `contact_email`, `password` (8+), `contact_phone?` | Always a Reporter. Returns `{ user, token }`. |
+| POST `/auth/register` | `full_name`, `contact_email`, `password` (Strong, see below), `contact_phone?` | Always a Reporter. Returns `{ user, token }`. |
 | POST `/auth/login` | `contact_email`, `password`, `platform` (`web` or `mobile`, required) | Returns `{ token, user: { user_id, full_name, contact_email, contact_phone, role } }`. Use `user.role` for the role-based redirect. Platforms (#36): Reporter and Traffic Officer sign in with `mobile`, Administrator with `web`. A correct password on the wrong platform returns **403** `{ success: false, error, details: { code: "WRONG_PLATFORM", platform } }`, where `details.platform` is the platform the account must use; it is written to the audit log as `auth.login_wrong_platform`. A correct password on a deactivated account returns **403** `details.code = "ACCOUNT_DEACTIVATED"` (#40), shown as "Account deactivated" in the apps. A wrong password or unknown email always returns 401 first, so neither message reveals whether an email exists. A missing or unknown `platform` returns 400. |
 | GET `/auth/me` | | Current user |
 | PATCH `/auth/me` | `full_name`, `contact_phone?` (string or `null` to clear) | Edit own profile (#25). Email and role cannot be changed here (extra fields are ignored). Returns `{ user }`. Audit: `account.profile_updated`. |
-| PATCH `/auth/me/password` | `current_password`, `new_password` (8+, different from the current one) | Change own password (#25). A wrong current password is **400** with `details.current_password` (not 401, so the apps keep the session). Rate limited like login. Existing tokens stay valid. Audit: `account.password_changed`. |
+| PATCH `/auth/me/password` | `current_password`, `new_password` (Strong, different from the current one) | Change own password (#25). A wrong current password is **400** with `details.current_password` (not 401, so the apps keep the session). Rate limited like login. Existing tokens stay valid. Audit: `account.password_changed`. |
 | POST `/auth/forgot-password` | `contact_email` | Forgot password, step 1 (#37, every role). Always **200** with the same message, whether or not the email has an account (or the account is deactivated). For an active account it emails an 8-character code (letters and digits, no 0/O/1/I/L), valid **15 minutes**. The code is not stored: it is an HMAC of the user id, the current password hash and the minute, keyed with `JWT_SECRET`, so it stops working once the password changes. Rate limited like login. Audit: `auth.password_reset_requested`. |
-| POST `/auth/reset-password` | `contact_email`, `reset_code`, `new_password` (8+) | Forgot password, step 2. Case, spaces and dashes in the code do not matter. A wrong or expired code, an unknown email and a deactivated account all get the same **400** `This code is wrong or has expired. Send a new code.` with `details.reset_code`. Other signed-in devices stay signed in. Emails the user that the password changed. Audit: `account.password_reset`. |
+| POST `/auth/reset-password` | `contact_email`, `reset_code`, `new_password` (Strong) | Forgot password, step 2. Case, spaces and dashes in the code do not matter. A wrong or expired code, an unknown email and a deactivated account all get the same **400** `This code is wrong or has expired. Send a new code.` with `details.reset_code`. Other signed-in devices stay signed in. Emails the user that the password changed. Audit: `account.password_reset`. |
 | GET `/auth/me/activity` | `period` (`7d`, `30d` default, `90d`, `all`), `action?`, `page`, `limit` | Action log, own actions (#27). Rows: `{ log_id, user_id, action_taken, action_details (object), timestamp }` plus `pagination`. `action` matches exactly (`auth.login`) or as a group (`user` matches `user.*`). User ids inside `action_details` come with names (`target_name`, `officer_name`). |
 
 ## Any logged-in user
@@ -62,11 +73,11 @@ Values that must match the database exactly:
 | PATCH `/admin/reports/:id/status` | `status`, `remarks?`, `rejection_reason` (required when `Rejected`) | Not for `Assigned` (use assign). `Verified` sets `record_type = verified_record`. |
 | PATCH `/admin/reports/:id/assign` | `officer_id`, `remarks?` | Sets status `Assigned`. The report must be **Verified** first (#30), or already have an officer (re-assign); never Rejected or Resolved/Closed. The officer must be an active Traffic Officer. |
 | POST `/admin/accident-types` | `type_name` | Add a category |
-| POST `/users` | `full_name`, `contact_email`, `password`, `role`, `contact_phone?` | Creates Traffic Officers (or any role) |
+| POST `/users` | `full_name`, `contact_email`, `password` (Strong), `role`, `contact_phone?` | Creates Traffic Officers (or any role) |
 | GET `/users` | `role?` | |
 | PATCH `/users/:id/role` | `role` | Not on yourself |
 | PATCH `/users/:id/active` | `is_active` (boolean) | Deactivate or reactivate. Not on yourself. |
-| PATCH `/users/:id/password` | `new_password` (8+) | Admin reset (#37): sets a temporary password for a Reporter or Traffic Officer, which the admin gives to the person directly. **400** on yourself (use Change password) or on another Administrator (they use Forgot password). The user gets an email that the password was reset, never the password. Audit: `user.password_reset`. |
+| PATCH `/users/:id/password` | `new_password` (Strong) | Admin reset (#37): sets a temporary password for a Reporter or Traffic Officer, which the admin gives to the person directly. **400** on yourself (use Change password) or on another Administrator (they use Forgot password). The user gets an email that the password was reset, never the password. Audit: `user.password_reset`. |
 | GET `/admin/audit-logs` | same as `/auth/me/activity`, plus `user_id?` | Action log, "All staff" view (#27): actions by Administrators and Traffic Officers (reporters left out); each row adds `user: { user_id, full_name, role }`. |
 | GET `/dashboard/stats` | | `cards` (total, pending, verified, closed), `by_status`, `by_type`, `trend` (last 30 days), `hotspots`, `map_points`, `recent` |
 | GET `/exports/summary` | `period` = daily, weekly, monthly or annual; `date?` (YYYY-MM-DD) | FR-12 summary JSON |

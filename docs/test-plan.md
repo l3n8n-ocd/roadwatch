@@ -23,9 +23,10 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 
 | ID | Steps | Expected | Actual | Result |
 |---|---|---|---|---|
-| TC-01.1 | On the app: Create account, enter full name, a new email, password of 8+ characters, optional mobile number; submit | Account created as a **Reporter** and signed in to Home (no role choice is offered) | | |
+| TC-01.1 | On the app: Create account, enter full name, a new email, a **Strong** password (8+ with uppercase, lowercase, a number and a symbol), optional mobile number; submit | Account created as a **Reporter** and signed in to Home (no role choice is offered) | | |
 | TC-01.2 | Register again with the same email | "An account with this email already exists. Log in instead." on the Email field; no second account | | |
-| TC-01.3 | Register with a 6-character password, then with an empty full name | Field errors ("at least 8 characters", name required); nothing is sent until fixed | | |
+| TC-01.3 | Register with a 6-character password, then with an empty full name | Field errors ("Make the password Strong to save it." with the meter at **Weak**, "Use at least 8 characters (6 so far)."; name required); nothing is sent until fixed | | |
+| TC-01.4 | Type into the Register password, one step at a time: `Abc12!`, `Sunflower`, `Sunflower7`, `Sunflower7!`; then a password with your own name (e.g. `Juan#2026x` for Juan Dela Cruz) and `Password1!` (#44) | The meter shows 1 red segment **Weak**, 2 amber **Fair** ("Add a number and a symbol"), 3 blue **Good** ("Add a symbol, or use 12+ characters"), 4 green **Strong**; the name and the common password both show **Weak** with a tip; only Strong can be saved; the level word is always shown next to the bar | | |
 
 ### FR-02 User login and logout
 
@@ -40,6 +41,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-02.7 | Mobile (R1, then O1): Log in > **Forgot password?** > email > Send code; type the 8-character code from the email and a new password (#37) | "If ... has a RoadWatch account, we sent it a code"; a wrong code shows "This code is wrong or has expired. Send a new code." under Code; the right code returns to Log in with "Password changed"; the new password works, the old one does not | | |
 | TC-02.8 | Web (A1): `/staff/sign-in` > **Forgot password?**, same steps; then try the same code again, and a code older than 15 minutes (#37) | Same as TC-02.7 on the web; a used or expired code is refused; an unknown email gets the same "we sent it a code" message (nothing reveals whether an account exists) | | |
 | TC-02.9 | Every password field (mobile Log in, Register, Change password, Forgot password; web sign-in, Change password, Create officer, Reset password): press the eye (#45) | The password shows and the icon becomes the crossed eye; it stays shown until pressed again; screen readers hear "Show password" / "Hide password" | | |
+| TC-02.10 | Mobile Change password, web Change password and both Forgot password screens: enter a **Good** new password (e.g. `Sunflower7`) and save (#44) | Not saved: "Make the password Strong to save it." under New password, meter at Good with its tip; a Strong password saves | | |
 
 ### FR-03 Accident reporting (mobile)
 
@@ -138,6 +140,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-13.4 | Reactivate R2 | R2 can log in again | | |
 | TC-13.5 | A1 tries to deactivate or change the role of A1's own account | Not offered in the UI ("You can't deactivate your own account"); the API refuses it too | | |
 | TC-13.6 | A1: Users > **Reset password** on R2 (temporary password + confirm), then log in as R2 with it (#37) | "Password reset" toast; R2 gets an email that the password was reset (without the password); R2 logs in with the temporary password; not offered on A1's own row or other administrators | | |
+| TC-13.7 | A1: Create officer and Reset password with a temporary password that is not Strong (e.g. `Sunflower7`), and one that contains the person's name (#44) | Refused with "Make the password Strong to save it."; the meter under the field shows the level and tip; a Strong temporary password works | | |
 
 ### FR-14 Audit trail
 
