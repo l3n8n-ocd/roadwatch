@@ -295,14 +295,45 @@ class Paged<T> {
   final Pagination pagination;
 }
 
-class AppInfo {
-  const AppInfo({this.demoVideoUrl});
+/// One video from GET /app-info (#48): a Cloudinary URL and its transcript, both null until published.
+class VideoClip {
+  const VideoClip({this.url, this.transcript});
 
-  /// Null until the team publishes the video ("Video coming soon").
+  final String? url;
+  final String? transcript;
+
+  factory VideoClip.fromJson(Object? j) {
+    final m = j is Map ? j : const {};
+    final url = _str(m['url']);
+    final transcript = _str(m['transcript']);
+    return VideoClip(
+      url: (url == null || url.isEmpty) ? null : url,
+      transcript: (transcript == null || transcript.isEmpty) ? null : transcript,
+    );
+  }
+}
+
+class AppInfo {
+  const AppInfo({
+    this.demoVideoUrl,
+    this.reporterClip = const VideoClip(),
+    this.officerClip = const VideoClip(),
+  });
+
+  /// The promotional video (older API: the one demo video). Null until the team publishes it.
   final String? demoVideoUrl;
+
+  /// The 30-second demo clips the app shows (#48): Reporter for everyone, Traffic Officer for officers.
+  final VideoClip reporterClip;
+  final VideoClip officerClip;
 
   factory AppInfo.fromJson(Map<String, dynamic> j) {
     final url = _str(j['demoVideoUrl']);
-    return AppInfo(demoVideoUrl: (url == null || url.isEmpty) ? null : url);
+    final clips = j['demoVideos'] is Map ? j['demoVideos'] as Map : const {};
+    return AppInfo(
+      demoVideoUrl: (url == null || url.isEmpty) ? null : url,
+      reporterClip: VideoClip.fromJson(clips['reporter']),
+      officerClip: VideoClip.fromJson(clips['officer']),
+    );
   }
 }

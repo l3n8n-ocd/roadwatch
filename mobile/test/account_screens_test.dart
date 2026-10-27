@@ -119,6 +119,8 @@ class _FakeApi extends RoadWatchApi {
   _FakeApi({this.reports}) : super(ApiClient(tokenStorage: _Tokens()));
 
   List<Report>? reports;
+  AppUser meUser = _juan;
+  AppInfo info = const AppInfo();
   final notifs = <AppNotification>[
     AppNotification(
       notificationId: 1,
@@ -178,13 +180,13 @@ class _FakeApi extends RoadWatchApi {
   }
 
   @override
-  Future<AppInfo> appInfo() async => const AppInfo();
+  Future<AppInfo> appInfo() async => info;
 
   @override
   Future<bool> health() async => true;
 
   @override
-  Future<AppUser> me() async => _juan;
+  Future<AppUser> me() async => meUser;
 
   @override
   Future<AppUser> updateMe({required String fullName, String? phone}) async =>
@@ -382,11 +384,50 @@ void main() {
     expect(find.bySemanticsLabel('Bureau of Fire Protection seal'), findsOneWidget);
   });
 
-  testWidgets('Demo video without a URL says it is coming soon', (tester) async {
+  testWidgets('Demo video: a reporter gets only the Reporter clip, coming soon without a URL (#48)', (
+    tester,
+  ) async {
     final api = _FakeApi();
     await tester.pumpWidget(_app(const DemoVideoScreen(), api: api, auth: await _signedIn(api)));
     await tester.pumpAndSettle();
-    expect(find.text('Video coming soon'), findsOneWidget);
+    expect(find.text('Report an accident'), findsOneWidget);
+    expect(find.text('Your role'), findsOneWidget);
+    expect(find.text('Work a case from your queue'), findsNothing);
+    expect(find.text('Clip coming soon'), findsOneWidget);
+    expect(find.text('Read the transcript'), findsNothing);
+  });
+
+  testWidgets('Demo video: an officer gets the Traffic Officer clip first, then the Reporter clip (#48)', (
+    tester,
+  ) async {
+    final api = _FakeApi()
+      ..meUser = const AppUser(
+        userId: 9,
+        fullName: 'Rafael Santos',
+        contactEmail: 'rafael.officer@example.com',
+        role: Roles.officer,
+      )
+      ..info = const AppInfo(
+        officerClip: VideoClip(
+          url: 'https://example.com/officer.mp4',
+          transcript: 'When the administrator assigns you a report.',
+        ),
+      );
+    tester.view.physicalSize = const Size(360, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(_app(const DemoVideoScreen(), api: api, auth: await _signedIn(api)));
+    await tester.pump();
+    await tester.pump();
+    final officerTitle = tester.getTopLeft(find.text('Work a case from your queue'));
+    final reporterTitle = tester.getTopLeft(find.text('Report an accident'));
+    expect(officerTitle.dy, lessThan(reporterTitle.dy));
+    expect(find.text('Your role'), findsOneWidget);
+    expect(find.text('Clip coming soon'), findsOneWidget); // the Reporter clip has no URL yet
+    expect(find.text('When the administrator assigns you a report.'), findsNothing);
+    await tester.tap(find.text('Read the transcript'));
+    await tester.pump();
+    expect(find.text('When the administrator assigns you a report.'), findsOneWidget);
   });
 
   group('screenshots', () {

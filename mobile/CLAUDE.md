@@ -83,4 +83,5 @@ Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max
 - Tracking shows the actor's role, never staff names (officers do see "Maria Cruz (Admin)"). Photos upload
   after the report is created.
 - Officers set only `Statuses.officerChoices` (In Progress, Additional Information Required, Resolved/Closed, #30).
-- Do not bundle the demo video; read `demoVideoUrl` from `GET /api/app-info`.
+- Do not bundle videos; Settings > Demo video reads `demoVideos.reporter` (and `.officer` for officers, shown first) from
+  `GET /api/app-info` (`AppInfo.reporterClip` / `officerClip`, each `VideoClip { url, transcript }`, #48). No URL = "Clip coming soon".
