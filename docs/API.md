@@ -27,7 +27,7 @@ meter. Login is unchanged, so existing passwords keep working. `npm run seed:adm
 | Method and path | Body | Notes |
 |---|---|---|
 | GET `/health` | | `{"status":"ok","service":"roadwatch-api"}` (no `success` field) |
-| GET `/app-info` | | `{"demoVideoUrl": string or null}` |
+| GET `/app-info` | | Videos (#48): `{ demoVideoUrl, promoVideo: { url, transcript }, demoVideos: { reporter, officer, admin } }`, each clip `{ url, transcript }`. `url` is null until set on the host (`PROMO_VIDEO_URL`, `DEMO_VIDEO_REPORTER_URL`, `DEMO_VIDEO_OFFICER_URL`, `DEMO_VIDEO_ADMIN_URL`); `transcript` is null when `url` is. The clip transcripts are in `api/src/config/videos.js`; the promo transcript comes from `PROMO_VIDEO_TRANSCRIPT`. `demoVideoUrl` (the promo URL, else the older `DEMO_VIDEO_URL`) stays for apps before v1.1.0. |
 | GET `/public/stats` | | Landing stats bar (#40): `{ reports_received, verified_records, cases_resolved, active_officers }`. Counts only, no personal data. Rate limited (60 a minute per IP, `PUBLIC_RATE_LIMIT`), `Cache-Control: max-age=60`. |
 | GET `/public/updates` | | Landing "Public road updates" (#23): up to 20 `verified_record` reports whose accident date is in the last 7 days, newest first. Each item: `report_id`, `accident_type: { type_name }`, `accident_date`, `accident_time`, `accident_location`, `latitude`, `longitude` (numbers or null), `report_status`, `record_type`. Never reporter or contact fields, description, remarks or photos. Same rate limit and cache as `/public/stats`. |
 | POST `/auth/register` | `full_name`, `contact_email`, `password` (Strong, see below), `contact_phone?` | Always a Reporter. Returns `{ user, token }`. |

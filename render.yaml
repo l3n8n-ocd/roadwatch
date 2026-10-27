@@ -50,4 +50,5 @@ services:
       # Email (Brevo over HTTPS, #37): add MAIL_PROVIDER=brevo, BREVO_API_KEY and MAIL_FROM in the dashboard
       # once the Brevo account and the sender domain are verified. Without them the API skips emails
       # (in-app notifications still work).
-      # DEMO_VIDEO_URL is added in the dashboard after the video is uploaded (Oct 30).
+      # Videos (#48) are added in the dashboard after upload (Oct 30): PROMO_VIDEO_URL, DEMO_VIDEO_REPORTER_URL,
+      # DEMO_VIDEO_OFFICER_URL and DEMO_VIDEO_ADMIN_URL (Cloudinary links; optional PROMO_VIDEO_TRANSCRIPT).

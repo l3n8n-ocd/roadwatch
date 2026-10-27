@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { allowedOrigins } = require('./config/env');
+const { appInfo } = require('./config/videos');
 const routes = require('./routes');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
@@ -23,9 +24,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'roadwatch-api' });
 });
 
-// Demo video URL for the web page and the mobile screen (set DEMO_VIDEO_URL on the host)
+// Promo video and the 30-second demo clip per role, with transcripts (#48; URLs set on the host)
 app.get('/api/app-info', (req, res) => {
-  res.json({ demoVideoUrl: process.env.DEMO_VIDEO_URL || null });
+  res.json(appInfo());
 });
 
 app.use('/api', routes);
