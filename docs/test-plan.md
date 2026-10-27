@@ -34,14 +34,16 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 |---|---|---|---|---|
 | TC-02.1 | Mobile: log in as R1, then Settings > Log out > confirm | Home opens; after Log out the login screen shows and the back button does not return to Home | | |
 | TC-02.2 | Mobile: wrong password | "Couldn't log in": "Email or password is incorrect. Check both and try again." No hint about which one was wrong | | |
-| TC-02.3 | Web: sign in as A1 at `/staff/sign-in`, then Log out (confirm dialog) | Dashboard opens; Log out lands on the Administrator sign-in page; opening `/admin` again also goes to sign-in | | |
-| TC-02.4 | Web: sign in as R1 (a reporter) | Refused with the "This account uses the mobile app" message and a **Get the Android app** button (WRONG_PLATFORM, #36) | | |
+| TC-02.3 | Web: `/staff/sign-in` > **Administrator**, sign in as A1, then Log out (confirm dialog) | Dashboard opens; Log out lands on the Administrator sign-in form; opening `/admin` again also goes to that form | | |
+| TC-02.4 | Web: sign in as R1 (a reporter) on either staff form | Refused with "This account uses the mobile app": "Reporter accounts sign in on the RoadWatch Android app." and a **Get the Android app** button (WRONG_PLATFORM, #36) | | |
 | TC-02.5 | Mobile: log in as A1 | Refused with "Use the RoadWatch website" | | |
 | TC-02.6 | Mobile: log in as O1 | Officer home opens on **Assigned** (tabs: Assigned, Notifications, Settings) | | |
 | TC-02.7 | Mobile (R1, then O1): Log in > **Forgot password?** > email > Send code; type the 8-character code from the email and a new password (#37) | "If ... has a RoadWatch account, we sent it a code"; a wrong code shows "This code is wrong or has expired. Send a new code." under Code; the right code returns to Log in with "Password changed"; the new password works, the old one does not | | |
 | TC-02.8 | Web (A1): `/staff/sign-in` > **Forgot password?**, same steps; then try the same code again, and a code older than 15 minutes (#37) | Same as TC-02.7 on the web; a used or expired code is refused; an unknown email gets the same "we sent it a code" message (nothing reveals whether an account exists) | | |
 | TC-02.9 | Every password field (mobile Log in, Register, Change password, Forgot password; web sign-in, Change password, Create officer, Reset password): press the eye (#45) | The password shows and the icon becomes the crossed eye; it stays shown until pressed again; screen readers hear "Show password" / "Hide password" | | |
 | TC-02.10 | Mobile Change password, web Change password and both Forgot password screens: enter a **Good** new password (e.g. `Sunflower7`) and save (#44) | Not saved: "Make the password Strong to save it." under New password, meter at Good with its tip; a Strong password saves | | |
+| TC-02.11 | Web: open `/staff/sign-in`; pick **Administrator** and sign in with O1's email and password (#52) | The role chooser shows two cards (Administrator, Traffic Officer) and "Reporters use the RoadWatch Android app."; on the Administrator form O1 stays signed out with "This is a Traffic Officer account" ("Go back with "Choose a different role" and pick Traffic Officer.") | | |
+| TC-02.12 | Web: **Choose a different role** > **Traffic Officer**, sign in as O1, then Log out (#52) | "Assigned to me" opens with the Traffic Officer console sidebar (Assigned to me, Demo video); opening `/admin` goes back to Assigned to me; Log out lands on the Traffic Officer form; "Forgot password?" from this form returns to it | | |
 
 ### FR-03 Accident reporting (mobile)
 
@@ -100,6 +102,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-08.6 | O1: open it, Update status > In Progress with remarks, then Resolved/Closed | Officer can only pick In Progress, Additional Information Required, Resolved/Closed; "Update saved" toast; admin and R1 see the new status | | |
 | TC-08.7 | O1: Open in Maps; Call on the reporter card | Maps app opens at the pin; dialer opens with R1's number | | |
 | TC-08.8 | Admin rejects a report assigned to O1; O1 opens it on the app | Not listed under "All open"; no Update status button, a note says the administrator rejected it (issue #44) | | |
+| TC-08.9 | Web (O1, #52): open an assigned report from Assigned to me; Update investigation > In Progress with remarks > Save update | "Update saved: Status is now In Progress. The reporter and the admin were notified."; the history shows "O1 (Officer)"; only In Progress, Additional Information Required and Resolved/Closed can be chosen; a Rejected report is read-only | | |
 
 ### FR-09 Notifications (in-app and email)
 
@@ -165,6 +168,8 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-P.2 | Download the app on an Android phone | `roadwatch.apk` downloads and installs | | |
 | TC-P.3 | Demo video on web (`/demo-video`) and mobile (Settings > Demo video) | Plays from `DEMO_VIDEO_URL`, or shows "Video coming soon" if not set | | |
 | TC-P.4 | Open `/does-not-exist` | 404 page with Go back home | | |
+| TC-P.5 | Web: landing footer and About block, `/about`, and the staff About (`/admin/about`, `/officer/about`), in Light and Dark (#48, #49) | No school, course or section wording anywhere; team shown with photos and titles (Project Lead & Mobile, Web & QA, Backend & Database, Documentation); "Built with" shows 29 logos in 6 groups, each with its name; one-color logos (Express, JWT, Vercel, Render, GitHub, PDFKit, Aiven text) stay visible in Dark | | |
+| TC-P.6 | Mobile: Settings (version row), Settings > About RoadWatch, Settings > Demo video, in Light and Dark (#48, #49) | Version row says only "Version 1.0.3"; About has the 911 disclaimer and the Built with card (3 tiles per row); the demo caption is "RoadWatch product demo" | | |
 
 ## Accessibility (WCAG 2.1 AA target)
 

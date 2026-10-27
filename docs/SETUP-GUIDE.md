@@ -386,7 +386,7 @@ On GitHub, Issues tab, close **Create the Aiven MySQL service and load the schem
 ## D4. Check what is left in milestone M1
 - Draw wireframes in Figma (Pauline, Lenon)
 - Generate the Vite and Flutter projects (Pauline, Lenon)
-- Ask the professor about anonymous reporting (Princess, today)
+- Ask the stakeholders about anonymous reporting (Princess, today)
 
 Today's date is the Oct 16 milestone. If these are not done tonight, shift the Oct 21 core-flow target by a day rather than rushing them.
 

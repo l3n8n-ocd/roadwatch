@@ -2,13 +2,13 @@
 
 Static PNG copies of the Figma screens, exported on Oct 21, 2026 from the high-fidelity file
 `psx52NYL69RkycK7Z44EAb` (Mobile page `90:4`, Web page `90:5`) at 1x. Use them in the PPT user guide,
-the video and the course documentation. Figma stays the source of truth: when a screen changes there,
+the video and the product documentation. Figma stays the source of truth: when a screen changes there,
 export it again under the same file name. Node IDs for every frame are in `../figma-index.md`.
 
 | Folder | Frames | Size |
 |---|---|---|
 | `mobile/` | 58: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
-| `web/` | 51: W0 landing, W1 sign-in, W2-W4, W6-W12, Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
+| `web/` | 59: W0 landing, W1 staff sign-in (role chooser, Administrator, Traffic Officer), W2-W12 (W5 and officer W4 since #52), Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
 
 File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for example
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is
@@ -39,3 +39,11 @@ Re-exported Oct 27 for the password strength meter (#44, Figma approved by Lenon
 - Web: `w6-users-1440.png`, `w6-users-after-deactivation-1440.png`, `w6-users-password-reset-1440.png`, `w6-reset-password-dialog.png`,
   `w2-change-password-dialog.png`, `w1-forgot-password-code-1440.png`, `w1-forgot-password-code-390.png`,
   `w1-forgot-password-new-code-sent-1440.png`.
+
+Added Oct 27 for #48, #49 and #52 (Figma approved by Lenon before any code; DECISIONS #45, #46):
+- Traffic Officer web portal (#52): `web/w1-staff-choose-role-1440.png`, `-390.png`, `web/w1-login-officer-1440.png`,
+  `web/w1-login-wrong-role-1440.png`, `web/w5-officer-queue-1440.png`, `web/w5-officer-queue-empty-1440.png`,
+  `web/w4-report-officer-1440.png`, `web/w4-report-officer-saved-1440.png`. The Administrator sign-in frames
+  (`w1-login-*`, `w1-forgot-password-email-1440.png`) were re-exported with "Choose a different role" and the new notes.
+- Product wording, team photos and Built with logos (#48, #49): `web/w0-landing-1440.png`, `-390.png`, `web/w9-admin-about-1440.png`,
+  `web/w10-about-1440.png`, `-390.png`, `mobile/settings-about.png`, `mobile/settings-demo-video-playing.png` re-exported.

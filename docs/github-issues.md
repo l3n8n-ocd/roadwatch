@@ -28,7 +28,7 @@ Use either: paste each block as a GitHub issue, or run `bash create-issues.sh` o
 **Owner:** Princess | **Due:** Oct 14
 
 - [ ] Copy the decisions table from the starter zip
-- [ ] Add the professor follow-up for Oct 16
+- [ ] Add the stakeholder follow-up for Oct 16
 - [ ] Update the file whenever a decision changes
 
 
@@ -79,7 +79,7 @@ Use either: paste each block as a GitHub issue, or run `bash create-issues.sh` o
 - [ ] Both apps start with an empty screen
 - [ ] Hand the files to Lenon to commit under each author
 
-### 9. Ask the professor about anonymous reporting
+### 9. Ask the stakeholders about anonymous reporting
 **Owner:** Princess | **Due:** Oct 16
 
 - [ ] Ask whether anonymous or guest reporting is required

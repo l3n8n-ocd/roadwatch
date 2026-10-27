@@ -15,7 +15,7 @@
 </defs>
 <rect width="2400" height="1400" fill="#1F2937"/>
 <text x="1200.0" y="100" font-size="76" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">RoadWatch: System Architecture &amp; Hosting Strategy</text>
-<text x="1200.0" y="150" font-size="26" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Updated with the team workflow path: Figma UI/UX (IT 304W) → AWA Web (IT 305W) + MAD Mobile (IT 306W)</text>
+<text x="1200.0" y="150" font-size="26" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Team workflow: Figma UI/UX design → React web + Flutter mobile</text>
 <text x="240" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Design, DevOps &amp; Source</text>
 <text x="790" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Frontend Clients</text>
 <text x="1330" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Backend API Gateway</text>
@@ -26,7 +26,7 @@
 <rect x="40" y="300" width="400" height="210" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
 <circle cx="215" cy="345" r="12" fill="#F24E1E"/><circle cx="239" cy="345" r="12" fill="#FF7262"/><circle cx="215" cy="369" r="12" fill="#A259FF"/><circle cx="239" cy="369" r="12" fill="#1ABCFE"/><circle cx="215" cy="393" r="12" fill="#0ACF83"/>
 <text x="285" y="385" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Figma</text>
-<text x="240" y="438" font-size="24" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">UI/UX Design (IT 304W)</text>
+<text x="240" y="438" font-size="24" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">UI/UX Design</text>
 <text x="240" y="470" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">wireframes → prototypes</text>
 <text x="240" y="498" font-size="20" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">design handoff to Web &amp; Mobile</text>
 <rect x="40" y="580" width="400" height="220" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
@@ -46,7 +46,7 @@
 <rect x="772" y="330" width="46" height="84" rx="8" fill="none" stroke="#C9D3E0" stroke-width="4"/><circle cx="795" cy="402" r="3" fill="#C9D3E0"/>
 <text x="790" y="452" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Mobile App (Lenon)</text>
 <rect x="660" y="466" width="260" height="34" rx="17" fill="#3B2F66" stroke="#A78BFA" stroke-width="2"/>
-<text x="790" y="490" font-size="20" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">MAD · IT 306W · 3I-G1</text>
+<text x="790" y="490" font-size="20" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Mobile app</text>
 <text x="790" y="538" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Flutter + Dart</text>
 <text x="790" y="574" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">dio, flutter_map, geolocator</text>
 <text x="790" y="606" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">image_picker, secure_storage</text>
@@ -55,7 +55,7 @@
 <rect x="745" y="805" width="90" height="62" rx="6" fill="none" stroke="#C9D3E0" stroke-width="4"/><rect x="772" y="872" width="36" height="8" fill="#C9D3E0"/>
 <text x="790" y="925" font-size="32" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Web Dashboard (Pauline)</text>
 <rect x="660" y="940" width="260" height="34" rx="17" fill="#3B2F66" stroke="#A78BFA" stroke-width="2"/>
-<text x="790" y="964" font-size="20" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">AWA · IT 305W · 3I-G1</text>
+<text x="790" y="964" font-size="20" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Web app</text>
 <text x="790" y="1012" font-size="25" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">React + Vite + Tailwind CSS</text>
 <text x="790" y="1048" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">React Router, Recharts, Leaflet</text>
 <text x="790" y="1080" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(react-leaflet for maps)</text>
