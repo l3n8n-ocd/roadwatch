@@ -8,7 +8,7 @@ export it again under the same file name. Node IDs for every frame are in `../fi
 | Folder | Frames | Size |
 |---|---|---|
 | `mobile/` | 58: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
-| `web/` | 59: W0 landing, W1 staff sign-in (role chooser, Administrator, Traffic Officer), W2-W12 (W5 and officer W4 since #52), Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
+| `web/` | 61: W0 landing, W1 staff sign-in (role chooser, Administrator, Traffic Officer), W2-W12 (W5 and officer W4 since #52), Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
 
 File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for example
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is
@@ -47,3 +47,6 @@ Added Oct 27 for #48, #49 and #52 (Figma approved by Lenon before any code; DECI
   (`w1-login-*`, `w1-forgot-password-email-1440.png`) were re-exported with "Choose a different role" and the new notes.
 - Product wording, team photos and Built with logos (#48, #49): `web/w0-landing-1440.png`, `-390.png`, `web/w9-admin-about-1440.png`,
   `web/w10-about-1440.png`, `-390.png`, `mobile/settings-about.png`, `mobile/settings-demo-video-playing.png` re-exported.
+- Officer bell (#47): `web/w5-notifications-open-1440.png`, `web/w5-notifications-panel-empty.png`. The bell was removed from every
+  Administrator frame, so `w2-*`, `w3-*`, `w4-report-*` (admin), `w6-*`, `w7-*`, `w8-action-log-1440.png`, `w8-action-log-all-staff-1440.png`,
+  `w9-admin-about-1440.png` and `demo-video-*` were re-exported; `w8-action-log-empty-1440.png` is an officer frame and keeps the bell.

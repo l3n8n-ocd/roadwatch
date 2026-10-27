@@ -49,6 +49,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Text field (Show password toggle + Toggle icon eye / eye-off, #45) | `97:178` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-178) |
 | Password strength (Empty, Weak, Fair, Good, Strong; #44, under every field that sets a new password) | `422:4211` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=422-4211) |
 | Section/Tool logos (#49): 29 "Tool logo/*" tiles (logo + name), used by the Built with grids | `450:4108` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=450-4108) |
+| Top bar web (component set; boolean `Bell`: on only in Traffic Officer frames, #47) | `105:665` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-665) |
 | Select | `97:279` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-279) |
 | Date time field | `97:411` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-411) |
 | Calendar popover | `97:412` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-412) |
@@ -215,11 +216,13 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W5/Officer queue/Empty (1440) | `465:18076` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18076) |
 | W4/Report details/Officer (1440) (/officer/reports/:id) | `465:18086` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18086) |
 | W4/Report details/Officer · Update saved (1440) | `465:18164` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18164) |
+| W5/Overlay/Notifications open (1440) (officer bell panel, #47) | `481:20505` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=481-20505) |
+| W5/Overlay/Notifications panel · Empty | `483:21192` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=483-21192) |
 | Accessibility checklist/Web | `132:4095` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=132-4095) |
 
 ## Flows (prototype)
 
-Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
+Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); I · Traffic Officer (web, starts at I1 483:47489, #52 and #47; Figma would not store a named start point, so open I1 directly); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
 
 | Frame / asset | Node ID | Link |
 |---|---|---|

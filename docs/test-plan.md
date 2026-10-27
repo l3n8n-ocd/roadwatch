@@ -111,6 +111,7 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-09.1 | After TC-03.1, check R1's inbox | Email "RoadWatch: report #N received" from `no-reply@roadwatch-ph.me` | | |
 | TC-09.2 | After each status change in FR-07/08 | R1 gets an in-app notification and an email for the change | | |
 | TC-09.3 | R1: Notifications > Mark all as read; open one | Unread badge clears; tapping opens the report | | |
+| TC-09.4 | Web (O1, #47): after an admin assigns a report to O1, look at the bell in the top bar; open it; select the new alert; then open it again and press **Mark all as read**; sign in as A1 | The bell shows the unread count ("Notifications (1 unread)" for screen readers); the panel lists "Report #N was assigned to you." with the unread dot; selecting it opens the report and lowers the count; Mark all as read clears it; Esc closes the panel and focus returns to the bell; A1's top bar has no bell | | |
 
 ### FR-10 Dashboard
 
