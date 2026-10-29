@@ -189,7 +189,7 @@ Relationships: roles 1-* users; users 1-* reports (as reporter) and 1-* reports 
 
 Seed data (`database/seed.sql`): roles Reporter, Administrator, Traffic Officer; accident types Collision, Hit-and-run, Vehicle rollover, Pedestrian accident, Other.
 
-Rules: every status change writes a `report_status_history` row; important admin actions (including deactivate and reactivate) and status changes write `audit_logs`; setting a report to Verified sets `record_type = verified_record`. Do not change tables or columns without approval, because the ERD and the deliverables depend on them. The `is_active` addition is the only approved change so far.
+Rules: every status change writes a `report_status_history` row; important admin actions (including deactivate and reactivate) and status changes write `audit_logs`; setting a report to Verified sets `record_type = verified_record`. Do not change tables or columns without approval, because the ERD and the deliverables depend on them. The `is_active` addition is loaded; **approved Oct 29 (DECISIONS #49), not yet made:** `reports.priority` and `reports.priority_source` (#54) and the new tables `officer_status` and `report_dispatch` (#57).
 
 **Loading the SQL:** `schema.sql` and `seed.sql` contain no `CREATE DATABASE` or `USE` line, so they load into whichever database you are connected to. Aiven: connect to `defaultdb` and run `schema.sql` then `seed.sql`. Local MySQL: run `database/local-init.sql` once (creates `roadwatch`), then run both files against `roadwatch`. Both files are safe to re-run. Aiven is live (the API on Render uses it).
 
@@ -318,7 +318,7 @@ Do not do the following without the user's approval:
 1. Change the stack, database host, hosting approach, email approach or notification channels (see section 4).
 2. Add Firebase, Prisma, SMS, push notifications or email verification.
 3. Allow anonymous reporting or make `reports.reporter_id` nullable.
-4. Change table names, columns or relationships in `database/schema.sql` or the ERD. The only approved change is adding `users.is_active`.
+4. Change table names, columns or relationships in `database/schema.sql` or the ERD. Approved changes: `users.is_active` (done) and the DECISIONS #49 additions (priority columns, `officer_status`, `report_dispatch`).
 5. Move `database/` into `api/`.
 6. Bundle the demo video inside `web/public` or Flutter assets.
 7. Squash-merge `dev` into `main` (it removes member authorship). Use merge commits.
