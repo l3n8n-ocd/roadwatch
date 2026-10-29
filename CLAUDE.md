@@ -1,6 +1,6 @@
 # CLAUDE.md: RoadWatch
 
-Primary context file for Claude Code. Source of truth: the user's explicit decisions (planning conversation Oct 12-15, 2026, and later answers recorded in `docs/DECISIONS.md`). Last updated Oct 27, 2026 (officer web portal #45, product wording and Built with #46, officer notification bell #47; course and school details removed from the CLAUDE.md files, #48; per-role demo clips, promo video, v1.1.0, domain steps and course work, DECISIONS #48).
+Primary context file for Claude Code. Source of truth: the user's explicit decisions (planning conversation Oct 12-15, 2026, and later answers recorded in `docs/DECISIONS.md`). Last updated Oct 29, 2026 (UI/UX defense recommendations #54 to #57, freeze paused, Gmail app password revoked, DECISIONS #49; officer web portal #45, product wording and Built with #46, officer notification bell #47; course and school details removed from the CLAUDE.md files, #48; per-role demo clips, promo video, v1.1.0, domain steps and course work, DECISIONS #48).
 Labels used below: **Confirmed** (user decided), **Recommended** (suggested, accepted or not yet rejected), **Pending** (needs a decision), **Unverified** (not checked by anyone).
 Always inspect the real files before relying on any path or detail here; the repo is the source of truth for code.
 
@@ -48,7 +48,7 @@ Objectives (from the requirements): web and mobile reporting; quick digital repo
 1. The login-required flow, stack and architecture below are decided. Do not substitute alternatives.
 2. Prefer the simplest implementation that satisfies the requirement. The deadline is tight and the team is new to this stack.
 3. Never cut: login, report submission, status tracking, admin review. Cut order if time runs short: dashboard map, then charts, then PDF export.
-4. Feature freeze on Oct 30 (proposed internal target: no new features after Oct 27).
+4. Feature freeze on Oct 30 (proposed internal target: no new features after Oct 27). **Paused Oct 29 (DECISIONS #49):** Lenon reopened feature work for the UI/UX defense recommendations (#54 to #57) and will say when the freeze resumes.
 5. Each member must be able to explain the system, so keep code readable.
 6. Repo and database setup are behind the original tracker dates (see section 16). Prioritize unblocking Carl and the foundation steps first.
 
@@ -301,7 +301,7 @@ Health checks: `GET /api/health` returns `{"status":"ok","service":"roadwatch-ap
 ## 17. Known Issues and Technical Debt (remaining items are to-do)
 
 - Fixed in starter v2 (Oct 16): `*.pem` ignored, `api/scripts/check-db.js` added (`npm run check:db`), `is_active` added to schema and ERD (all present in the repo).
-- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotated (confirmed Oct 20). Brevo works since Oct 21: revoke the old Gmail app password.
+- Carl's pasted `.env` held real Aiven and Cloudinary credentials (Oct 16): rotated (confirmed Oct 20). Brevo works since Oct 21; the old Gmail app password was revoked (Lenon, Oct 29).
 - **CVE-2026-111497 "Node2Shell" (Oct 23):** Brotli decoder out-of-bounds write in Node.js 22.x/24.x/26.x before 22.23.4/24.22.1/26.12.1 (plus the other Oct 21 Node.js security fixes). Patched by pinning Render's `NODE_VERSION` to 22.23.4, `engines` `>=22.23.4`, and `check-latest` in CI. Exposure was low: Express 4 / body-parser 1.x refuse `Content-Encoding: br` (415), so only `fetch` responses from Brevo could reach the decoder. 26/26 API tests pass on 22.23.4. Team machines should update Node too.
 - Render's free tier sleeps when idle. The Aiven free plan limits were not verified in the conversation.
 - Git LFS: the user relies on 1 GB free storage. Bandwidth limits and "Download ZIP" behavior (LFS pointers only) are unverified. Submit the MP4 as a separate file too.
@@ -337,7 +337,7 @@ Do not do the following without the user's approval:
 - **Separate READMEs** in `api/`, `web/`, `mobile/`, and a GIF in the README (#50): not decided.
 - **Aiven free-plan limits:** not verified.
 
-**Decided:** Oct 15: Sequelize, Render, `is_active`, full responsive and WCAG AA. Oct 20: anonymous reporting not required (#35); platforms per role (#36, updated by #45); Brevo email API (#37); `.me` domain (#38); phase plan (#39). Oct 25-27: forgot password, show/hide password, full screen (#43); password strength (#44); officer web portal (#45); product wording, Built with, README, LICENSE (#46); officer notification bell (#47). Oct 27: Play Store (#51) waits until after Nov 2; the CLAUDE.md files drop the course details; videos per role plus a promo, final version v1.1.0, domain now, PPT draft, no per-folder READMEs (#48).
+**Decided:** Oct 15: Sequelize, Render, `is_active`, full responsive and WCAG AA. Oct 20: anonymous reporting not required (#35); platforms per role (#36, updated by #45); Brevo email API (#37); `.me` domain (#38); phase plan (#39). Oct 25-27: forgot password, show/hide password, full screen (#43); password strength (#44); officer web portal (#45); product wording, Built with, README, LICENSE (#46); officer notification bell (#47). Oct 27: Play Store (#51) waits until after Nov 2; the CLAUDE.md files drop the course details; videos per role plus a promo, final version v1.1.0, domain now, PPT draft, no per-folder READMEs (#48). Oct 29: UI/UX defense recommendations (report priority #54, Users toolbar #55, accessibility guide #56, nearby on-duty officer #57), freeze paused (#49).
 
 **Immediate next steps (in order)**
 1. Lenon: merge PR #53 (`dev` to `main`, merge commit), then push the `v1.1.0` tag so mobile-ci builds the APK (`docs/RELEASE-CHECKLIST.md`). Connect the domain (SETUP-GUIDE Part G).
