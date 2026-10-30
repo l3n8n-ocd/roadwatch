@@ -19,10 +19,13 @@ import 'package:roadwatch_mobile/core/state/auth_provider.dart';
 import 'package:roadwatch_mobile/core/state/notifications_provider.dart';
 import 'package:roadwatch_mobile/core/state/settings_provider.dart';
 import 'package:roadwatch_mobile/core/theme/app_theme.dart';
+import 'package:roadwatch_mobile/core/widgets/widgets.dart';
+import 'package:roadwatch_mobile/features/home/home_screen.dart';
 import 'package:roadwatch_mobile/features/my_reports/my_reports_screen.dart';
 import 'package:roadwatch_mobile/features/my_reports/tracking_screen.dart';
 import 'package:roadwatch_mobile/features/notifications/notifications_screen.dart';
 import 'package:roadwatch_mobile/features/settings/about_screen.dart';
+import 'package:roadwatch_mobile/features/settings/accessibility_screen.dart';
 import 'package:roadwatch_mobile/features/settings/appearance_screen.dart';
 import 'package:roadwatch_mobile/features/settings/change_password_screen.dart';
 import 'package:roadwatch_mobile/features/settings/demo_video_screen.dart';
@@ -119,6 +122,8 @@ class _FakeApi extends RoadWatchApi {
   _FakeApi({this.reports}) : super(ApiClient(tokenStorage: _Tokens()));
 
   List<Report>? reports;
+  AppUser meUser = _juan;
+  AppInfo info = const AppInfo();
   final notifs = <AppNotification>[
     AppNotification(
       notificationId: 1,
@@ -178,13 +183,13 @@ class _FakeApi extends RoadWatchApi {
   }
 
   @override
-  Future<AppInfo> appInfo() async => const AppInfo();
+  Future<AppInfo> appInfo() async => info;
 
   @override
   Future<bool> health() async => true;
 
   @override
-  Future<AppUser> me() async => _juan;
+  Future<AppUser> me() async => meUser;
 
   @override
   Future<AppUser> updateMe({required String fullName, String? phone}) async =>
@@ -340,6 +345,49 @@ void main() {
     expect(settings.themeMode, ThemeMode.dark);
   });
 
+  testWidgets('Accessibility: Read aloud and reading speed are saved on the phone (#56)', (tester) async {
+    final api = _FakeApi();
+    final settings = SettingsProvider();
+    await tester.pumpWidget(
+      _app(const AccessibilityScreen(), api: api, auth: await _signedIn(api), settings: settings),
+    );
+    expect(find.text('Start the guide'), findsOneWidget);
+    expect(find.text('Captions and a full transcript are always available'), findsOneWidget);
+    expect(settings.readAloud, isFalse);
+    await tester.tap(find.text('Read aloud'));
+    await tester.pumpAndSettle();
+    expect(settings.readAloud, isTrue);
+    expect(find.text('1×'), findsOneWidget);
+    await tester.tap(find.text('Reading speed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('1.25×'));
+    await tester.pumpAndSettle();
+    expect(settings.readingSpeed, 1.25);
+    expect(find.text('1.25×'), findsOneWidget);
+  });
+
+  testWidgets('Home: the Guide button starts a 5-step text tour; reporters never see priority (#54, #56)', (
+    tester,
+  ) async {
+    final api = _FakeApi(reports: _reports);
+    await tester.pumpWidget(_app(const HomeTab(), api: api, auth: await _signedIn(api)));
+    await tester.pumpAndSettle();
+    expect(find.byType(RwPriorityChip), findsNothing);
+    await tester.tap(find.bySemanticsLabel('Guide'));
+    await tester.pumpAndSettle();
+    expect(find.text('STEP 1 OF 5'), findsOneWidget);
+    expect(find.textContaining('Start here when you see a road accident'), findsOneWidget);
+    expect(find.widgetWithText(RwButton, 'Read aloud'), findsOneWidget);
+    for (var step = 2; step <= 5; step++) {
+      await tester.tap(find.widgetWithText(RwButton, 'Next'));
+      await tester.pumpAndSettle();
+      expect(find.text('STEP $step OF 5'), findsOneWidget);
+    }
+    await tester.tap(find.widgetWithText(RwButton, 'Done'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('STEP '), findsNothing);
+  });
+
   testWidgets('Change password validates, then shows the not-built-yet error', (tester) async {
     final api = _FakeApi();
     await tester.pumpWidget(_app(const ChangePasswordScreen(), api: api, auth: await _signedIn(api)));
@@ -348,11 +396,19 @@ void main() {
     await tester.enterText(fields.at(1), 'abcdef');
     await tester.enterText(fields.at(2), 'abcde');
     await tester.pump();
+    // The meter explains the rule while typing (#44); the error waits for Update password.
     expect(find.text('Use at least 8 characters (6 so far).'), findsOneWidget);
     expect(find.text("Passwords don't match."), findsOneWidget);
 
-    await tester.enterText(fields.at(1), 'abcdefgh');
-    await tester.enterText(fields.at(2), 'abcdefgh');
+    await tester.enterText(fields.at(1), 'Sunflower7');
+    await tester.enterText(fields.at(2), 'Sunflower7');
+    await tester.tap(find.text('Update password'));
+    await tester.pumpAndSettle();
+    expect(find.text('Make the password Strong to save it.'), findsOneWidget, reason: 'Good is not enough');
+    expect(find.text('Good'), findsOneWidget);
+
+    await tester.enterText(fields.at(1), 'Sunflower7!');
+    await tester.enterText(fields.at(2), 'Sunflower7!');
     await tester.tap(find.text('Update password'));
     await tester.pumpAndSettle();
     expect(find.text("Couldn't update your password"), findsOneWidget);
@@ -374,11 +430,50 @@ void main() {
     expect(find.bySemanticsLabel('Bureau of Fire Protection seal'), findsOneWidget);
   });
 
-  testWidgets('Demo video without a URL says it is coming soon', (tester) async {
+  testWidgets('Demo video: a reporter gets only the Reporter clip, coming soon without a URL (#48)', (
+    tester,
+  ) async {
     final api = _FakeApi();
     await tester.pumpWidget(_app(const DemoVideoScreen(), api: api, auth: await _signedIn(api)));
     await tester.pumpAndSettle();
-    expect(find.text('Video coming soon'), findsOneWidget);
+    expect(find.text('Report an accident'), findsOneWidget);
+    expect(find.text('Your role'), findsOneWidget);
+    expect(find.text('Work a case from your queue'), findsNothing);
+    expect(find.text('Clip coming soon'), findsOneWidget);
+    expect(find.text('Read the transcript'), findsNothing);
+  });
+
+  testWidgets('Demo video: an officer gets the Traffic Officer clip first, then the Reporter clip (#48)', (
+    tester,
+  ) async {
+    final api = _FakeApi()
+      ..meUser = const AppUser(
+        userId: 9,
+        fullName: 'Rafael Santos',
+        contactEmail: 'rafael.officer@example.com',
+        role: Roles.officer,
+      )
+      ..info = const AppInfo(
+        officerClip: VideoClip(
+          url: 'https://example.com/officer.mp4',
+          transcript: 'When the administrator assigns you a report.',
+        ),
+      );
+    tester.view.physicalSize = const Size(360, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(_app(const DemoVideoScreen(), api: api, auth: await _signedIn(api)));
+    await tester.pump();
+    await tester.pump();
+    final officerTitle = tester.getTopLeft(find.text('Work a case from your queue'));
+    final reporterTitle = tester.getTopLeft(find.text('Report an accident'));
+    expect(officerTitle.dy, lessThan(reporterTitle.dy));
+    expect(find.text('Your role'), findsOneWidget);
+    expect(find.text('Clip coming soon'), findsOneWidget); // the Reporter clip has no URL yet
+    expect(find.text('When the administrator assigns you a report.'), findsNothing);
+    await tester.tap(find.text('Read the transcript'));
+    await tester.pump();
+    expect(find.text('When the administrator assigns you a report.'), findsOneWidget);
   });
 
   group('screenshots', () {

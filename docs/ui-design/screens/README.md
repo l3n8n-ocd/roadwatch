@@ -2,13 +2,13 @@
 
 Static PNG copies of the Figma screens, exported on Oct 21, 2026 from the high-fidelity file
 `psx52NYL69RkycK7Z44EAb` (Mobile page `90:4`, Web page `90:5`) at 1x. Use them in the PPT user guide,
-the video and the course documentation. Figma stays the source of truth: when a screen changes there,
+the video and the product documentation. Figma stays the source of truth: when a screen changes there,
 export it again under the same file name. Node IDs for every frame are in `../figma-index.md`.
 
 | Folder | Frames | Size |
 |---|---|---|
-| `mobile/` | 58: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
-| `web/` | 51: W0 landing, W1 sign-in, W2-W4, W6-W12, Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
+| `mobile/` | 64 (6 added for v1.2.0, Oct 30: O1 on duty + priority, nearby alert, already taken, O2 responding, M1 guide, Settings/Accessibility): M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
+| `web/` | 72 (11 added for v1.2.0, Oct 30: W3 priority, W4 priority x2, W5 on duty + alert, W6 toolbar x2 and dialogs x3, W2 guide, components): W0 landing, W1 staff sign-in (role chooser, Administrator, Traffic Officer), W2-W12 (W5 and officer W4 since #52), Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
 
 File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for example
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is
@@ -32,3 +32,28 @@ Added Oct 25 for #37, #45 and #46 (Figma approved by Lenon before any code; DECI
 - Re-exported: every frame with a password field (eye button, #45) or a map (Expand map button, #46), the W1 frames
   ("Forgot password?" link) and W6 (Reset password row action).
 - Oct 25, later: "New code sent" state (`mobile/m0-forgot-password-new-code-sent.png`, `web/w1-forgot-password-new-code-sent-1440.png`); `mobile/m3-location-full-screen-map.png` re-exported (button label on one line).
+
+Re-exported Oct 27 for the password strength meter (#44, Figma approved by Lenon before any code; DECISIONS #44):
+- Mobile: `m0-register-default.png`, `m0-register-validation.png`, `settings-change-password.png`, `m0-forgot-password-code.png`,
+  `m0-forgot-password-code-wrong.png`, `m0-forgot-password-new-code-sent.png`.
+- Web: `w6-users-1440.png`, `w6-users-after-deactivation-1440.png`, `w6-users-password-reset-1440.png`, `w6-reset-password-dialog.png`,
+  `w2-change-password-dialog.png`, `w1-forgot-password-code-1440.png`, `w1-forgot-password-code-390.png`,
+  `w1-forgot-password-new-code-sent-1440.png`.
+
+Added Oct 27 for #48, #49 and #52 (Figma approved by Lenon before any code; DECISIONS #45, #46):
+- Traffic Officer web portal (#52): `web/w1-staff-choose-role-1440.png`, `-390.png`, `web/w1-login-officer-1440.png`,
+  `web/w1-login-wrong-role-1440.png`, `web/w5-officer-queue-1440.png`, `web/w5-officer-queue-empty-1440.png`,
+  `web/w4-report-officer-1440.png`, `web/w4-report-officer-saved-1440.png`. The Administrator sign-in frames
+  (`w1-login-*`, `w1-forgot-password-email-1440.png`) were re-exported with "Choose a different role" and the new notes.
+- Product wording, team photos and Built with logos (#48, #49): `web/w0-landing-1440.png`, `-390.png`, `web/w9-admin-about-1440.png`,
+  `web/w10-about-1440.png`, `-390.png`, `mobile/settings-about.png`, `mobile/settings-demo-video-playing.png` re-exported.
+- Officer bell (#47): `web/w5-notifications-open-1440.png`, `web/w5-notifications-panel-empty.png`. The bell was removed from every
+  Administrator frame, so `w2-*`, `w3-*`, `w4-report-*` (admin), `w6-*`, `w7-*`, `w8-action-log-1440.png`, `w8-action-log-all-staff-1440.png`,
+  `w9-admin-about-1440.png` and `demo-video-*` were re-exported; `w8-action-log-empty-1440.png` is an officer frame and keeps the bell.
+
+Added Oct 27 for the per-role demo clips and the promotional video (#48, DECISIONS #48; Figma approved by Lenon before any code):
+- Web: `demo-video-per-role-admin-1440.png`, `demo-video-per-role-officer-1440.png`, `demo-video-clip-coming-soon.png`,
+  `w0-watch-the-video-1440.png`, `w0-watch-the-video-390.png`; `w0-landing-1440.png` and `w0-landing-390.png` re-exported
+  (new section after How it works; footer link "Watch the video").
+- Mobile: `demo-video-per-role-reporter.png`, `demo-video-per-role-officer.png`. The older `settings-demo-video-*.png` and
+  `demo-video-playing-1440.png` / `demo-video-coming-soon-1440.png` show the single video used before v1.1.0.

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, EmptyState, Icon, Pagination, SegmentedControl, Select } from '../../components/ui';
 import { admin, auth, users } from '../../api/endpoints';
+import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../lib/constants';
 import { cx } from '../../lib/cx';
 import { reportCode } from '../../lib/format';
@@ -135,6 +136,8 @@ function normalize(result) {
 }
 
 export default function ActionLog() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === ROLES.ADMIN;
   const [view, setView] = useState('mine');
   const [action, setAction] = useState('');
   const [period, setPeriod] = useState('30d');
@@ -146,7 +149,7 @@ export default function ActionLog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // { status, message }
 
-  const allStaff = view === 'all';
+  const allStaff = isAdmin && view === 'all';
 
   // Staff list for the "Staff member" filter (administrators only).
   useEffect(() => {
@@ -215,7 +218,7 @@ export default function ActionLog() {
     setPage(1);
   };
 
-  const reportPath = (id) => `/admin/reports/${id}`;
+  const reportPath = (id) => (isAdmin ? `/admin/reports/${id}` : `/officer/reports/${id}`);
   const filtered = Boolean(action) || period !== '30d' || Boolean(staffId);
   const columnCount = allStaff ? 5 : 4;
   const staffOptions = [
@@ -382,7 +385,9 @@ export default function ActionLog() {
         </p>
       </div>
 
-      <SegmentedControl label="Show" options={VIEW_OPTIONS} value={view} onChange={changeView} className="self-start" />
+      {isAdmin && (
+        <SegmentedControl label="Show" options={VIEW_OPTIONS} value={view} onChange={changeView} className="self-start" />
+      )}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
         {allStaff && (

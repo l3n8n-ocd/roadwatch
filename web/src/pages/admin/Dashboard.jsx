@@ -118,7 +118,7 @@ function TrendCard({ days }) {
   const ticks = [0, 7, 14, 21, 28].map((i) => days[i].key);
 
   return (
-    <section aria-labelledby="trend-title" className={`flex min-w-0 flex-col gap-4 ${card}`}>
+    <section data-guide="trend" aria-labelledby="trend-title" className={`flex min-w-0 flex-col gap-4 ${card}`}>
       <div className="flex flex-wrap items-center gap-4">
         <h2 id="trend-title" className="min-w-0 flex-1 type-h3 text-text-primary">
           Reports submitted, last 30 days
@@ -210,7 +210,7 @@ function TypeBars({ byType, total }) {
   const rows = [...byType].sort((a, b) => b.count - a.count);
   const max = Math.max(1, ...rows.map((r) => r.count));
   return (
-    <section aria-labelledby="types-title" className={`flex min-w-0 flex-col gap-4 ${card}`}>
+    <section data-guide="types" aria-labelledby="types-title" className={`flex min-w-0 flex-col gap-4 ${card}`}>
       <h2 id="types-title" className="type-h3 text-text-primary">
         By accident type
       </h2>
@@ -301,7 +301,7 @@ function HotspotsCard({ hotspots, mapPoints }) {
   );
 
   return (
-    <section aria-labelledby="hotspots-title" className={`flex flex-col gap-4 ${card}`}>
+    <section data-guide="hotspots" aria-labelledby="hotspots-title" className={`flex flex-col gap-4 ${card}`}>
       <h2 id="hotspots-title" className="type-h3 text-text-primary">
         Accident hotspots
       </h2>
@@ -339,7 +339,7 @@ function RecentReports({ rows }) {
   ];
 
   return (
-    <section aria-labelledby="recent-title" className={`flex flex-col gap-4 ${card}`}>
+    <section data-guide="recent" aria-labelledby="recent-title" className={`flex flex-col gap-4 ${card}`}>
       <div className="flex flex-wrap items-center gap-4">
         <h2 id="recent-title" className="min-w-0 flex-1 type-h3 text-text-primary">
           Recent reports
@@ -470,7 +470,7 @@ export default function Dashboard() {
               Could not refresh: {error}
             </p>
           )}
-          <section aria-label="Summary" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <section data-guide="stats" aria-label="Summary" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard metric="total" label="Total reports" value={cards.total ?? 0} caption="All time" index={0} />
             <StatCard
               metric="pending"

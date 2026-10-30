@@ -17,16 +17,19 @@ Project-wide rules live in the root `CLAUDE.md`. This file covers the web app on
 src/
   api/client.js        axios instance (unwraps { success, data }), token storage, downloadFile()
   api/endpoints.js     one function per docs/API.md endpoint ("not built yet" ones are marked)
-  context/             AuthContext (Administrator login with platform "web", logout), ThemeContext
+  context/             AuthContext (staff login with platform "web" + expected role, logout), ThemeContext
   lib/constants.js     ROLES, STATUSES, ADMIN_STATUSES, INJURY_OPTIONS, HOTLINES, homePathFor(), APK_URL
-  lib/format.js        formatDate, formatDateTime, reportCode (RW-000128)
+  lib/format.js        formatDate, formatDateTime, formatRelative ("5 min ago"), reportCode (RW-000128)
   components/ui/       Figma Components page, one file per component (Button.jsx, StatusChip.jsx...)
   layouts/             StaffLayout (sidebar + top bar + user menu, Log out confirm), AccountDialogs,
+                       NotificationsBell (officers only, #47: GET /notifications, mark read, open the report),
                        PublicLayout (public header with Light/Dark switch + footer; landing, /about, 404, 500)
   components/ErrorBoundary.jsx  shows the 500 page (W12) when a page crashes
+  components/ui/VideoPlayer.jsx native <video controls> + Transcript (details); tone="dark" on the landing band (#48)
   lib/useServerError.js         a page's main request with a 5xx re-throws into the ErrorBoundary
   pages/<area>/        one file per screen; App.jsx holds every route
-  assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png
+  assets/images/       emblem.png, hero-street.jpg, brand-panel.jpg, pnp-seal.png, bfp-seal.png, team/ (photos, lib/team.js)
+  assets/logos/        Built with logos (#49; a "-dark" twin for one-color logos), listed in lib/builtWith.js, drawn by BuiltWith
   styles/tokens.css    generated from Figma variables (light + dark); styles/theme.css maps them to Tailwind
 ```
 
@@ -51,16 +54,36 @@ src/
   Body text navy; text-only colors `text-text-blue|success|danger`.
 - Charts and maps get a text alternative or a data table. Images have alt text (decorative: `alt=""`).
 - Touch targets at least 44 px. Respect `prefers-reduced-motion`.
-- Password inputs use `PasswordField` (eye / eye-off, "Show password" / "Hide password", #45).
+- Password inputs use `PasswordField` (eye / eye-off, "Show password" / "Hide password", #45). Fields that set a new
+  password add `showStrength` and `person` ({ name, email }) for the meter, and the form refuses `!isStrong(...)` with
+  `NOT_STRONG` from `lib/passwordStrength.js` (#44; same rules as the API).
 - Maps: pass `onExpand` to `MapView` and render `FullScreenMap` (title, Close/Esc, `aside` = the text alternative list);
   photos open in `PhotoViewerDialog` (always dark via `bg-dark-bg`, arrows, +/- zoom, Esc, no download; #46).
 
 ## Routes (#40)
-- Public: `/` landing, `/about` (W10, Meet our team), `/500` (W12), `/staff/sign-in`, `/staff/forgot-password`
-  (#37: email, then code + new password, back to sign-in with "Password changed"); any unknown path shows 404 (W11).
-- Administrator: `/admin...`, `/demo-video`, `/action-log`, `/admin/about` (W9, version and server status).
+- Public: `/` landing, `/about` (W10, Meet our team, Built with), `/500` (W12), `/staff/sign-in` (role chooser, #52),
+  `/staff/sign-in/admin` and `/staff/sign-in/officer` (forms; copy in `pages/auth/staffForms.js`), `/staff/forgot-password`
+  (#37: email, then code + new password, back to the form it came from with "Password changed"); any unknown path shows 404 (W11).
+- Administrator: `/admin...`, `/admin/about` (W9, version and server status).
+- Traffic Officer (#52): `/officer` (W5 Assigned to me), `/officer/reports/:id` (`ReportDetails mode="officer"`), `/officer/about`.
+- Both staff roles: `/demo-video`, `/action-log` (the All staff view is admin-only).
 - Landing section links are `/#how-it-works`, `/#public-updates`, `/#safety-tips`, `/#faq`; Landing scrolls to the hash.
+- Videos (#48): `/demo-video` shows the Administrator and Traffic Officer clips from `GET /app-info` `demoVideos` (own role
+  first, "Clip coming soon" without a URL); the landing "Watch the video" section (`/#video`, after How it works) and the
+  footer link appear only when `promoVideo.url` is set. `/app` on Vercel redirects to the newest APK (`vercel.json`).
 - Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.
+
+## v1.2.0 (#54 to #57, DECISIONS #49, #50; Figma frames in `docs/ui-design/figma-index.md`)
+- Priority: `PriorityChip` (+ `priorityMeta.js`, icon + word), W3 Priority column and filter (sorted `sort=priority`), W4
+  Priority card (admin override / Back to automatic), W5 Priority column and Sort by. `ReportCard` takes `priority` and `note`.
+- Nearby officers: `lib/dispatch.js` `dispatchTag()` (line under the status), W5 On duty card + "Accident reported near
+  you" (`pages/officer/useNearbyAlerts.js`: browser location, 30-second checks), "Already taken" dialog, W4 officer
+  `RespondingPanel` (Confirm on scene / Reject report). W6 Nearby officers card saves the alert range.
+- Users & settings (#55): toolbar (+ Create officer, Edit), `Radio` per row (the table and the phone list use different
+  radio groups), Edit and Create officer dialogs.
+- Guide (#56): `GuideTour` (focus trap, ← →, Esc, Read aloud via `speechSynthesis`, speed) with steps per page in
+  `lib/guideSteps.js`, pointing at `data-guide="..."` anchors. Top bar Guide button from 1024 px; below that it is in the
+  account menu (Help), so the top bar fits at 390 px (the logo shows the emblem only below 420 px).
 
 ## Motion (#41, docs/ui-design/motion-spec.md)
 - `lib/motion.js`: GSAP + ScrollTrigger + DrawSVG, tokens (`DUR`, `EASE`), `reveal()`, `countTo()`, `useRefreshOnResize()`.
@@ -70,12 +93,15 @@ src/
 - Admin: CSS `starting:` entrances (rows, bars, dialogs, menus, toasts) and `AnimatedNumber`; no scroll effects.
 
 ## Data and roles
-- The web is for Administrators only (#36). Reporters and Traffic Officers use the Android app; their old
-  web screens (R0-R6, W5, officer W4) were removed on Oct 20 and live on the Figma Archive page.
-- Login sends `platform: "web"`. The API answers 403 `details.code = WRONG_PLATFORM` for other roles, shown
-  as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default:
+- The web is for staff: Administrators and, since Oct 27 (#52, DECISIONS #45), Traffic Officers (who can also use the app).
+  Reporters use the Android app; the reporter web screens (R0-R6) stay on the Figma Archive page.
+- Login sends `platform: "web"` and the role chosen on the chooser; a staff account on the other role's form is signed
+  out again with "This is a ... account" (Figma 465:17972). The API answers 403 `details.code = WRONG_PLATFORM` for a
+  Reporter, shown as the "This account uses the mobile app" state with a link to `APK_URL` (`VITE_APK_URL`, default:
   `roadwatch.apk` from the latest GitHub release, #22; switch to roadwatch-ph.me/app once the domain is live, #38).
 - Roles are enforced by the API; `RequireRole` only routes.
+- Officers see a notification bell in the top bar (assignment alerts; Figma top bar "Bell" property, panel 481:20505,
+  empty 483:21192). Administrators get no in-app notifications, so their top bar has no bell (#47).
 - Reporter contact details only on screens the API returns them for (admin, assigned officer).
 - Public updates, edit profile, change password, action log and admin audit logs exist on the API since Oct 21
   (#23, #25, #27). Pages still show their designed empty/error state when a request fails.

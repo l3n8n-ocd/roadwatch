@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:roadwatch_mobile/core/api/api_client.dart';
+import 'package:roadwatch_mobile/core/api/api_exception.dart';
 import 'package:roadwatch_mobile/core/api/models.dart';
 import 'package:roadwatch_mobile/core/api/roadwatch_api.dart';
 import 'package:roadwatch_mobile/core/api/token_storage.dart';
@@ -16,6 +17,7 @@ import 'package:roadwatch_mobile/core/theme/app_theme.dart';
 import 'package:roadwatch_mobile/core/widgets/widgets.dart';
 import 'package:roadwatch_mobile/features/home/home_shell.dart';
 import 'package:roadwatch_mobile/features/officer/assigned_screen.dart';
+import 'package:roadwatch_mobile/features/officer/nearby_alerts.dart';
 import 'package:roadwatch_mobile/features/officer/officer_report_screen.dart';
 import 'package:roadwatch_mobile/routes.dart';
 
@@ -45,10 +47,20 @@ const _officer = AppUser(
   role: Roles.officer,
 );
 
-Map<String, dynamic> _json(int id, String status, {String type = 'Collision'}) => {
+Map<String, dynamic> _json(
+  int id,
+  String status, {
+  String type = 'Collision',
+  String priority = 'Medium',
+  Map<String, dynamic>? dispatch,
+  String recordType = 'verified_record',
+}) => {
   'report_id': id,
+  'priority': priority,
+  'priority_source': 'auto',
+  'dispatch': ?dispatch,
   'report_status': status,
-  'record_type': 'verified_record',
+  'record_type': recordType,
   'accident_date': '2026-10-17',
   'accident_time': '08:15:00',
   'accident_location': 'MacArthur Hwy, Malolos',
@@ -113,7 +125,59 @@ class _FakeApi extends RoadWatchApi {
   @override
   Future<NotificationList> notifications() async =>
       NotificationList(items: notificationItems, unread: notificationItems.where((n) => !n.isRead).length);
+
+  // Nearby on-duty officers (#57).
+  bool onDuty = false;
+  List<NearbyAlert> alerts = const [];
+  String? confirmed;
+  String? rejectedWith;
+
+  @override
+  Future<bool> duty() async => onDuty;
+
+  @override
+  Future<bool> setDuty({required bool onDuty, double? latitude, double? longitude}) async =>
+      this.onDuty = onDuty;
+
+  @override
+  Future<List<NearbyAlert>> nearbyAlerts() async => alerts;
+
+  @override
+  Future<Report> confirmOnScene(int reportId, {String? remarks}) async {
+    confirmed = '$reportId';
+    return Report.fromJson({
+      ...detail!,
+      'report_status': Statuses.inProgress,
+      'record_type': 'verified_record',
+      'dispatch': {
+        'state': 'confirmed',
+        'responder': {'full_name': 'Rafael Santos'},
+      },
+    });
+  }
+
+  @override
+  Future<Report> rejectOnScene(int reportId, {required String reason}) async {
+    rejectedWith = reason;
+    return Report.fromJson({
+      ...detail!,
+      'report_status': Statuses.rejected,
+      'record_type': 'public_submission',
+      'dispatch': {
+        'state': 'rejected_on_scene',
+        'responder': {'full_name': 'Rafael Santos'},
+      },
+    });
+  }
 }
+
+const _alert = NearbyAlert(
+  reportId: 132,
+  priority: 'Urgent',
+  accidentType: 'Pedestrian accident',
+  location: 'Paseo del Congreso, Malolos',
+  distanceKm: 1.2,
+);
 
 Future<void> _pump(
   WidgetTester tester,
@@ -179,7 +243,7 @@ void main() {
         Report.fromJson(_json(99, Statuses.rejected, type: 'Other')),
       ];
     await _pump(tester, const Scaffold(body: AssignedTab()), api);
-    expect(find.text('2 open reports, newest first'), findsOneWidget);
+    expect(find.text('2 open reports · Urgent first'), findsOneWidget);
     expect(find.text('RW-000101'), findsNothing);
     expect(find.text('RW-000099'), findsNothing);
 
@@ -187,7 +251,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('All assigned to me').last);
     await tester.pumpAndSettle();
-    expect(find.text('4 reports, newest first'), findsOneWidget);
+    expect(find.text('4 reports · Urgent first'), findsOneWidget);
     expect(find.text('RW-000101'), findsOneWidget);
     expect(find.text('RW-000099'), findsOneWidget);
   });
@@ -265,6 +329,174 @@ void main() {
     expect(find.text('Traffic Officer'), findsOneWidget);
     expect(find.text('Status changes'), findsNothing);
     expect(find.text('How to report'), findsNothing);
+  });
+
+  testWidgets('O1 sorts by priority (Urgent first) and shows the Priority chip (#54)', (tester) async {
+    final api = _FakeApi()
+      ..assigned = [
+        Report.fromJson(_json(128, Statuses.assigned, priority: 'Low')),
+        Report.fromJson(_json(124, Statuses.inProgress, type: 'Hit-and-run', priority: 'High')),
+        Report.fromJson(_json(119, Statuses.assigned, type: 'Pedestrian accident', priority: 'Urgent')),
+      ];
+    await _pump(tester, const Scaffold(body: AssignedTab()), api);
+    final codes = tester.widgetList<Text>(find.textContaining(RegExp(r'^RW-0'))).map((t) => t.data).toList();
+    expect(codes, ['RW-000119', 'RW-000124', 'RW-000128']);
+    expect(find.byWidgetPredicate((w) => w is RwPriorityChip && w.priority == 'Urgent'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        RegExp(r'Report RW-000119, Pedestrian accident, status Assigned, priority Urgent'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Priority (Urgent first)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Newest first').last);
+    await tester.pumpAndSettle();
+    final newest = tester.widgetList<Text>(find.textContaining(RegExp(r'^RW-0'))).map((t) => t.data).toList();
+    expect(newest, ['RW-000128', 'RW-000124', 'RW-000119']);
+    expect(find.text('3 open reports · newest first'), findsOneWidget);
+  });
+
+  testWidgets('O1 shows the On duty switch (#57); off by default', (tester) async {
+    final api = _FakeApi()..assigned = [Report.fromJson(_json(128, Statuses.assigned))];
+    await _pump(tester, const Scaffold(body: AssignedTab()), api);
+    expect(find.text('On duty'), findsOneWidget);
+    expect(
+      find.text('Nearby reports reach you. Your location is shared only while this is on.'),
+      findsOneWidget,
+    );
+    expect(find.byType(RwOnDutyCard), findsOneWidget);
+    expect(tester.widget<RwOnDutyCard>(find.byType(RwOnDutyCard)).onDuty, isFalse);
+  });
+
+  testWidgets('Nearby alert sheet: Respond or Not now; Already taken names who responded (#57)', (
+    tester,
+  ) async {
+    bool? answer;
+    await _pump(
+      tester,
+      Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: RwButton(
+              label: 'Open',
+              onPressed: () async => answer = await showNearbyAlertSheet(context, _alert),
+            ),
+          ),
+        ),
+      ),
+      _FakeApi(),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    expect(find.text('Accident reported near you'), findsOneWidget);
+    expect(find.bySemanticsLabel('Priority: Urgent'), findsOneWidget);
+    expect(find.text('Not yet verified'), findsOneWidget);
+    expect(find.textContaining('1.2 km from you'), findsOneWidget);
+    await tester.tap(find.widgetWithText(RwButton, 'Respond'));
+    await tester.pumpAndSettle();
+    expect(answer, isTrue);
+
+    final context = tester.element(find.text('Open'));
+    showAlreadyTakenSheet(context, _alert, 'Liza Manalo');
+    await tester.pumpAndSettle();
+    expect(find.text('Already taken'), findsOneWidget);
+    expect(
+      find.text(
+        'Liza Manalo responded first to RW-000132 (Pedestrian accident, 1.2 km away). It’s no longer waiting for you.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(RwButton, 'OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Already taken'), findsNothing);
+  });
+
+  testWidgets('O2 responding: Confirm on scene makes it a verified record (#57)', (tester) async {
+    final api = _FakeApi()
+      ..detail = _json(
+        132,
+        Statuses.submitted,
+        type: 'Pedestrian accident',
+        priority: 'Urgent',
+        recordType: 'public_submission',
+        dispatch: {
+          'state': 'responding',
+          'responded_at': '2026-10-30T01:14:00Z',
+          'distance_km': 1.2,
+          'responder': {'full_name': 'Rafael Santos'},
+        },
+      );
+    await _pump(tester, const OfficerReportScreen(reportId: 132), api);
+    expect(find.text('You’re responding'), findsOneWidget);
+    expect(find.byWidgetPredicate((w) => w is RwPriorityChip && w.priority == 'Urgent'), findsOneWidget);
+    expect(find.widgetWithText(RwButton, 'Update status'), findsNothing, reason: 'confirm or reject first');
+
+    await tester.tap(find.widgetWithText(RwButton, 'Confirm on scene'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(RwButton, 'Confirm on scene').last);
+    await tester.pumpAndSettle();
+    expect(api.confirmed, '132');
+    expect(find.text('Confirmed on scene'), findsOneWidget);
+    expect(find.text('You’re responding'), findsNothing);
+    expect(find.widgetWithText(RwButton, 'Update status'), findsOneWidget);
+  });
+
+  testWidgets('O2 responding: Reject report needs a reason (#57)', (tester) async {
+    final api = _FakeApi()
+      ..detail = _json(
+        132,
+        Statuses.submitted,
+        recordType: 'public_submission',
+        dispatch: {
+          'state': 'responding',
+          'responder': {'full_name': 'Rafael Santos'},
+        },
+      );
+    await _pump(tester, const OfficerReportScreen(reportId: 132), api);
+    await tester.tap(find.widgetWithText(RwButton, 'Reject report'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(RwButton, 'Reject report').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Give a reason (3 characters or more).'), findsOneWidget);
+    expect(api.rejectedWith, isNull);
+    await tester.enterText(find.byType(TextField).last, 'No accident at this spot.');
+    await tester.tap(find.widgetWithText(RwButton, 'Reject report').last);
+    await tester.pumpAndSettle();
+    expect(api.rejectedWith, 'No accident at this spot.');
+    expect(find.text('Report rejected'), findsOneWidget);
+  });
+
+  testWidgets('The ApiException flags ALREADY_TAKEN and carries the responder name', (tester) async {
+    const e = ApiException(
+      kind: ApiErrorKind.conflict,
+      message: 'Liza Manalo responded first.',
+      code: 'ALREADY_TAKEN',
+      fieldErrors: {
+        'responder_name': ['Liza Manalo'],
+      },
+    );
+    expect(e.isAlreadyTaken, isTrue);
+    expect(e.fieldError('responder_name'), 'Liza Manalo');
+  });
+
+  testWidgets('Assigned has a Guide button that starts a text tour (#56)', (tester) async {
+    final api = _FakeApi()..assigned = [Report.fromJson(_json(128, Statuses.assigned))];
+    await _pump(tester, const Scaffold(body: AssignedTab()), api);
+    await tester.tap(find.bySemanticsLabel('Guide'));
+    await tester.pumpAndSettle();
+    expect(find.text('STEP 1 OF 4'), findsOneWidget);
+    expect(find.text('On duty'), findsNWidgets(2));
+    await tester.tap(find.widgetWithText(RwButton, 'Next'));
+    await tester.pumpAndSettle();
+    expect(find.text('STEP 2 OF 4'), findsOneWidget);
+    expect(find.text('Filter by status'), findsNWidgets(2));
+    await tester.tap(find.widgetWithText(RwButton, 'Back'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(RwButton, 'Close'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('STEP '), findsNothing);
   });
 
   group('screenshots', () {
@@ -372,6 +604,68 @@ void main() {
           notifications: alerts,
         );
         await shot(tester, 'o5_notifications');
+      });
+      // v1.2.0 (#54, #56, #57; Figma 537:4741, 537:4936, 537:5070, 543:32820)
+      _FakeApi v12() => _FakeApi()
+        ..onDuty = true
+        ..assigned = [
+          Report.fromJson(_json(128, Statuses.assigned, priority: 'High')),
+          Report.fromJson(
+            _json(119, Statuses.additionalInfo, type: 'Pedestrian accident', priority: 'Urgent'),
+          ),
+          Report.fromJson(_json(124, Statuses.inProgress, type: 'Hit-and-run', priority: 'Medium')),
+        ]
+        ..detail = _json(
+          132,
+          Statuses.submitted,
+          type: 'Collision',
+          priority: 'Urgent',
+          recordType: 'public_submission',
+          dispatch: {
+            'state': 'responding',
+            'responded_at': '2026-10-30T01:14:00Z',
+            'distance_km': 1.2,
+            'responder': {'full_name': 'Rafael Santos'},
+          },
+        );
+      testWidgets('v12 O1 duty priority $mode', skip: skip, (tester) async {
+        await _pump(tester, const HomeShell(), v12(), size: const Size(360, 800), theme: theme());
+        await shot(tester, 'v12_o1_duty_priority');
+      });
+      testWidgets('v12 alert sheet $mode', skip: skip, (tester) async {
+        await _pump(tester, const HomeShell(), v12(), size: const Size(360, 800), theme: theme());
+        showNearbyAlertSheet(tester.element(find.byType(AssignedTab)), _alert);
+        await tester.pumpAndSettle();
+        await shot(tester, 'v12_alert_sheet');
+      });
+      testWidgets('v12 O2 responding $mode', skip: skip, (tester) async {
+        await _pump(
+          tester,
+          const OfficerReportScreen(reportId: 132),
+          v12(),
+          size: const Size(360, 1000),
+          theme: theme(),
+        );
+        await shot(tester, 'v12_o2_responding');
+      });
+      testWidgets('v12 guide $mode', skip: skip, (tester) async {
+        await _pump(tester, const HomeShell(), v12(), size: const Size(360, 800), theme: theme());
+        await tester.tap(find.bySemanticsLabel('Guide'));
+        await tester.pumpAndSettle();
+        await shot(tester, 'v12_guide');
+      });
+      testWidgets('v12 accessibility $mode', skip: skip, (tester) async {
+        await _pump(
+          tester,
+          const HomeShell(initialTab: RwTab.settings),
+          v12(),
+          size: const Size(360, 800),
+          theme: theme(),
+        );
+        await tester.scrollUntilVisible(find.text('Guide, Read aloud and captions'), 300);
+        await tester.tap(find.text('Guide, Read aloud and captions'));
+        await tester.pumpAndSettle();
+        await shot(tester, 'v12_accessibility');
       });
       testWidgets('O6 settings $mode', skip: skip, (tester) async {
         await _pump(

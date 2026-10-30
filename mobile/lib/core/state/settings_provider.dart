@@ -28,6 +28,11 @@ class SettingsProvider extends ChangeNotifier {
   static const _kAlertStatus = 'rw.alerts.statusChanges';
   static const _kAlertInfo = 'rw.alerts.infoRequests';
   static const _kAlertAssignments = 'rw.alerts.newAssignments';
+  static const _kReadAloud = 'rw.guide.readAloud';
+  static const _kReadingSpeed = 'rw.guide.readingSpeed';
+
+  /// Reading speeds for the guide's Read aloud (#56), shown as "0.75×", "1×", "1.25×".
+  static const readingSpeeds = [0.75, 1.0, 1.25];
 
   ThemeMode _themeMode = ThemeMode.system;
   AppLanguage _language = AppLanguage.english;
@@ -35,6 +40,8 @@ class SettingsProvider extends ChangeNotifier {
   bool _alertStatusChanges = true;
   bool _alertInfoRequests = true;
   bool _alertNewAssignments = true;
+  bool _readAloud = false;
+  double _readingSpeed = 1.0;
 
   /// System (default), Light or Dark.
   ThemeMode get themeMode => _themeMode;
@@ -47,6 +54,10 @@ class SettingsProvider extends ChangeNotifier {
 
   /// Officers: show "assigned to you" alerts (O6).
   bool get alertNewAssignments => _alertNewAssignments;
+
+  /// Accessibility guide (#56): speak each step as the officer or reporter moves through it. Off by default.
+  bool get readAloud => _readAloud;
+  double get readingSpeed => _readingSpeed;
 
   /// Whether animations should be reduced, combining the stored choice with the OS setting.
   bool reduceMotion(BuildContext context) =>
@@ -63,6 +74,9 @@ class SettingsProvider extends ChangeNotifier {
       _alertStatusChanges = await _prefs.getBool(_kAlertStatus) ?? true;
       _alertInfoRequests = await _prefs.getBool(_kAlertInfo) ?? true;
       _alertNewAssignments = await _prefs.getBool(_kAlertAssignments) ?? true;
+      _readAloud = await _prefs.getBool(_kReadAloud) ?? false;
+      final speed = await _prefs.getDouble(_kReadingSpeed);
+      _readingSpeed = readingSpeeds.contains(speed) ? speed! : 1.0;
     } catch (_) {
       // Storage unavailable: keep defaults.
     }
@@ -103,6 +117,18 @@ class SettingsProvider extends ChangeNotifier {
     _alertNewAssignments = value;
     notifyListeners();
     await _save(() => _prefs.setBool(_kAlertAssignments, value));
+  }
+
+  Future<void> setReadAloud(bool value) async {
+    _readAloud = value;
+    notifyListeners();
+    await _save(() => _prefs.setBool(_kReadAloud, value));
+  }
+
+  Future<void> setReadingSpeed(double value) async {
+    _readingSpeed = value;
+    notifyListeners();
+    await _save(() => _prefs.setDouble(_kReadingSpeed, value));
   }
 
   Future<void> _save(Future<void> Function() write) async {

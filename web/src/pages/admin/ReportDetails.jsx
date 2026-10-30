@@ -10,6 +10,8 @@ import {
   IconButton,
   MapView,
   PhotoViewerDialog,
+  PRIORITIES,
+  PriorityChip,
   RecordBadge,
   Select,
   Skeleton,
@@ -19,17 +21,24 @@ import {
   TimelineItem,
   Toast,
 } from '../../components/ui';
-import { admin, users } from '../../api/endpoints';
+import { admin, officer, users } from '../../api/endpoints';
 import useServerError from '../../lib/useServerError';
-import { ADMIN_STATUSES, INJURY_OPTIONS, ROLES } from '../../lib/constants';
+import { ADMIN_STATUSES, INJURY_OPTIONS, OFFICER_STATUSES, ROLES } from '../../lib/constants';
 import { formatDate, formatDateTime, reportCode } from '../../lib/format';
 import { cx } from '../../lib/cx';
+import { dispatchTag } from '../../lib/dispatch';
 
-// W4 Report details (Figma 125:1372, 131:4011 at 390 px). Administrator only (#36): verify / reject,
-// then assign an officer (assigning is locked until Verified, #30). Officers update reports in the mobile app.
+// W4 Report details (Figma 125:1372, 131:4011 at 390 px).
+// mode="admin": verify / reject, then assign an officer (assigning is locked until Verified, #30).
+// mode="officer" (#52, Figma 465:18086, saved 465:18164): the Traffic Officer web portal; update the
+// investigation status and/or add official remarks on a report assigned to you.
 // Below 1024 px the action panels move into dialogs opened from a bottom action bar.
 // Full screen (#46): the map's Expand button opens W4/Overlay/Full-screen map (410:17163); the main
 // photo opens the photo viewer (410:17126).
+// Priority (#54, Figma 533:24612 automatic, 533:25357 set by admin): chip in the header for staff; the admin
+// changes it in the Priority card (officers see it but can't change it).
+// Nearby officer (#57): an officer who took the report from a nearby alert confirms it on scene or rejects it
+// (Figma O2 537:5070) before any other update.
 
 // ---------- small helpers ----------
 
@@ -83,9 +92,10 @@ const CAN_REASSIGN_BLOCKED = ['Rejected', 'Resolved/Closed'];
 
 // ---------- layout pieces ----------
 
-function Card({ title, titleId, icon, action, className = '', children }) {
+function Card({ title, titleId, icon, action, className = '', children, guide }) {
   return (
     <section
+      data-guide={guide}
       aria-labelledby={titleId}
       className={cx(
         'flex min-w-0 flex-col gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-6',
@@ -117,30 +127,36 @@ function Detail({ label, children, className = '' }) {
 
 // ---------- sections ----------
 
-function HeaderCard({ report }) {
+function HeaderCard({ report, mode }) {
   const officerName = report.assignedOfficer?.full_name;
   let extra = '';
   if (officerName) extra = ` · Assigned to Officer ${shortName(officerName)}`;
   else if (report.report_status === 'Verified') extra = ' · Verified, no officer assigned yet';
+  const tag = dispatchTag(report);
 
   return (
     <section
+      data-guide="report-header"
       aria-labelledby="report-title"
       className="flex flex-col gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-6"
     >
-      <p className="type-overline uppercase text-text-blue">Report</p>
+      <p className="type-overline uppercase text-text-blue">
+        {mode === 'officer' ? 'Report · Assigned to you' : 'Report'}
+      </p>
       <h1 id="report-title" className="type-h1 break-words text-text-primary">
         {reportCode(report.report_id)}
         {report.accidentType?.type_name ? ` · ${report.accidentType.type_name}` : ''}
       </h1>
       <div className="flex flex-wrap items-center gap-2">
         <StatusChip status={report.report_status} />
+        {report.priority && <PriorityChip priority={report.priority} />}
         <RecordBadge type={report.record_type} />
       </div>
       <p className="type-body-sm text-text-muted">
         Submitted {formatDateTime(report.date_submitted)}
         {extra}
       </p>
+      {tag && <p className={cx('type-body-sm', tag.tone)}>{tag.text}</p>}
     </section>
   );
 }
@@ -291,7 +307,7 @@ function PhotoViewer({ report }) {
   );
 }
 
-function ReporterCard({ report }) {
+function ReporterCard({ report, mode }) {
   const [shown, setShown] = useState(false);
   const r = report.reporter;
   const rows = [
@@ -302,7 +318,9 @@ function ReporterCard({ report }) {
   return (
     <Card title="Reporter" titleId="reporter-title" icon="lock">
       <p className="type-body-sm text-text-muted">
-        Visible only to administrators and the officer assigned to this report.
+        {mode === 'officer'
+          ? 'You can see this because the report is assigned to you.'
+          : 'Visible only to administrators and the officer assigned to this report.'}
       </p>
       <dl id="reporter-contact" className="flex flex-col gap-4">
         {rows.map((row) => (
@@ -334,7 +352,7 @@ function HistoryCard({ report }) {
     (a, b) => new Date(b.changed_at) - new Date(a.changed_at) || b.history_id - a.history_id,
   );
   return (
-    <Card title="Status history" titleId="history-title">
+    <Card title="Status history" titleId="history-title" guide="history">
       {history.length === 0 ? (
         <p className="type-body-sm text-text-muted">No status changes yet.</p>
       ) : (
@@ -605,35 +623,279 @@ function AdminStatusForm({ report, onSaved }) {
   );
 }
 
+function OfficerForm({ report, onSaved }) {
+  const current = report.report_status;
+  const [status, setStatus] = useState(OFFICER_STATUSES.includes(current) ? current : '');
+  const [remarks, setRemarks] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  // Rejected stays with the administrator (#44); Resolved/Closed needs no more updates.
+  const closed = current === 'Resolved/Closed' || current === 'Rejected';
+
+  const submit = async (event) => {
+    event.preventDefault();
+    const changed = status && status !== current;
+    if (!changed && !remarks.trim()) {
+      setError('Choose a new status or write remarks.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const body = {};
+      if (changed) body.status = status;
+      if (remarks.trim()) body.remarks = remarks.trim();
+      const updated = await officer.update(report.report_id, body);
+      setRemarks('');
+      onSaved(updated, {
+        title: 'Update saved',
+        body: changed
+          ? `Status is now ${status}. The reporter and the admin were notified.`
+          : 'Your remarks were saved to the report.',
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+      <Select
+        label="Status"
+        value={status}
+        disabled={closed}
+        placeholder={`Keep current (${current})`}
+        onChange={(e) => {
+          setStatus(e.target.value);
+          setError('');
+        }}
+        options={OFFICER_STATUSES.map((s) => ({ value: s, label: s }))}
+        helper="Officers can set In Progress, Additional Information Required and Resolved/Closed. Only an administrator verifies, assigns or rejects."
+      />
+      <Textarea
+        label="Official remarks"
+        optional
+        rows={4}
+        disabled={closed}
+        placeholder="e.g. Spoke with both drivers on site."
+        value={remarks}
+        onChange={(e) => {
+          setRemarks(e.target.value);
+          setError('');
+        }}
+        error={error || undefined}
+      />
+      <Button type="submit" fullWidth disabled={busy || closed}>
+        {busy ? 'Saving…' : 'Save update'}
+      </Button>
+      <p className="type-body-sm text-text-muted">
+        {current === 'Rejected'
+          ? 'An administrator rejected this report. Only an administrator can reopen it.'
+          : closed
+            ? `This report is ${current}; no further updates are needed.`
+            : 'Send a status, remarks, or both. Officers cannot verify, assign or reject.'}
+      </p>
+    </form>
+  );
+}
+
+const INJURY_PHRASE = {
+  none: 'no injuries',
+  injuries: 'with injuries',
+  fatalities: 'with fatalities',
+  unknown: 'injuries unknown',
+};
+
+// "Auto · Collision with injuries" or "Set by admin · was High".
+function prioritySource(report) {
+  if (report.priority_source === 'admin') return `Set by admin · was ${report.priority_auto}`;
+  const type = report.accidentType?.type_name || 'Accident';
+  const injury = INJURY_PHRASE[report.injury_information] || '';
+  return `Auto · ${type}${injury.startsWith('with') ? ' ' : ', '}${injury}`;
+}
+
+// Priority card (#54): the administrator overrides the automatic priority or goes back to it. Logged.
+function PriorityForm({ report, onSaved }) {
+  const [value, setValue] = useState(report.priority);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const overridden = report.priority_source === 'admin';
+  const changed = value !== report.priority;
+  const code = reportCode(report.report_id);
+
+  const save = async (priority) => {
+    setBusy(true);
+    setError('');
+    try {
+      const updated = await admin.setPriority(report.report_id, priority);
+      onSaved(updated, {
+        title: 'Priority saved',
+        body:
+          priority === null
+            ? `${code} is back to its automatic priority: ${updated.priority}.`
+            : `${code} is now ${updated.priority} priority. Saved to the action log.`,
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form
+      noValidate
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (changed) save(value);
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <PriorityChip priority={report.priority} />
+        <span className="type-body-sm text-text-muted">{prioritySource(report)}</span>
+      </div>
+      <p className="type-body-sm text-text-muted">
+        {overridden
+          ? 'Changed by an administrator and saved to the action log. Back to automatic uses the accident type and injuries again.'
+          : 'Set automatically from the accident type and injuries. Change it if the scene needs a faster or slower response; officers see it but can’t change it.'}
+      </p>
+      <Select
+        label="Change priority"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setError('');
+        }}
+        options={PRIORITIES.map((p) => ({ value: p, label: p === report.priority_auto ? `${p} (automatic)` : p }))}
+        helper="Low, Medium, High or Urgent"
+      />
+      {error && (
+        <p role="alert" className="flex items-start gap-2 type-body-sm text-text-danger">
+          <Icon name="alert-circle" size={16} className="mt-0.5" />
+          {error}
+        </p>
+      )}
+      {overridden && !changed ? (
+        <Button variant="secondary" icon="refresh" fullWidth disabled={busy} onClick={() => save(null)}>
+          {busy ? 'Saving…' : 'Back to automatic'}
+        </Button>
+      ) : (
+        <Button type="submit" variant="secondary" icon="check" fullWidth disabled={!changed || busy}>
+          {busy ? 'Saving…' : 'Save priority'}
+        </Button>
+      )}
+    </form>
+  );
+}
+
+// "You're responding" (#57, Figma O2 537:5070): the officer who took a nearby alert confirms the accident on scene
+// (it becomes an official record and In Progress) or rejects the report with a reason.
+function RespondingPanel({ report, onSaved }) {
+  const [dialog, setDialog] = useState(null); // 'confirm' | 'reject'
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const code = reportCode(report.report_id);
+  const d = report.dispatch;
+  const when = d?.responded_at ? new Date(d.responded_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+
+  const run = async (action, message) => {
+    setBusy(true);
+    setError('');
+    try {
+      const updated = await action();
+      setDialog(null);
+      onSaved(updated, message);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div data-guide="officer-actions" className="flex flex-col gap-3 rounded-rw-md bg-surface-amber-subtle p-4">
+      <h2 className="type-h3 text-text-primary">You’re responding</h2>
+      <p className="type-body text-text-primary">
+        Responded {when}
+        {d?.distance_km != null ? ` · ${d.distance_km} km away` : ''}. When you arrive, confirm the accident to make it an
+        official record, or reject the report with a reason.
+      </p>
+      <Button icon="shield-check" fullWidth onClick={() => setDialog('confirm')}>
+        Confirm on scene
+      </Button>
+      <Button variant="destructive" icon="x-circle" fullWidth onClick={() => setDialog('reject')}>
+        Reject report
+      </Button>
+      <ConfirmDialog
+        open={dialog === 'confirm'}
+        onClose={() => setDialog(null)}
+        title={`Confirm ${code} on scene?`}
+        description="The report becomes an official (verified) record and its status changes to In Progress. The reporter is notified."
+        confirmLabel="Confirm on scene"
+        confirmIcon="shield-check"
+        busy={busy}
+        error={dialog === 'confirm' ? error : undefined}
+        onConfirm={() =>
+          run(() => officer.confirmOnScene(report.report_id, {}), {
+            title: 'Confirmed on scene',
+            body: `${code} is now a Verified record and In Progress. The reporter was notified.`,
+          })
+        }
+      />
+      <ConfirmDialog
+        open={dialog === 'reject'}
+        onClose={() => setDialog(null)}
+        title={`Reject report ${code}?`}
+        description="The reporter sees this reason. The administrator sees the report flagged “Rejected on scene” and can reopen it."
+        confirmLabel="Reject report"
+        tone="destructive"
+        reason={{ label: 'Rejection reason', placeholder: 'e.g. No accident at this spot; the road is clear.', minLength: 3 }}
+        busy={busy}
+        error={dialog === 'reject' ? error : undefined}
+        onConfirm={(reason) =>
+          run(() => officer.rejectOnScene(report.report_id, { rejection_reason: reason }), {
+            title: 'Report rejected',
+            body: `${code} was rejected on scene. The reporter and the administrator were told.`,
+          })
+        }
+      />
+    </div>
+  );
+}
+
 // ---------- page ----------
 
-export default function ReportDetails() {
+export default function ReportDetails({ mode = 'admin' }) {
   const { id } = useParams();
+  const isAdmin = mode === 'admin';
   const [report, setReport] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [officers, setOfficers] = useState([]);
   const [officersError, setOfficersError] = useState('');
   const [toast, setToast] = useState(null);
-  const [sheet, setSheet] = useState(null); // mobile dialog: 'assign' | 'status'
+  const [sheet, setSheet] = useState(null); // mobile dialog: 'assign' | 'status' | 'officer'
   const raiseServerError = useServerError();
 
   const load = useCallback(() => {
     setLoadError(null);
     setReport(null);
-    admin
-      .get(id)
+    (isAdmin ? admin.get(id) : officer.get(id))
       .then(setReport)
       .catch((err) => !raiseServerError(err) && setLoadError(err));
-  }, [id, raiseServerError]);
+  }, [id, isAdmin, raiseServerError]);
 
   useEffect(load, [load]);
 
   useEffect(() => {
+    if (!isAdmin) return;
     users
       .list({ role: ROLES.OFFICER })
       .then((list) => setOfficers((list || []).filter((u) => u.is_active)))
       .catch(() => setOfficersError('Could not load the officer list. Reload the page to try again.'));
-  }, []);
+  }, [isAdmin]);
 
   const onSaved = (updated, message) => {
     setReport(updated);
@@ -642,8 +904,8 @@ export default function ReportDetails() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const backTo = '/admin/reports';
-  const backLabel = 'Reports';
+  const backTo = isAdmin ? '/admin/reports' : '/officer';
+  const backLabel = isAdmin ? 'Reports' : 'Assigned to me';
 
   const shell = (children) => (
     <div className="flex flex-col gap-6 px-4 py-6 pb-28 sm:px-6 lg:px-10 lg:py-8 lg:pb-8">
@@ -665,7 +927,11 @@ export default function ReportDetails() {
         type={notFound ? 'no-results' : 'error'}
         title={notFound ? 'Report not found' : 'Could not load this report'}
         description={
-          notFound ? 'It may have been removed, or the link is wrong.' : loadError.message
+          notFound
+            ? isAdmin
+              ? 'It may have been removed, or the link is wrong.'
+              : 'It is not assigned to you, or the link is wrong.'
+            : loadError.message
         }
         action={
           notFound ? (
@@ -695,13 +961,27 @@ export default function ReportDetails() {
   const showReporter = Boolean(report.reporter?.contact_email);
 
   const assignCard = (
-    <Card title="Assign officer" titleId="assign-title">
+    <Card title="Assign officer" titleId="assign-title" guide="assign">
       <AssignForm key={report.report_status} report={report} officers={officers} officersError={officersError} onSaved={onSaved} />
     </Card>
   );
   const statusCard = (
-    <Card title="Update status" titleId="status-title">
+    <Card title="Update status" titleId="status-title" guide="status">
       <AdminStatusForm key={report.report_status} report={report} onSaved={onSaved} />
+    </Card>
+  );
+  const priorityCard = (
+    <Card title="Priority" titleId="priority-title" guide="priority">
+      <PriorityForm key={`${report.priority}-${report.priority_source}`} report={report} onSaved={onSaved} />
+    </Card>
+  );
+  // A report taken from a nearby alert waits for Confirm on scene or Reject (#57).
+  const responding = !isAdmin && report.dispatch?.state === 'responding';
+  const officerCard = responding ? (
+    <RespondingPanel report={report} onSaved={onSaved} />
+  ) : (
+    <Card title="Update investigation" titleId="officer-title" guide="officer-actions">
+      <OfficerForm key={report.report_status} report={report} onSaved={onSaved} />
     </Card>
   );
 
@@ -716,7 +996,7 @@ export default function ReportDetails() {
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         {/* Main column */}
         <div className="flex min-w-0 flex-col gap-6">
-          <HeaderCard report={report} />
+          <HeaderCard report={report} mode={mode} />
           <DetailsCard report={report} />
           <LocationCard report={report} />
           <PhotoViewer key={report.report_id} report={report} />
@@ -724,11 +1004,20 @@ export default function ReportDetails() {
 
         {/* Side column: restricted reporter info, actions, history */}
         <div className="flex min-w-0 flex-col gap-6">
-          {showReporter && <ReporterCard report={report} />}
+          {showReporter && <ReporterCard report={report} mode={mode} />}
+          {/* Priority stays inline at every width: it is short and the admin needs it while reading the report. */}
+          {isAdmin && <div className="lg:hidden">{priorityCard}</div>}
           {/* Action panels inline from 1024 px; below that they open from the bottom bar. */}
           <div className="hidden flex-col gap-6 lg:flex">
-            {assignCard}
-            {statusCard}
+            {isAdmin ? (
+              <>
+                {priorityCard}
+                {assignCard}
+                {statusCard}
+              </>
+            ) : (
+              officerCard
+            )}
           </div>
           <HistoryCard report={report} />
         </div>
@@ -736,12 +1025,20 @@ export default function ReportDetails() {
 
       {/* Mobile action bar (Figma 131:4011) */}
       <div className="fixed inset-x-0 bottom-0 z-[1000] flex gap-3 border-t border-border-subtle bg-surface-white px-4 py-3 shadow-rw-lg lg:hidden">
-        <Button variant="secondary" icon="user-check" className="min-w-0 flex-1 px-3" onClick={() => setSheet('assign')}>
-          Assign officer
-        </Button>
-        <Button icon="pencil" className="min-w-0 flex-1 px-3" onClick={() => setSheet('status')}>
-          Update status
-        </Button>
+        {isAdmin ? (
+          <>
+            <Button variant="secondary" icon="user-check" className="min-w-0 flex-1 px-3" onClick={() => setSheet('assign')}>
+              Assign officer
+            </Button>
+            <Button icon="pencil" className="min-w-0 flex-1 px-3" onClick={() => setSheet('status')}>
+              Update status
+            </Button>
+          </>
+        ) : (
+          <Button icon={responding ? 'shield-check' : 'pencil'} fullWidth onClick={() => setSheet('officer')}>
+            {responding ? 'Confirm or reject' : 'Update investigation'}
+          </Button>
+        )}
       </div>
 
       <Dialog open={sheet === 'assign'} onClose={() => setSheet(null)} title="Assign officer">
@@ -752,6 +1049,16 @@ export default function ReportDetails() {
       </Dialog>
       <Dialog open={sheet === 'status'} onClose={() => setSheet(null)} title="Update status">
         <AdminStatusForm key={report.report_status} report={report} onSaved={onSaved} />
+        <Button variant="secondary" fullWidth onClick={() => setSheet(null)}>
+          Close
+        </Button>
+      </Dialog>
+      <Dialog open={sheet === 'officer'} onClose={() => setSheet(null)} title={responding ? 'You’re responding' : 'Update investigation'}>
+        {responding ? (
+          <RespondingPanel report={report} onSaved={onSaved} />
+        ) : (
+          <OfficerForm key={report.report_status} report={report} onSaved={onSaved} />
+        )}
         <Button variant="secondary" fullWidth onClick={() => setSheet(null)}>
           Close
         </Button>

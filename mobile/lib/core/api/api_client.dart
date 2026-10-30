@@ -53,6 +53,8 @@ class ApiClient {
 
   Future<ApiBody> patch(String path, {Object? body}) => _send(() => _dio.patch<dynamic>(path, data: body));
 
+  Future<ApiBody> put(String path, {Object? body}) => _send(() => _dio.put<dynamic>(path, data: body));
+
   Future<ApiBody> _send(Future<Response<dynamic>> Function() call) async {
     try {
       final res = await call();

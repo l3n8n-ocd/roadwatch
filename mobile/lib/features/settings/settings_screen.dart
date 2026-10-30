@@ -148,6 +148,13 @@ class _SettingsTabState extends State<SettingsTab> {
           const _GroupLabel('Accessibility'),
           _Group(
             children: [
+              // #56: the guide (a text tour) with optional Read aloud, and the reading speed.
+              RwSettingsRow.navigation(
+                icon: RwIcons.accessibility,
+                label: 'Accessibility',
+                description: 'Guide, Read aloud and captions',
+                onTap: () => _push(Routes.accessibility),
+              ),
               RwSettingsRow.toggle(
                 icon: RwIcons.sliders,
                 label: 'Reduce motion',
@@ -191,7 +198,7 @@ class _SettingsTabState extends State<SettingsTab> {
               RwSettingsRow.navigation(
                 icon: RwIcons.info,
                 label: 'About RoadWatch',
-                description: 'Version ${AppConfig.appVersion} · IT 305 project',
+                description: 'Version ${AppConfig.appVersion}',
                 onTap: () => _push(Routes.about),
               ),
             ],

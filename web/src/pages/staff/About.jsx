@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Icon, Logo } from '../../components/ui';
+import { BuiltWith, Icon, Logo } from '../../components/ui';
 import { publicApi } from '../../api/endpoints';
 import { useAuth } from '../../context/AuthContext';
-import { initials } from '../../lib/cx';
+import { TEAM } from '../../lib/team';
 
 // W9 About (Figma 212:5577): product description, version, live server status (GET /health),
-// privacy summary, team, stack and credits. Opened from the user menu (#27).
+// privacy summary, team (photos, #48), Built with logos (#49) and credits. Opened from the user menu (#27);
+// Administrators at /admin/about, Traffic Officers at /officer/about (#52).
 
-// Shown as "1.0.0 (web) · Oct 2026". Update with each release tag (v*).
-const APP_VERSION = '1.0.0';
+// Shown as "1.2.0 (web) · Oct 2026". Update with each release tag (v*).
+const APP_VERSION = '1.2.0';
 const RELEASE_MONTH = 'Oct 2026';
 
 const PRIVACY = [
@@ -16,21 +17,6 @@ const PRIVACY = [
   'Every status change and important admin action is recorded in the audit trail. You can see your own entries in Action log.',
   'Passwords are stored hashed. RoadWatch never shows or emails them.',
   'Photos are stored on Cloudinary; only their links are kept in the database.',
-];
-
-const TEAM = [
-  { name: 'Lenon Adriano', role: 'Project Leader · Front-End (Mobile)' },
-  { name: 'Pauline Lapuz', role: 'QA Testing · Front-End (Web)' },
-  { name: 'Carl Ernest Santos', role: 'Back-End and Database' },
-  { name: 'Princess Lorellyn Isip', role: 'Documentation Lead' },
-];
-
-const BUILT_WITH = [
-  ['Web', 'React, Vite and Tailwind CSS'],
-  ['Mobile', 'Flutter (Android APK)'],
-  ['API', 'Node.js and Express'],
-  ['Database', 'MySQL'],
-  ['Maps', 'OpenStreetMap with Leaflet and flutter_map'],
 ];
 
 const CREDITS = [
@@ -172,33 +158,25 @@ export default function About() {
           <ul className="flex flex-col gap-3">
             {TEAM.map((member) => (
               <li key={member.name} className="flex items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-navy-subtle type-label text-text-primary"
-                >
-                  {initials(member.name)}
-                </span>
+                <img src={member.photo} alt="" className="size-10 shrink-0 rounded-full bg-surface-navy-subtle object-cover" />
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <span className="type-label text-text-primary">{member.name}</span>
-                  <span className="type-body-sm text-text-muted">{member.role}</span>
+                  <span className="type-body-sm text-text-muted">{member.title}</span>
                 </span>
               </li>
             ))}
           </ul>
-          <p className="type-body-sm text-text-muted">
-            IT 305 Advance Web Development · BSIT 3I-G1 · College of Information and Communications Technology, Bulacan
-            State University
-          </p>
+          <p className="type-body-sm text-text-muted">The RoadWatch product team.</p>
         </section>
 
-        <section aria-labelledby="built-title" className={card}>
+        <section aria-labelledby="built-title" className={`${card} lg:col-span-2`}>
           <h2 id="built-title" className="type-h3 text-text-primary">
             Built with
           </h2>
-          <TermList items={BUILT_WITH} />
+          <BuiltWith />
         </section>
 
-        <section aria-labelledby="credits-title" className={card}>
+        <section aria-labelledby="credits-title" className={`${card} lg:col-span-2`}>
           <h2 id="credits-title" className="type-h3 text-text-primary">
             Credits and licences
           </h2>

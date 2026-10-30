@@ -8,9 +8,10 @@ import { cx } from '../../lib/cx';
 // Responsive (below lg): 64 px with a menu button that opens the sidebar drawer, then the Logo.
 // breadcrumbs: [{ label, to? }] (the last one is the current page).
 // children: the right-hand actions (theme switch, user menu, Log out...).
-export default function TopBarWeb({ breadcrumbs = [], onOpenMenu, menuOpen = false, homeTo = '/', children, className = '' }) {
+export default function TopBarWeb({ breadcrumbs = [], onOpenMenu, menuOpen = false, homeTo = '/', children, className = '', ...rest }) {
   return (
     <header
+      {...rest}
       className={cx(
         'flex h-16 items-center gap-2 border-b border-border-subtle bg-surface-white px-2 lg:h-18 lg:gap-3 lg:px-10',
         className,
@@ -26,7 +27,8 @@ export default function TopBarWeb({ breadcrumbs = [], onOpenMenu, menuOpen = fal
         />
       )}
       <Link to={homeTo} className="rounded-rw-md lg:hidden">
-        <Logo />
+        {/* Below 420 px only the emblem tile shows, so an officer's bell and avatar still fit at 390 px. */}
+        <Logo className="max-[419px]:[&>span:last-child]:hidden" />
       </Link>
 
       <nav aria-label="Breadcrumb" className="hidden min-w-0 lg:block">

@@ -5,6 +5,7 @@ import '../format.dart';
 import '../theme/tokens.dart';
 import 'rw_icon.dart';
 import 'rw_pressable.dart';
+import 'rw_priority_chip.dart';
 import 'rw_status_chip.dart';
 
 /// Figma "Report card" (99:348): report code + status chip, accident type, location, date and time.
@@ -17,6 +18,7 @@ class RwReportCard extends StatelessWidget {
     required this.location,
     required this.dateTimeLabel,
     required this.status,
+    this.priority,
     this.onTap,
   });
 
@@ -26,7 +28,8 @@ class RwReportCard extends StatelessWidget {
       accidentType = report.accidentTypeName ?? 'Accident',
       location = report.location,
       dateTimeLabel = formatAccidentDateTime(report.accidentDate, report.accidentTime),
-      status = report.status;
+      status = report.status,
+      priority = report.priority;
 
   final int reportId;
   final String accidentType;
@@ -35,6 +38,9 @@ class RwReportCard extends StatelessWidget {
   /// For example "Oct 17, 2026 · 08:15".
   final String dateTimeLabel;
   final String status;
+
+  /// Staff only (#54): the API never sends priority to reporters, so their cards have no chip.
+  final String? priority;
   final VoidCallback? onTap;
 
   @override
@@ -43,7 +49,9 @@ class RwReportCard extends StatelessWidget {
     final code = reportCode(reportId);
     return RwPressable(
       onTap: onTap,
-      semanticLabel: 'Report $code, $accidentType, status $status, $location, $dateTimeLabel',
+      semanticLabel:
+          'Report $code, $accidentType, status $status${priority == null ? '' : ', priority $priority'}, '
+          '$location, $dateTimeLabel',
       excludeChildSemantics: true,
       builder: (context, s) => Container(
         width: double.infinity,
@@ -64,6 +72,7 @@ class RwReportCard extends StatelessWidget {
               runSpacing: RwSpace.s8,
               children: [
                 Text(code, style: RwType.label.copyWith(color: c.textMuted)),
+                if (priority != null) RwPriorityChip(priority!),
                 RwStatusChip(status),
               ],
             ),

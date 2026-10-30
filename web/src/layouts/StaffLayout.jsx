@@ -1,28 +1,34 @@
 import { startTransition, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button, ConfirmDialog, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu, useFocusTrap } from '../components/ui';
+import { Button, ConfirmDialog, GuideTour, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu, useFocusTrap } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, homePathFor } from '../lib/constants';
 import { reportCode } from '../lib/format';
+import { guideStepsFor } from '../lib/guideSteps';
 import { DUR, gsap, useGSAP } from '../lib/motion';
 import { ChangePasswordDialog, ContactSupportDialog, EditProfileDialog } from './AccountDialogs';
+import NotificationsBell from './NotificationsBell';
 
-// Staff shell (Figma W2 123:108): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
+// Staff shell for Administrators and Traffic Officers (#52) (Figma W2 123:108, W5 465:18031): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
 // Log out). Below 1024 px the sidebar becomes a drawer opened from the menu button (131:3837).
+// Guide (#56, Figma 543:26679): a text tour of the current page with optional Read aloud.
 
 // Breadcrumb for the current route ("Reports / RW-000128", "Help / About").
 function breadcrumbsFor(pathname) {
   const detail = pathname.match(/^\/admin\/reports\/(\d+)/);
   if (detail) return [{ label: 'Reports', to: '/admin/reports' }, { label: reportCode(detail[1]) }];
+  const assigned = pathname.match(/^\/officer\/reports\/(\d+)/);
+  if (assigned) return [{ label: 'Assigned to me', to: '/officer' }, { label: reportCode(assigned[1]) }];
   const pages = {
     '/admin': 'Dashboard',
     '/admin/reports': 'Reports',
     '/admin/users': 'Users & settings',
     '/admin/summaries': 'Summaries',
+    '/officer': 'Assigned to me',
     '/demo-video': 'Demo video',
   };
   if (pathname === '/action-log') return [{ label: 'Account' }, { label: 'Action log' }];
-  if (pathname === '/admin/about') return [{ label: 'Help' }, { label: 'About' }];
+  if (pathname === '/admin/about' || pathname === '/officer/about') return [{ label: 'Help' }, { label: 'About' }];
   return [{ label: pages[pathname] || 'RoadWatch' }];
 }
 
@@ -39,12 +45,16 @@ export default function StaffLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dialog, setDialog] = useState(null); // 'profile' | 'password' | 'support' | 'logout'
   const [toast, setToast] = useState('');
+  const [guideOpen, setGuideOpen] = useState(false);
   const drawerRef = useRef(null);
 
   useFocusTrap(drawerRef, drawerOpen, () => setDrawerOpen(false));
 
   // Close the drawer when the route changes; hide the toast after a few seconds.
-  useEffect(() => setDrawerOpen(false), [pathname]);
+  useEffect(() => {
+    setDrawerOpen(false);
+    setGuideOpen(false);
+  }, [pathname]);
   useEffect(() => {
     if (!toast) return undefined;
     const timer = setTimeout(() => setToast(''), 5000);
@@ -56,16 +66,17 @@ export default function StaffLayout() {
     setDrawerOpen(false);
     setDialog('logout');
   };
-  // Log out ends on the Administrator sign-in page (issue #41). One transition for both updates, so the route
+  // Log out ends on the staff sign-in page (issue #41). One transition for both updates, so the route
   // guard never sees the signed-out user on an admin page and remembers it as the page to return to.
   const handleLogout = () => {
     setDialog(null);
     startTransition(() => {
       logout();
-      navigate('/staff/sign-in', { replace: true });
+      navigate(user?.role === ROLES.OFFICER ? '/staff/sign-in/officer' : '/staff/sign-in/admin', { replace: true });
     });
   };
 
+  const aboutPath = user?.role === ROLES.OFFICER ? '/officer/about' : '/admin/about';
   const menuGroups = [
     {
       label: 'Account',
@@ -78,8 +89,10 @@ export default function StaffLayout() {
     {
       label: 'Help',
       items: [
+        // On phones the Guide button lives here instead of the top bar (#56).
+        { key: 'guide', label: 'Guide', icon: 'accessibility', onSelect: () => setGuideOpen(true) },
         { key: 'support', label: 'Contact support', icon: 'mail', onSelect: () => setDialog('support') },
-        { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate('/admin/about') },
+        { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate(aboutPath) },
       ],
     },
   ];
@@ -97,7 +110,7 @@ export default function StaffLayout() {
       </a>
 
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen shrink-0 lg:block">
+      <aside data-guide="sidebar" className="sticky top-0 hidden h-screen shrink-0 lg:block">
         <Sidebar role={role} pathname={pathname} />
       </aside>
 
@@ -130,8 +143,21 @@ export default function StaffLayout() {
           menuOpen={drawerOpen}
           homeTo={homePathFor(role)}
           className="sticky top-0 z-[1100]"
+          data-guide="top-bar"
         >
+          <Button
+            variant="secondary"
+            icon="accessibility"
+            aria-pressed={guideOpen}
+            aria-haspopup="dialog"
+            onClick={() => setGuideOpen(true)}
+            className="hidden lg:inline-flex"
+          >
+            Guide
+          </Button>
           <ThemeSwitch />
+          {/* Officers only: administrators get no in-app notifications (Figma top bar "Bell" property). */}
+          {role === ROLES.OFFICER && <NotificationsBell />}
           {/* Full trigger on desktop, avatar only below lg (the drawer has Log out). */}
           <UserMenu user={user} groups={menuGroups} className="hidden lg:block" />
           <UserMenu user={user} groups={menuGroups} compact className="lg:hidden" />
@@ -164,6 +190,8 @@ export default function StaffLayout() {
         confirmLabel="Log out"
         confirmIcon="log-out"
       />
+
+      <GuideTour open={guideOpen} steps={guideStepsFor(pathname, role)} onClose={() => setGuideOpen(false)} />
 
       {toast && (
         <div className="fixed right-4 bottom-4 z-[2500]">

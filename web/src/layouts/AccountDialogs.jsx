@@ -3,6 +3,7 @@ import { Button, Dialog, PasswordField, TextField } from '../components/ui';
 import { auth } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import { HOTLINES } from '../lib/constants';
+import { NOT_STRONG, isStrong } from '../lib/passwordStrength';
 
 // Dialogs opened from the user menu. Edit profile (PATCH /auth/me) and Change password
 // (PATCH /auth/me/password), DECISIONS #25: any API error is shown inline so the user knows
@@ -130,6 +131,8 @@ export function EditProfileDialog({ open, onClose, onSaved }) {
 }
 
 export function ChangePasswordDialog({ open, onClose, onSaved }) {
+  const { user } = useAuth();
+  const person = { name: user?.full_name, email: user?.contact_email };
   const [form, setForm] = useState({ current: '', next: '', confirm: '' });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
@@ -148,7 +151,8 @@ export function ChangePasswordDialog({ open, onClose, onSaved }) {
     event.preventDefault();
     const found = {};
     if (!form.current) found.current = 'Enter your current password.';
-    if (form.next.length < 8) found.next = `Use at least 8 characters (${form.next.length} so far).`;
+    // #44: the new password must be Strong (the API refuses anything else).
+    if (!isStrong(form.next, person)) found.next = NOT_STRONG;
     if (form.confirm !== form.next) found.confirm = "Passwords don't match.";
     setErrors(found);
     if (Object.keys(found).length > 0) return;
@@ -200,8 +204,9 @@ export function ChangePasswordDialog({ open, onClose, onSaved }) {
           autoComplete="new-password"
           value={form.next}
           onChange={update('next')}
-          helper="At least 8 characters."
           error={errors.next}
+          showStrength
+          person={person}
         />
         <PasswordField
           label="Confirm new password"

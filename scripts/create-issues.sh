@@ -43,7 +43,7 @@ gh issue create --title "Log decisions in docs/DECISIONS.md" --milestone "M0 Fou
 **Due:** Oct 14
 
 - [ ] Copy the decisions table from the starter zip
-- [ ] Add the professor follow-up for Oct 16
+- [ ] Add the stakeholder follow-up for Oct 16
 - [ ] Update the file whenever a decision changes
 EOF
 gh issue create --title "Set up the public GitHub repo from the starter zip" --milestone "M1 Foundation (Oct 16)" --label "owner:lenon,phase:1-foundation" --body-file - << 'EOF'
@@ -96,7 +96,7 @@ gh issue create --title "Generate the Vite and Flutter projects" --milestone "M1
 - [ ] Both apps start with an empty screen
 - [ ] Hand the files to Lenon to commit under each author
 EOF
-gh issue create --title "Ask the professor about anonymous reporting" --milestone "M1 Foundation (Oct 16)" --label "owner:princess,phase:1-foundation" --body-file - << 'EOF'
+gh issue create --title "Ask the stakeholders about anonymous reporting" --milestone "M1 Foundation (Oct 16)" --label "owner:princess,phase:1-foundation" --body-file - << 'EOF'
 **Owner:** Princess
 **Due:** Oct 16
 

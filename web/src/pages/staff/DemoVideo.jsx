@@ -1,13 +1,29 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, EmptyState, Icon } from '../../components/ui';
+import { Button, EmptyState, Icon, VideoPlayer } from '../../components/ui';
 import { publicApi } from '../../api/endpoints';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '../../lib/constants';
+import { cx } from '../../lib/cx';
 
-// Demo video (Figma: Playing 127:2829, Coming soon 127:2974). The video lives on Cloudinary and
-// GET /app-info returns its URL (DEMO_VIDEO_URL on Render); it is never bundled into the web app.
-// A native <video controls> gives keyboard, captions (CC) and fullscreen support for free.
-// captionsUrl and transcript are optional extra fields: they show once /app-info provides them.
+// Demo video (#48; Figma: Administrator view 492:21204, Traffic Officer view 492:21788, clip coming soon 493:48058).
+// One 30-second clip per web role, the viewer's own role first. The clips live on Cloudinary and
+// GET /app-info returns their URLs and transcripts; they are never bundled into the web app.
+// The Reporter clip is in the Android app only.
+const CLIPS = {
+  admin: {
+    role: ROLES.ADMIN,
+    title: 'Review, verify and assign a report',
+    description: 'Open a new report, check the photos and map, verify it, then assign a traffic officer.',
+  },
+  officer: {
+    role: ROLES.OFFICER,
+    title: 'Work a case from your queue',
+    description: 'Open an assigned report, set it to In Progress, add remarks, then mark it Resolved/Closed.',
+  },
+};
 
 export default function DemoVideo() {
+  const { user } = useAuth();
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,22 +50,15 @@ export default function DemoVideo() {
 
   useEffect(() => load(), [load]);
 
-  const url = info?.demoVideoUrl;
+  const order = user?.role === ROLES.OFFICER ? ['officer', 'admin'] : ['admin', 'officer'];
 
   let content;
-  if (loading) {
-    content = (
-      <div aria-busy="true" className="w-full max-w-240">
-        <span className="sr-only">Loading the demo video…</span>
-        <div aria-hidden="true" className="aspect-video w-full animate-pulse rounded-rw-md bg-surface-navy-subtle motion-reduce:animate-none" />
-      </div>
-    );
-  } else if (error) {
+  if (error) {
     content = (
       <div className="w-full rounded-rw-md border border-border-subtle bg-surface-white px-6 py-10">
         <EmptyState
           type="error"
-          title="Could not load the video"
+          title="Could not load the videos"
           description={error}
           action={
             <Button variant="secondary" icon="refresh" onClick={load}>
@@ -59,61 +68,68 @@ export default function DemoVideo() {
         />
       </div>
     );
-  } else if (!url) {
-    content = (
-      <div className="w-full rounded-rw-md border border-border-subtle bg-surface-white px-6 py-10 sm:py-16">
-        <EmptyState
-          type="video"
-          title="Video coming soon"
-          description="The team will publish the RoadWatch demo video here before November 2."
-        />
-      </div>
-    );
   } else {
     content = (
-      <>
-        <div className="w-full max-w-240 overflow-hidden rounded-rw-md bg-brand-navy">
-          <video
-            controls
-            preload="metadata"
-            src={url}
-            className="aspect-video w-full bg-brand-navy"
-            aria-label="RoadWatch demo video"
-          >
-            {info.captionsUrl && <track kind="captions" src={info.captionsUrl} srcLang="en" label="English" default />}
-            Your browser cannot play this video. <a href={url}>Download the demo video</a>.
-          </video>
-        </div>
-        <p className="flex max-w-240 items-start gap-2 type-body-sm text-text-muted">
-          <Icon name="info" size={16} className="mt-0.5" />
-          <span>
-            {info.captionsUrl
-              ? 'Turn on captions with the CC button in the player. Space plays or pauses; the arrow keys skip.'
-              : 'Captions are being prepared with the final video. Space plays or pauses; the arrow keys skip.'}
-          </span>
-        </p>
-        {info.transcript && (
-          <details className="group w-full max-w-240 rounded-rw-md border border-border-subtle bg-surface-white p-6">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
-              <span className="min-w-0 flex-1 type-h3 text-text-primary">Transcript</span>
-              <Icon name="chevron-down" size={20} className="transition-transform group-open:rotate-180 motion-reduce:transition-none" />
-            </summary>
-            <p className="mt-4 type-body whitespace-pre-line text-text-primary">{info.transcript}</p>
-          </details>
-        )}
-      </>
+      <div aria-busy={loading || undefined} className="grid w-full items-start gap-6 lg:grid-cols-2">
+        {loading && <span className="sr-only">Loading the demo videos…</span>}
+        {order.map((key) => (
+          <ClipCard key={key} clip={CLIPS[key]} video={info?.demoVideos?.[key]} mine={CLIPS[key].role === user?.role} loading={loading} />
+        ))}
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
       <h1 className="type-h1 text-text-primary">Demo video</h1>
-      {url && (
-        <p className="max-w-240 type-body-lg text-text-muted">
-          A walkthrough of RoadWatch: reporting on mobile, review and assignment on web, and the officer closing a case.
-        </p>
-      )}
+      <p className="max-w-240 type-body-lg text-text-muted">
+        Short clips, 30 seconds each, for the two roles that use the web. Your role comes first. The Android app has the
+        Reporter clip.
+      </p>
       {content}
     </div>
+  );
+}
+
+function Tag({ children, amber = false }) {
+  return (
+    <span
+      className={cx(
+        'inline-flex items-center rounded-full px-2.5 py-1 type-caption text-text-primary',
+        amber ? 'bg-brand-amber' : 'bg-surface-navy-subtle',
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function ClipCard({ clip, video, mine, loading }) {
+  return (
+    <article
+      aria-labelledby={`clip-${clip.role}`}
+      className="flex min-w-0 flex-col gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-6"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <Tag>{clip.role}</Tag>
+        {mine && <Tag amber>Your role</Tag>}
+        <span className="type-body-sm text-text-muted">30 seconds</span>
+      </div>
+      <h2 id={`clip-${clip.role}`} className="type-h3 text-text-primary">
+        {clip.title}
+      </h2>
+      <p className="type-body text-text-muted">{clip.description}</p>
+      {loading ? (
+        <div aria-hidden="true" className="aspect-video w-full animate-pulse rounded-rw-md bg-surface-navy-subtle motion-reduce:animate-none" />
+      ) : video?.url ? (
+        <VideoPlayer src={video.url} label={`${clip.role} demo, 30 seconds`} transcript={video.transcript} />
+      ) : (
+        <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-rw-md bg-surface-navy-subtle p-4 text-center">
+          <Icon name="play-circle" size={32} className="text-text-primary" />
+          <p className="type-label text-text-primary">Clip coming soon</p>
+          <p className="type-body-sm text-text-muted">The team publishes it before November&nbsp;2.</p>
+        </div>
+      )}
+    </article>
   );
 }

@@ -1,7 +1,7 @@
 # mobile/CLAUDE.md: RoadWatch mobile (Flutter, Android)
 
 Project-wide rules live in the root `CLAUDE.md`. This file covers the Flutter app only.
-One app for **Reporters** and **Traffic Officers**; Administrators use the web (#36).
+One app for **Reporters** and **Traffic Officers**; Administrators use the web (#36). Officers can also use the web portal (#52).
 Forgot password (#37): Log in → `Routes.forgotPassword` (public; email, then code + new password; pops `true` and
 Log in shows "Password changed"). Login sends `platform: "mobile"`: the API answers 403 `WRONG_PLATFORM` for Administrators (shown as
 "Use the RoadWatch website"). `HomeShell` picks the tabs from the role: reporters Home, My reports,
@@ -46,6 +46,7 @@ lib/
   features/<area>/           one file per screen; features/report/report_draft.dart holds the 3-step form;
                              features/officer/ = O1 Assigned tab, O2 details + O3 update sheet + O4 toast
 assets/icons/                58 Figma icons as SVG (stroke recolored by RwIcon)
+assets/logos/                Built with logos (#49), SVG/PNG, "-dark" twins for one-color logos
 assets/images/               emblem.png, hero-street.jpg, pnp-seal.png, bfp-seal.png
 assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 ```
@@ -53,7 +54,8 @@ assets/fonts/                Inter 400/500/600, Poppins 700 (bundled TTF, OFL)
 ## Widgets (lib/core/widgets)
 `RwButton` (primary/secondary/destructive, 48 px, `icon`, `loading`), `RwIconButton` (needs
 `semanticLabel`, light/dark tone, `badgeCount`), `RwTextField` / `RwTextarea`, `RwPasswordField` (eye / eye-off,
-"Show password" / "Hide password", #45: use it for every password), `RwTextLink` (underlined 48 px link), `RwSelect<T>`,
+"Show password" / "Hide password", #45: use it for every password; `showStrength` + `strengthName`/`strengthEmail` add
+`RwPasswordStrength` under fields that set a new password, #44, rules in `core/password_strength.dart`, save only when `isStrong`), `RwTextLink` (underlined 48 px link), `RwSelect<T>`,
 `RwDateTimeField.date/.time` (YYYY-MM-DD, HH:MM), `RwStatusChip`, `RwRecordBadge`, `RwReportCard`
 (`.fromReport`), `RwTimelineItem`, `RwPhotoTile`, `RwMap` (OSM + attribution; pin / no pin /
 `locating`; `onExpand` adds the Expand map button, #46), `RwFullScreenMap` (`.show` read-only with address and optional
@@ -62,9 +64,19 @@ Open in Maps; `.pick` = M3 "Move the pin", returns the LatLng), `RwToast` + `sho
 `RwSwitch`, `RwSettingsRow` (`.navigation/.toggle/.info/.destructive`), `RwCard`, `RwSectionTitle`, `RwMetaRow`,
 `RwDetailItem`, `RwPhotoViewer.show(urls:, initialIndex:, captions:)` (full-screen gallery: swipe, zoom, no download, #46;
 report detail parts, shared by tracking and officer details), `RwDialog` +
-`showRwConfirmDialog`, `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
+`showRwConfirmDialog`, `RwBuiltWith` (About "Built with" logo tiles, #49; logos in `assets/logos/`, `-dark` twins for dark mode), `RwLogo`, `RwPressable` (base for anything tappable, scales to 98% when pressed).
 Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max 8), `RwPulse` (stops after N),
 `RwDrawIn`, `RwSharedAxisPageTransitionsBuilder` (app.dart). All respect `disableAnimations` (short fades).
+
+## v1.2.0 (#54, #56, #57, DECISIONS #49, #50)
+- `RwPriorityChip` (+ `priorityRank`); `RwReportCard` shows it when the report has a priority (staff only).
+- Officers: `features/officer/nearby_alerts.dart` (`RwOnDutyCard`, `showNearbyAlertSheet`, `showAlreadyTakenSheet`);
+  O1 sends the location and checks `GET /officer/nearby` every 30 s while On duty (the tab stays alive in the IndexedStack);
+  O2 shows "You're responding" (Confirm on scene / Reject report) and hides Update status until then.
+- Guide: `RwGuideTour` / `showRwGuideTour` (steps with GlobalKey targets, Read aloud via `flutter_tts`, speed from
+  `SettingsProvider.readAloud/readingSpeed`); Home (5 steps) and Assigned (4 steps) have a Guide button; Settings >
+  Accessibility (`features/settings/accessibility_screen.dart`, route `Routes.accessibility`) can start it through
+  `rwGuideRequests` -> HomeShell (first tab) -> `rwGuideStart`.
 
 ## Rules
 - Colors only through `RwColors.of(context)`; text styles from `RwType`; spacing `RwSpace`.
@@ -81,4 +93,5 @@ Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max
 - Tracking shows the actor's role, never staff names (officers do see "Maria Cruz (Admin)"). Photos upload
   after the report is created.
 - Officers set only `Statuses.officerChoices` (In Progress, Additional Information Required, Resolved/Closed, #30).
-- Do not bundle the demo video; read `demoVideoUrl` from `GET /api/app-info`.
+- Do not bundle videos; Settings > Demo video reads `demoVideos.reporter` (and `.officer` for officers, shown first) from
+  `GET /api/app-info` (`AppInfo.reporterClip` / `officerClip`, each `VideoClip { url, transcript }`, #48). No URL = "Clip coming soon".

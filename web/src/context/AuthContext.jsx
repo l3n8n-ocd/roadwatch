@@ -18,9 +18,16 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  // Administrators only (#36): the API answers 403 WRONG_PLATFORM for other roles on the web.
-  const login = useCallback(async (email, password) => {
+  // Staff only (#36, #52): the API answers 403 WRONG_PLATFORM for a Reporter on the web.
+  // expectedRoles: the role chosen on the staff sign-in. On a mismatch the token is discarded
+  // and the caller shows the "Wrong role" state (Figma 465:17972).
+  const login = useCallback(async (email, password, expectedRoles) => {
     const res = await auth.login(email, password);
+    if (expectedRoles && !expectedRoles.includes(res.user.role)) {
+      const err = new Error('wrong-role');
+      err.actualRole = res.user.role;
+      throw err;
+    }
     setToken(res.token);
     setUser(res.user);
     return res.user;

@@ -14,129 +14,128 @@
 <marker id="s8795A8" markerWidth="7" markerHeight="7" refX="3" refY="6" orient="auto-start-reverse"><path d="M1 1 L11 6 L1 11 Z" fill="#8795A8"/></marker>
 </defs>
 <rect width="2400" height="1400" fill="#1F2937"/>
-<text x="1200.0" y="100" font-size="76" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">RoadWatch: System Architecture &amp; Hosting Strategy</text>
-<text x="1200.0" y="150" font-size="26" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Updated with the team workflow path: Figma UI/UX (IT 304W) → AWA Web (IT 305W) + MAD Mobile (IT 306W)</text>
-<text x="240" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Design, DevOps &amp; Source</text>
-<text x="790" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Frontend Clients</text>
-<text x="1330" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Backend API Gateway</text>
-<text x="1810" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Databases &amp; Media</text>
-<text x="2200" y="205" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Third-Party &amp; Services</text>
-<rect x="560" y="290" width="460" height="1050" rx="24" fill="#273244" stroke="#273244" stroke-width="2"/>
-<rect x="1620" y="290" width="380" height="1050" rx="24" fill="#273244" stroke="#273244" stroke-width="2"/>
-<rect x="40" y="300" width="400" height="210" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<circle cx="215" cy="345" r="12" fill="#F24E1E"/><circle cx="239" cy="345" r="12" fill="#FF7262"/><circle cx="215" cy="369" r="12" fill="#A259FF"/><circle cx="239" cy="369" r="12" fill="#1ABCFE"/><circle cx="215" cy="393" r="12" fill="#0ACF83"/>
-<text x="285" y="385" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Figma</text>
-<text x="240" y="438" font-size="24" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">UI/UX Design (IT 304W)</text>
-<text x="240" y="470" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">wireframes → prototypes</text>
-<text x="240" y="498" font-size="20" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">design handoff to Web &amp; Mobile</text>
-<rect x="40" y="580" width="400" height="220" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<circle cx="240" cy="640" r="38" fill="#F3F6FA"/><circle cx="240" cy="640" r="22" fill="#1F2937"/>
-<text x="240" y="720" font-size="32" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">GitHub Monorepo</text>
-<text x="240" y="756" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(/api, /web, /mobile,</text>
-<text x="240" y="786" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">/docs)</text>
-<path d="M240 800 L240 880" fill="none" stroke="#8795A8" stroke-width="4" stroke-linejoin="round" marker-end="url(#m8795A8)"/>
-<rect x="40" y="890" width="400" height="360" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<circle cx="215" cy="950" r="14" fill="none" stroke="#3B8EEA" stroke-width="5"/><circle cx="265" cy="975" r="14" fill="none" stroke="#3B8EEA" stroke-width="5"/><circle cx="215" cy="1000" r="14" fill="none" stroke="#3B8EEA" stroke-width="5"/>
-<text x="240" y="1065" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">GitHub Actions</text>
-<text x="240" y="1105" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(CI/CD)</text>
-<text x="240" y="1150" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">api-ci: lint/test</text>
-<text x="240" y="1182" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">web-ci: lint/build</text>
-<text x="240" y="1214" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">mobile-ci: flutter apk build</text>
-<rect x="580" y="310" width="420" height="430" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<rect x="772" y="330" width="46" height="84" rx="8" fill="none" stroke="#C9D3E0" stroke-width="4"/><circle cx="795" cy="402" r="3" fill="#C9D3E0"/>
-<text x="790" y="452" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Mobile App (Lenon)</text>
-<rect x="660" y="466" width="260" height="34" rx="17" fill="#3B2F66" stroke="#A78BFA" stroke-width="2"/>
-<text x="790" y="490" font-size="20" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">MAD · IT 306W · 3I-G1</text>
-<text x="790" y="538" font-size="28" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Flutter + Dart</text>
-<text x="790" y="574" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">dio, flutter_map, geolocator</text>
-<text x="790" y="606" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">image_picker, secure_storage</text>
-<text x="790" y="650" font-size="24" font-weight="bold" fill="#F2C94C" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">■ Built APK (mobile-ci)</text>
-<rect x="580" y="780" width="420" height="540" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<rect x="745" y="805" width="90" height="62" rx="6" fill="none" stroke="#C9D3E0" stroke-width="4"/><rect x="772" y="872" width="36" height="8" fill="#C9D3E0"/>
-<text x="790" y="925" font-size="32" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Web Dashboard (Pauline)</text>
-<rect x="660" y="940" width="260" height="34" rx="17" fill="#3B2F66" stroke="#A78BFA" stroke-width="2"/>
-<text x="790" y="964" font-size="20" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">AWA · IT 305W · 3I-G1</text>
-<text x="790" y="1012" font-size="25" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">React + Vite + Tailwind CSS</text>
-<text x="790" y="1048" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">React Router, Recharts, Leaflet</text>
-<text x="790" y="1080" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(react-leaflet for maps)</text>
-<rect x="650" y="1120" width="280" height="150" rx="18" fill="#35445C" stroke="#5A7090" stroke-width="2"/>
-<text x="790" y="1155" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Hosted on</text>
-<text x="790" y="1195" font-size="32" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Vercel</text>
-<text x="790" y="1235" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">auto-deploy from main</text>
-<rect x="1140.0" y="310" width="380" height="110" rx="18" fill="#35445C" stroke="#5A7090" stroke-width="2"/>
-<path d="M1318 420 L1330 434 L1342 420 Z" fill="#35445C" stroke="#5A7090" stroke-width="2"/>
-<rect x="1319" y="417" width="22" height="6" fill="#35445C"/>
-<text x="1330" y="340" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Hosted on</text>
-<text x="1330" y="372" font-size="28" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Render / Railway</text>
-<text x="1330" y="402" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Free tier sleeps on idle</text>
-<rect x="1120" y="470" width="420" height="590" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<rect x="1270" y="500" width="120" height="38" rx="6" fill="#2F3B4E" stroke="#C9D3E0" stroke-width="3"/><circle cx="1288" cy="519" r="6" fill="#4CC38A"/>
-<rect x="1270" y="546" width="120" height="38" rx="6" fill="#2F3B4E" stroke="#C9D3E0" stroke-width="3"/><circle cx="1288" cy="565" r="6" fill="#4CC38A"/>
-<rect x="1270" y="592" width="120" height="38" rx="6" fill="#2F3B4E" stroke="#C9D3E0" stroke-width="3"/><circle cx="1288" cy="611" r="6" fill="#4CC38A"/>
-<text x="1330" y="680" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Backend</text>
-<text x="1330" y="720" font-size="34" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">REST API (Carl)</text>
-<text x="1330" y="775" font-size="26" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Node.js 20 + Express</text>
-<text x="1330" y="813" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Sequelize / Prisma ORM</text>
-<text x="1330" y="851" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">zod, helmet, cors, /api/app-info</text>
-<text x="1330" y="899" font-size="25" font-weight="bold" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">JWT &amp; Role Middleware</text>
-<text x="1330" y="933" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(reporter, admin, officer)</text>
-<text x="1330" y="981" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">pdfkit + json2csv exports</text>
-<text x="1330" y="1017" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Nodemailer + Resend email</text>
-<rect x="1640.0" y="320" width="340" height="110" rx="18" fill="#35445C" stroke="#5A7090" stroke-width="2"/>
-<path d="M1798 430 L1810 444 L1822 430 Z" fill="#35445C" stroke="#5A7090" stroke-width="2"/>
-<rect x="1799" y="427" width="22" height="6" fill="#35445C"/>
-<text x="1810" y="350" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Hosted on</text>
-<text x="1810" y="382" font-size="28" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Aiven (MySQL)</text>
-<text x="1810" y="412" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(Free Tier)</text>
-<rect x="1640" y="470" width="340" height="350" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<ellipse cx="1810" cy="515" rx="50" ry="16" fill="#3B7DD8"/><rect x="1760" y="515" width="100" height="70" fill="#2F6BBF"/><ellipse cx="1810" cy="585" rx="50" ry="16" fill="#2F6BBF"/><ellipse cx="1810" cy="515" rx="50" ry="16" fill="#5BA3F0"/>
-<text x="1810" y="650" font-size="30" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Managed MySQL DB</text>
-<text x="1810" y="690" font-size="23" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">users, roles, reports,</text>
-<text x="1810" y="720" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">report_photos, status_history,</text>
-<text x="1810" y="750" font-size="23" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">notifications, audit_logs, </text>
-<text x="1810" y="780" font-size="23" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">accident_types</text>
-<rect x="1640" y="900" width="340" height="360" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<ellipse cx="1810" cy="965" rx="60" ry="30" fill="#3B8EEA"/><circle cx="1770" cy="975" r="30" fill="#3B8EEA"/><circle cx="1845" cy="975" r="28" fill="#3B8EEA"/><rect x="1785" y="960" width="55" height="40" rx="4" fill="#F3F6FA"/>
-<text x="1810" y="1060" font-size="32" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Cloudinary</text>
-<text x="1810" y="1100" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Image uploads (multer)</text>
-<text x="1810" y="1132" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Stores only URL in DB</text>
-<text x="1810" y="1164" font-size="20" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(report_photos.cloudinary_url)</text>
-<rect x="2060" y="300" width="320" height="360" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<path d="M2220 330 q-26 0 -26 26 q0 22 26 50 q26 -28 26 -50 q0 -26 -26 -26 Z" fill="#E9503F"/><circle cx="2220" cy="355" r="9" fill="#F3F6FA"/>
-<text x="2220" y="450" font-size="30" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Maps &amp; GPS</text>
-<text x="2220" y="490" font-size="23" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">OpenStreetMap via</text>
-<text x="2220" y="520" font-size="23" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Leaflet (web) &amp;</text>
-<text x="2220" y="550" font-size="23" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">flutter_map (mobile)</text>
-<text x="2220" y="590" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Nominatim address lookup</text>
-<text x="2220" y="626" font-size="22" font-weight="bold" fill="#4CC38A" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(Free, no billing)</text>
-<rect x="2060" y="720" width="320" height="270" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<rect x="2185" y="745" width="70" height="48" rx="6" fill="#DDE6F0"/><path d="M2185 750 L2220 775 L2255 750" fill="none" stroke="#7A8AA0" stroke-width="3"/>
-<text x="2220" y="840" font-size="28" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Email Notifications</text>
-<text x="2220" y="880" font-size="21" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Nodemailer + Resend (SMTP)</text>
-<text x="2220" y="912" font-size="21" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(Gmail SMTP as fallback)</text>
-<text x="2220" y="950" font-size="20" font-weight="normal" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">submission + status emails</text>
-<rect x="2060" y="1050" width="320" height="260" rx="22" fill="#2F3B4E" stroke="#4B5B73" stroke-width="2"/>
-<rect x="2195" y="1072" width="50" height="62" rx="6" fill="#3B8EEA"/><path d="M2230 1105 l30 -12 l-10 -12" fill="none" stroke="#4CC38A" stroke-width="6"/>
-<text x="2220" y="1180" font-size="28" font-weight="bold" fill="#F3F6FA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Doc Generator</text>
-<text x="2220" y="1220" font-size="24" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">pdfkit &amp; json2csv</text>
-<text x="2220" y="1252" font-size="21" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">PDF / CSV export (FR-15)</text>
-<path d="M440 400 L485 400 L485 520 L580 520" fill="none" stroke="#A78BFA" stroke-width="4" stroke-linejoin="round" marker-end="url(#mA78BFA)"/>
-<path d="M485 520 L485 1040 L580 1040" fill="none" stroke="#A78BFA" stroke-width="4" stroke-linejoin="round" marker-end="url(#mA78BFA)"/>
-<text x="468" y="380" font-size="18" font-weight="normal" fill="#A78BFA" text-anchor="end" font-family="DejaVu Sans, Arial, sans-serif">UI/UX</text>
-<path d="M440 1090 L530 1090 L530 440 L580 440" fill="none" stroke="#8795A8" stroke-width="4" stroke-linejoin="round" stroke-dasharray="12 10" marker-end="url(#m8795A8)"/>
-<path d="M530 1090 L580 1090" fill="none" stroke="#8795A8" stroke-width="4" stroke-linejoin="round" stroke-dasharray="12 10" marker-end="url(#m8795A8)"/>
-<text x="530" y="780" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="end" font-family="DejaVu Sans, Arial, sans-serif">Auto-Deploy</text>
-<text x="530" y="806" font-size="22" font-weight="normal" fill="#C9D3E0" text-anchor="end" font-family="DejaVu Sans, Arial, sans-serif">(CD)</text>
-<path d="M2060 330 L2040 330 L2040 265 L790 265 L790 310" fill="none" stroke="#35C2C2" stroke-width="4" stroke-linejoin="round" marker-end="url(#m35C2C2)"/>
-<text x="1400" y="252" font-size="24" font-weight="normal" fill="#35C2C2" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Map tiles &amp; address lookup (Leaflet / flutter_map → OpenStreetMap, Nominatim)</text>
-<path d="M1000 560 L1060 560 L1060 620 L1120 620" fill="none" stroke="#3B8EEA" stroke-width="4" stroke-linejoin="round" marker-end="url(#m3B8EEA)"/>
-<path d="M1000 1050 L1060 1050 L1060 900 L1120 900" fill="none" stroke="#3B8EEA" stroke-width="4" stroke-linejoin="round" marker-end="url(#m3B8EEA)"/>
-<text x="1065" y="770" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">REST API /</text>
-<text x="1065" y="795" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">JWT Auth</text>
-<path d="M1540 610 L1640 610" fill="none" stroke="#3B8EEA" stroke-width="4" stroke-linejoin="round" marker-end="url(#m3B8EEA)" marker-start="url(#s3B8EEA)"/>
-<text x="1590" y="590" font-size="20" font-weight="normal" fill="#C9D3E0" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">SQL</text>
-<path d="M1540 900 L1580 900 L1580 1080 L1640 1080" fill="none" stroke="#F5A04A" stroke-width="4" stroke-linejoin="round" marker-end="url(#mF5A04A)"/>
-<path d="M1330 1060 L1330 1360 L2020 1360 L2020 850 L2060 850" fill="none" stroke="#4CC38A" stroke-width="4" stroke-linejoin="round" marker-end="url(#m4CC38A)"/>
-<path d="M2020 1180 L2060 1180" fill="none" stroke="#4CC38A" stroke-width="4" stroke-linejoin="round" marker-end="url(#m4CC38A)"/>
-<text x="1700" y="1385" font-size="22" font-weight="normal" fill="#4CC38A" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Email + PDF/CSV requests from the API</text>
+<text x="1200.0" y="72" font-size="46" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">RoadWatch: System Architecture and Hosting</text>
+<text x="1200.0" y="108" font-size="22" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">As built on Oct 27, 2026: one REST API for the Android app and the website; Traffic Officers on both clients</text>
+<text x="250" y="190" font-size="24" font-weight="bold" fill="#CBD5E1" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Design and delivery</text>
+<text x="750" y="190" font-size="24" font-weight="bold" fill="#CBD5E1" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Clients</text>
+<text x="1280" y="190" font-size="24" font-weight="bold" fill="#CBD5E1" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Backend API</text>
+<text x="1760" y="190" font-size="24" font-weight="bold" fill="#CBD5E1" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Data and media</text>
+<text x="2185" y="190" font-size="24" font-weight="bold" fill="#CBD5E1" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">External services</text>
+<rect x="60" y="210" width="380" height="200" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="250.0" y="254" font-size="26" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Figma</text>
+<text x="250.0" y="288" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">UI/UX: Foundations, Components,</text>
+<text x="250.0" y="316" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Mobile, Web, Flows</text>
+<text x="250.0" y="344" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Designs approved before code</text>
+<rect x="60" y="450" width="380" height="220" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="250.0" y="494" font-size="26" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">GitHub monorepo</text>
+<text x="250.0" y="528" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">api/  web/  mobile/  database/  docs/</text>
+<text x="250.0" y="556" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">dev → PR → main (merge commits)</text>
+<text x="250.0" y="584" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Members credited via commit-as.sh</text>
+<rect x="60" y="710" width="380" height="300" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="250.0" y="754" font-size="26" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">GitHub Actions</text>
+<text x="250.0" y="788" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">api-ci: tests (MySQL 8 service)</text>
+<text x="250.0" y="816" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">web-ci: lint + build</text>
+<text x="250.0" y="844" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">mobile-ci: analyze + test</text>
+<text x="250.0" y="872" font-size="18" font-weight="bold" fill="#F2A900" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Tag v* → release APK</text>
+<text x="250.0" y="900" font-size="18" font-weight="normal" fill="#F2A900" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">roadwatch.apk on GitHub Releases</text>
+<rect x="500" y="200" width="500" height="870" rx="22" fill="#243041" stroke="#3B4A5E" stroke-width="2"/>
+<rect x="520" y="220" width="460" height="380" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="750.0" y="264" font-size="26" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Android app</text>
+<rect x="624.0" y="276" width="252" height="30" rx="15" fill="#A78BFA" fill-opacity="0.22" stroke="#A78BFA" stroke-width="1.5"/>
+<text x="750.0" y="298" font-size="17" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">platform: mobile</text>
+<text x="750.0" y="336" font-size="22" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Flutter + Dart</text>
+<text x="750.0" y="368" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Reporter: report, GPS/map pin, photos,</text>
+<text x="750.0" y="396" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">tracking, notifications</text>
+<text x="750.0" y="424" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Traffic Officer: assigned reports,</text>
+<text x="750.0" y="452" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">status + remarks, Open in Maps</text>
+<text x="750.0" y="480" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">dio, flutter_map, geolocator,</text>
+<text x="750.0" y="508" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">image_picker, secure storage</text>
+<rect x="520" y="630" width="460" height="350" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="750.0" y="674" font-size="26" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Website</text>
+<rect x="645.0" y="686" width="210" height="30" rx="15" fill="#A78BFA" fill-opacity="0.22" stroke="#A78BFA" stroke-width="1.5"/>
+<text x="750.0" y="708" font-size="17" font-weight="bold" fill="#A78BFA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">platform: web</text>
+<text x="750.0" y="746" font-size="22" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">React + Vite + Tailwind CSS</text>
+<text x="750.0" y="778" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Public: landing, road updates, About</text>
+<text x="750.0" y="806" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Administrator console: dashboard,</text>
+<text x="750.0" y="834" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">reports, users, summaries, exports</text>
+<text x="750.0" y="862" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Traffic Officer portal: Assigned to me,</text>
+<text x="750.0" y="890" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">updates, notification bell</text>
+<text x="750.0" y="918" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Recharts, Leaflet, GSAP</text>
+<rect x="600" y="1000" width="300" height="56" rx="14" fill="#1E3A5F" stroke="#3B8EEA" stroke-width="2"/>
+<text x="750" y="1036" font-size="19" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Hosted on Vercel (from main)</text>
+<rect x="1060" y="250" width="440" height="720" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="1280.0" y="294" font-size="26" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">REST API</text>
+<text x="1280.0" y="328" font-size="22" font-weight="bold" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Node.js 22.23.4 + Express</text>
+<text x="1280.0" y="360" font-size="20" font-weight="normal" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Sequelize ORM</text>
+<text x="1280.0" y="390" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif"></text>
+<text x="1280.0" y="418" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">JWT sign-in, role checks on</text>
+<text x="1280.0" y="446" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">every endpoint, platform rule</text>
+<text x="1280.0" y="474" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">(Reporter: app · Admin: web ·</text>
+<text x="1280.0" y="502" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Officer: both)</text>
+<text x="1280.0" y="530" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif"></text>
+<text x="1280.0" y="558" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Zod validation · Helmet · CORS</text>
+<text x="1280.0" y="586" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">rate limiting · multer uploads</text>
+<text x="1280.0" y="614" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif"></text>
+<text x="1280.0" y="642" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Status history + audit log</text>
+<text x="1280.0" y="670" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Password strength (Strong only)</text>
+<text x="1280.0" y="698" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">pdfkit + json2csv exports</text>
+<text x="1280.0" y="726" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">/api/health · /api/app-info</text>
+<rect x="1130" y="1000" width="300" height="56" rx="14" fill="#1E3A5F" stroke="#3B8EEA" stroke-width="2"/>
+<text x="1280" y="1036" font-size="19" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Hosted on Render (from main)</text>
+<rect x="1580" y="250" width="360" height="330" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="1760.0" y="294" font-size="26" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">MySQL on Aiven</text>
+<text x="1760.0" y="328" font-size="20" font-weight="normal" fill="#F1F5F9" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Managed, TLS</text>
+<text x="1760.0" y="358" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">roles, users, accident_types,</text>
+<text x="1760.0" y="386" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">reports, report_photos,</text>
+<text x="1760.0" y="414" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">report_status_history,</text>
+<text x="1760.0" y="442" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">notifications, audit_logs</text>
+<rect x="1580" y="640" width="360" height="260" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="1760.0" y="684" font-size="26" font-weight="bold" fill="#F5A04A" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Cloudinary</text>
+<text x="1760.0" y="718" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Report photos (multer upload</text>
+<text x="1760.0" y="746" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">through the API)</text>
+<text x="1760.0" y="774" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Only the URL is stored in</text>
+<text x="1760.0" y="802" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">report_photos</text>
+<rect x="2020" y="250" width="330" height="330" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="2185.0" y="294" font-size="26" font-weight="bold" fill="#35C2C2" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">OpenStreetMap</text>
+<text x="2185.0" y="328" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Map tiles: Leaflet (web),</text>
+<text x="2185.0" y="356" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">flutter_map (app)</text>
+<text x="2185.0" y="384" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Nominatim address lookup</text>
+<text x="2185.0" y="412" font-size="18" font-weight="bold" fill="#35C2C2" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Called by the clients</text>
+<rect x="2020" y="640" width="330" height="260" rx="18" fill="#2A3546" stroke="#475569" stroke-width="2"/>
+<text x="2185.0" y="684" font-size="26" font-weight="bold" fill="#4CC38A" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Brevo</text>
+<text x="2185.0" y="718" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Transactional email over</text>
+<text x="2185.0" y="746" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">HTTPS (SMTP is blocked</text>
+<text x="2185.0" y="774" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">on Render)</text>
+<text x="2185.0" y="802" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Report and status emails,</text>
+<text x="2185.0" y="830" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">reset codes</text>
+<path d="M 440 300 L 480 300 L 480 410 L 518 410" fill="none" stroke="#A78BFA" stroke-width="3" marker-end="url(#mA78BFA)"/>
+<path d="M 480 410 L 480 840 L 518 840" fill="none" stroke="#A78BFA" stroke-width="3" marker-end="url(#mA78BFA)"/>
+<path d="M 440 860 L 470 860 L 470 1110 L 750 1110 L 750 1058" fill="none" stroke="#8795A8" stroke-width="3" stroke-dasharray="10 8" marker-end="url(#m8795A8)"/>
+<path d="M 750 1110 L 1280 1110 L 1280 1058" fill="none" stroke="#8795A8" stroke-width="3" stroke-dasharray="10 8" marker-end="url(#m8795A8)"/>
+<text x="1015" y="1140" font-size="17" font-weight="bold" fill="#8795A8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">auto-deploy from main</text>
+<path d="M 980 410 L 1058 410" fill="none" stroke="#3B8EEA" stroke-width="3" marker-end="url(#m3B8EEA)" marker-start="url(#s3B8EEA)"/>
+<text x="1019" y="395" font-size="17" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">REST + JWT</text>
+<path d="M 980 840 L 1020 840 L 1020 700 L 1058 700" fill="none" stroke="#3B8EEA" stroke-width="3" marker-end="url(#m3B8EEA)" marker-start="url(#s3B8EEA)"/>
+<path d="M 1500 410 L 1578 410" fill="none" stroke="#3B8EEA" stroke-width="3" marker-end="url(#m3B8EEA)" marker-start="url(#s3B8EEA)"/>
+<text x="1539" y="395" font-size="17" font-weight="bold" fill="#3B8EEA" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">SQL (TLS)</text>
+<path d="M 1500 770 L 1578 770" fill="none" stroke="#F5A04A" stroke-width="3" marker-end="url(#mF5A04A)"/>
+<text x="1539" y="755" font-size="17" font-weight="bold" fill="#F5A04A" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">photos</text>
+<path d="M 1500 940 L 1990 940 L 1990 800 L 2018 800" fill="none" stroke="#4CC38A" stroke-width="3" marker-end="url(#m4CC38A)"/>
+<text x="1760" y="972" font-size="17" font-weight="bold" fill="#4CC38A" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">email (HTTPS)</text>
+<path d="M 900 218 L 900 150 L 2300 150 L 2300 248" fill="none" stroke="#35C2C2" stroke-width="3" stroke-dasharray="10 8" marker-end="url(#m35C2C2)"/>
+<text x="1600" y="140" font-size="18" font-weight="bold" fill="#35C2C2" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Map tiles and address lookup, straight from the clients</text>
+<rect x="60" y="1210" width="2290" height="110" rx="16" fill="#243041" stroke="#3B4A5E" stroke-width="2"/>
+<rect x="100" y="1246" width="40" height="8" rx="4" fill="#3B8EEA"/>
+<text x="154" y="1256" font-size="19" font-weight="normal" fill="#CBD5E1" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">API and database traffic</text>
+<rect x="470" y="1246" width="40" height="8" rx="4" fill="#F5A04A"/>
+<text x="524" y="1256" font-size="19" font-weight="normal" fill="#CBD5E1" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Photo storage</text>
+<rect x="840" y="1246" width="40" height="8" rx="4" fill="#4CC38A"/>
+<text x="894" y="1256" font-size="19" font-weight="normal" fill="#CBD5E1" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Email</text>
+<rect x="1210" y="1246" width="40" height="8" rx="4" fill="#35C2C2"/>
+<text x="1264" y="1256" font-size="19" font-weight="normal" fill="#CBD5E1" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Maps (from the clients)</text>
+<rect x="1580" y="1246" width="40" height="8" rx="4" fill="#A78BFA"/>
+<text x="1634" y="1256" font-size="19" font-weight="normal" fill="#CBD5E1" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Design to code</text>
+<rect x="1950" y="1246" width="40" height="8" rx="4" fill="#8795A8"/>
+<text x="2004" y="1256" font-size="19" font-weight="normal" fill="#CBD5E1" text-anchor="start" font-family="DejaVu Sans, Arial, sans-serif">Build and deploy</text>
+<text x="1200.0" y="1298" font-size="18" font-weight="normal" fill="#94A3B8" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif">Free tiers: Render sleeps when idle (warm it before demos); Aiven, Cloudinary, Brevo and Vercel free plans.</text>
 </svg>

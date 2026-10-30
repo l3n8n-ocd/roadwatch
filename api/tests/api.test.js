@@ -29,7 +29,7 @@ test('database-backed API flow', { skip }, async (t) => {
   const server = app.listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api`;
   const run = Date.now();
-  const pw = 'password123';
+  const pw = 'Sunflower7!';
 
   const call = async (method, path, { token, body } = {}) => {
     const res = await fetch(base + path, {
@@ -64,6 +64,12 @@ test('database-backed API flow', { skip }, async (t) => {
       assert.equal(dup.status, 409);
       const weak = await call('POST', '/auth/register', { body: { full_name: 'Weak', contact_email: `weak.${run}@test.local`, password: 'short' } });
       assert.equal(weak.status, 400);
+      // #44: a new password must be Strong (Good is not enough), and must not contain the name or email.
+      const good = await call('POST', '/auth/register', { body: { full_name: 'Weak', contact_email: `weak.${run}@test.local`, password: 'Sunflower7' } });
+      assert.equal(good.status, 400);
+      assert.equal(good.body.details.password[0], 'Make the password Strong to save it.');
+      const named = await call('POST', '/auth/register', { body: { full_name: 'Maria Santos', contact_email: `weak.${run}@test.local`, password: 'Santos#2026x' } });
+      assert.equal(named.status, 400);
     });
 
     const rep = { email: `rep.${run}@test.local` };
@@ -121,6 +127,8 @@ test('database-backed API flow', { skip }, async (t) => {
     await t.test('admin creates a Traffic Officer; cannot create with bad data', async () => {
       const bad = await call('POST', '/users', { token: admin.token, body: { full_name: 'X', contact_email: 'x@test.local', password: pw, role: 'Superuser' } });
       assert.equal(bad.status, 400);
+      const notStrong = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer One', contact_email: `off1.${run}@test.local`, password: 'Sunflower7', role: 'Traffic Officer' } });
+      assert.equal(notStrong.status, 400, 'an officer password must be Strong too (#44)');
       const ok = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer One', contact_email: `off1.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
       assert.equal(ok.status, 201);
       officer.id = ok.body.data.user_id;
@@ -128,6 +136,10 @@ test('database-backed API flow', { skip }, async (t) => {
       const other = await call('POST', '/users', { token: admin.token, body: { full_name: 'Officer Two', contact_email: `off2.${run}@test.local`, password: pw, role: 'Traffic Officer' } });
       officer.token2 = (await call('POST', '/auth/login', { body: { contact_email: `off2.${run}@test.local`, password: pw, platform: 'mobile' } })).body.data.token;
       officer.id2 = other.body.data.user_id;
+      // Traffic Officers sign in on the web portal as well as the app (#52, DECISIONS #45)
+      const onWeb = await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: pw, platform: 'web' } });
+      assert.equal(onWeb.status, 200);
+      assert.equal(onWeb.body.data.user.role, 'Traffic Officer');
     });
 
     await t.test('admin filters, verifies, rejects (reason required) and assigns', async () => {
@@ -281,13 +293,16 @@ test('database-backed API flow', { skip }, async (t) => {
       const cleared = await call('PATCH', '/auth/me', { token: rep.token, body: { full_name: 'Rep Renamed', contact_phone: null } });
       assert.equal(cleared.body.data.user.contact_phone, null);
 
-      const wrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: 'not-it-123', new_password: 'newpassword456' } });
+      const wrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: 'not-it-123', new_password: 'Lantern#456b' } });
       assert.equal(wrong.status, 400, 'a wrong current password is 400, not 401, so the apps keep the session');
       assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'short' } })).status, 400);
       assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: pw } })).status, 400);
-      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'newpassword456' } })).status, 200);
+      const notStrong = await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'Sunflower8' } });
+      assert.equal(notStrong.status, 400);
+      assert.equal(notStrong.body.details.new_password[0], 'Make the password Strong to save it.');
+      assert.equal((await call('PATCH', '/auth/me/password', { token: rep.token, body: { current_password: pw, new_password: 'Lantern#456b' } })).status, 200);
       assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: pw, platform: 'mobile' } })).status, 401);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'newpassword456', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'Lantern#456b', platform: 'mobile' } })).status, 200);
     });
 
     await t.test('action log: own actions for anyone, all staff for admins only (#27)', async () => {
@@ -325,14 +340,17 @@ test('database-backed API flow', { skip }, async (t) => {
       const repUser = await User.scope('withPassword').findOne({ where: { contact_email: rep.email } });
       const code = makeResetCode(repUser);
       assert.match(code, /^[A-Z2-9]{8}$/);
-      const reset = (body) => call('POST', '/auth/reset-password', { body: { contact_email: rep.email, new_password: 'resetpass789', ...body } });
+      const reset = (body) => call('POST', '/auth/reset-password', { body: { contact_email: rep.email, new_password: 'Harbor$789k', ...body } });
       const wrong = await reset({ reset_code: code === 'AAAAAAAA' ? 'BBBBBBBB' : 'AAAAAAAA' });
       assert.equal(wrong.status, 400);
       assert.ok(wrong.body.details.reset_code, 'the error goes under the code field');
-      const noUser = await call('POST', '/auth/reset-password', { body: { contact_email: `nobody.${run}@test.local`, reset_code: code, new_password: 'resetpass789' } });
+      const noUser = await call('POST', '/auth/reset-password', { body: { contact_email: `nobody.${run}@test.local`, reset_code: code, new_password: 'Harbor$789k' } });
       assert.equal(noUser.status, 400);
       assert.equal(noUser.body.error, wrong.body.error, 'unknown email gives the same answer as a wrong code');
       assert.equal((await reset({ reset_code: code, new_password: 'short' })).status, 400);
+      const notStrong = await reset({ reset_code: code, new_password: 'Sunflower8' });
+      assert.equal(notStrong.status, 400);
+      assert.ok(notStrong.body.details.new_password, 'a right code with a not-Strong password: the error is on the password');
 
       const realNow = Date.now;
       Date.now = () => realNow() + 16 * 60000;
@@ -344,23 +362,188 @@ test('database-backed API flow', { skip }, async (t) => {
       const typed = `${code.slice(0, 4).toLowerCase()}-${code.slice(4)}`;
       assert.equal((await reset({ reset_code: typed })).status, 200, 'case and dashes do not matter');
       assert.equal((await reset({ reset_code: code })).status, 400, 'a code works once');
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'newpassword456', platform: 'mobile' } })).status, 401);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'resetpass789', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'Lantern#456b', platform: 'mobile' } })).status, 401);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: rep.email, password: 'Harbor$789k', platform: 'mobile' } })).status, 200);
       assert.equal((await call('GET', '/auth/me', { token: rep.token })).status, 200, 'other signed-in devices stay signed in');
       assert.ok(await AuditLog.findOne({ where: { user_id: repUser.user_id, action_taken: 'account.password_reset' } }));
 
       const path = `/users/${officer.id}/password`;
-      assert.equal((await call('PATCH', path, { token: rep.token, body: { new_password: 'temporary123' } })).status, 403);
-      assert.equal((await call('PATCH', path, { token: officer.token, body: { new_password: 'temporary123' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: rep.token, body: { new_password: 'Temp-Key-2026x' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: officer.token, body: { new_password: 'Temp-Key-2026x' } })).status, 403);
       assert.equal((await call('PATCH', path, { token: admin.token, body: { new_password: 'short' } })).status, 400);
-      assert.equal((await call('PATCH', `/users/${admin.user.user_id}/password`, { token: admin.token, body: { new_password: 'temporary123' } })).status, 400, 'not on your own account');
+      const tempNotStrong = await call('PATCH', path, { token: admin.token, body: { new_password: 'Sunflower8' } });
+      assert.equal(tempNotStrong.status, 400, 'a temporary password must be Strong too (#44)');
+      assert.ok(tempNotStrong.body.details.new_password);
+      assert.equal((await call('PATCH', `/users/${admin.user.user_id}/password`, { token: admin.token, body: { new_password: 'Temp-Key-2026x' } })).status, 400, 'not on your own account');
       const admin2 = await makeStaff('Administrator', 'admin2');
-      assert.equal((await call('PATCH', `/users/${admin2.user.user_id}/password`, { token: admin.token, body: { new_password: 'temporary123' } })).status, 400, 'not on another administrator');
-      assert.equal((await call('PATCH', '/users/99999999/password', { token: admin.token, body: { new_password: 'temporary123' } })).status, 404);
-      const done = await call('PATCH', path, { token: admin.token, body: { new_password: 'temporary123' } });
+      assert.equal((await call('PATCH', `/users/${admin2.user.user_id}/password`, { token: admin.token, body: { new_password: 'Temp-Key-2026x' } })).status, 400, 'not on another administrator');
+      assert.equal((await call('PATCH', '/users/99999999/password', { token: admin.token, body: { new_password: 'Temp-Key-2026x' } })).status, 404);
+      const done = await call('PATCH', path, { token: admin.token, body: { new_password: 'Temp-Key-2026x' } });
       assert.equal(done.status, 200);
-      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: 'temporary123', platform: 'mobile' } })).status, 200);
+      assert.equal((await call('POST', '/auth/login', { body: { contact_email: `off1.${run}@test.local`, password: 'Temp-Key-2026x', platform: 'mobile' } })).status, 200);
       assert.ok(await AuditLog.findOne({ where: { user_id: admin.user.user_id, action_taken: 'user.password_reset' } }));
+    });
+
+    await t.test('report priority: automatic, staff only, admin override and back to automatic (#54)', async () => {
+      // type 1 is Collision (seed order): Medium base, raised to High by injuries; fatalities make it Urgent.
+      const made = await call('POST', '/reports', { token: rep.token, body: report({ latitude: undefined, longitude: undefined }) });
+      assert.equal(made.status, 201);
+      assert.equal(made.body.data.priority, undefined, 'reporters never see priority');
+      const id = made.body.data.report_id;
+      const urgent = await call('POST', '/reports', { token: rep.token, body: report({ injury_information: 'fatalities', latitude: undefined, longitude: undefined }) });
+      const one = await call('GET', `/admin/reports/${id}`, { token: admin.token });
+      assert.equal(one.body.data.priority, 'High');
+      assert.equal(one.body.data.priority_source, 'auto');
+      assert.equal((await call('GET', `/reports/${id}`, { token: rep.token })).body.data.priority, undefined);
+      assert.ok((await call('GET', '/reports', { token: rep.token })).body.data.every((r) => r.priority === undefined));
+
+      const filtered = await call('GET', '/admin/reports?priority=Urgent&sort=priority', { token: admin.token });
+      assert.ok(filtered.body.data.some((r) => r.report_id === urgent.body.data.report_id));
+      assert.ok(filtered.body.data.every((r) => r.priority === 'Urgent'));
+      const sorted = (await call('GET', '/admin/reports?sort=priority&limit=100', { token: admin.token })).body.data.map((r) => ['Low', 'Medium', 'High', 'Urgent'].indexOf(r.priority));
+      assert.deepEqual(sorted, [...sorted].sort((a, b) => b - a), 'Urgent first');
+
+      assert.equal((await call('PATCH', `/admin/reports/${id}/priority`, { token: admin.token, body: { priority: 'Severe' } })).status, 400);
+      assert.equal((await call('PATCH', `/admin/reports/${id}/priority`, { token: officer.token, body: { priority: 'Low' } })).status, 403);
+      const set = await call('PATCH', `/admin/reports/${id}/priority`, { token: admin.token, body: { priority: 'Urgent' } });
+      assert.equal(set.status, 200);
+      assert.equal(set.body.data.priority, 'Urgent');
+      assert.equal(set.body.data.priority_source, 'admin');
+      assert.equal(set.body.data.priority_auto, 'High');
+      assert.ok(await AuditLog.findOne({ where: { user_id: admin.user.user_id, action_taken: 'report.priority_changed' } }));
+      const back = await call('PATCH', `/admin/reports/${id}/priority`, { token: admin.token, body: { priority: null } });
+      assert.equal(back.body.data.priority, 'High');
+      assert.equal(back.body.data.priority_source, 'auto');
+      const csv = await call('GET', '/exports/reports.csv', { token: admin.token });
+      assert.ok(csv.body.toString().split('\n')[0].includes('"priority"'));
+    });
+
+    await t.test('admin edits another account\'s name and phone (#55)', async () => {
+      const target = await makeStaff('Traffic Officer', 'edit-me');
+      const path = `/users/${target.user.user_id}`;
+      assert.equal((await call('PATCH', path, { token: rep.token, body: { full_name: 'Nope' } })).status, 403);
+      assert.equal((await call('PATCH', path, { token: admin.token, body: { full_name: 'X' } })).status, 400);
+      assert.equal((await call('PATCH', '/users/99999999', { token: admin.token, body: { full_name: 'Nobody Here' } })).status, 404);
+      const ok = await call('PATCH', path, { token: admin.token, body: { full_name: 'Edited Officer', contact_phone: '0917 555 0142', contact_email: 'ignored@test.local' } });
+      assert.equal(ok.status, 200);
+      assert.equal(ok.body.data.full_name, 'Edited Officer');
+      assert.equal(ok.body.data.contact_phone, '0917 555 0142');
+      assert.equal(ok.body.data.contact_email, target.email, 'email stays fixed');
+      assert.equal(ok.body.data.password_hash, undefined);
+      const cleared = await call('PATCH', path, { token: admin.token, body: { full_name: 'Edited Officer', contact_phone: null } });
+      assert.equal(cleared.body.data.contact_phone, null);
+      const log = await AuditLog.findOne({ where: { user_id: admin.user.user_id, action_taken: 'user.updated' }, order: [['log_id', 'DESC']] });
+      assert.deepEqual(JSON.parse(log.action_details).fields, ['contact_phone']);
+    });
+
+    await t.test('nearby on-duty officers: alert, first to respond wins, confirm or reject on scene (#57)', async () => {
+      const { ReportDispatch, OfficerStatus } = require('../src/models');
+      // A spot of its own (Samar), so other tests' reports never fall in range. 0.009 degrees of latitude is about 1 km.
+      const at = (km) => ({ latitude: 12.5 + km * 0.009, longitude: 124.9 });
+      const officers = {};
+      for (const [name, km] of [['near1', 1], ['near2', 2], ['near3', 3], ['near4', 4], ['far', 20], ['offduty', 0.5]]) {
+        officers[name] = await makeStaff('Traffic Officer', `${name}`);
+      }
+      try {
+        // settings: admin only, bounded
+        assert.equal((await call('GET', '/admin/settings', { token: officers.near1.token })).status, 403);
+        assert.equal((await call('PATCH', '/admin/settings', { token: admin.token, body: { alert_range_km: 500 } })).status, 400);
+        const range = await call('PATCH', '/admin/settings', { token: admin.token, body: { alert_range_km: 5 } });
+        assert.equal(range.body.data.alert_range_km, 5);
+        assert.ok(await AuditLog.findOne({ where: { user_id: admin.user.user_id, action_taken: 'settings.updated' } }));
+
+        // duty switch: officers only; latitude and longitude together
+        assert.equal((await call('PUT', '/officer/duty', { token: rep.token, body: { on_duty: true } })).status, 403);
+        assert.equal((await call('PUT', '/officer/duty', { token: officers.near1.token, body: { on_duty: true, latitude: 12.5 } })).status, 400);
+        for (const [name, km] of [['near1', 1], ['near2', 2], ['near3', 3], ['near4', 4], ['far', 20]]) {
+          const d = await call('PUT', '/officer/duty', { token: officers[name].token, body: { on_duty: true, ...at(km) } });
+          assert.equal(d.status, 200);
+          assert.equal(d.body.data.on_duty, true);
+        }
+        await call('PUT', '/officer/duty', { token: officers.offduty.token, body: { on_duty: true, ...at(0.5) } });
+        const off = await call('PUT', '/officer/duty', { token: officers.offduty.token, body: { on_duty: false } });
+        assert.equal(off.body.data.latitude, null, 'going off duty clears the location');
+        assert.ok(await AuditLog.findOne({ where: { user_id: officers.offduty.user.user_id, action_taken: 'officer.off_duty' } }));
+
+        // a report there alerts the 3 nearest on-duty officers in range
+        const r1 = (await call('POST', '/reports', { token: rep.token, body: report(at(0)) })).body.data;
+        const alerted = await ReportDispatch.findAll({ where: { report_id: r1.report_id }, order: [['distance_km', 'ASC']] });
+        assert.deepEqual(alerted.map((d) => d.officer_id), ['near1', 'near2', 'near3'].map((n) => officers[n].user.user_id));
+        assert.ok(Math.abs(Number(alerted[0].distance_km) - 1) < 0.05);
+        const pending = await call('GET', '/officer/nearby', { token: officers.near2.token });
+        assert.equal(pending.status, 200);
+        assert.equal(pending.body.data[0].report_id, r1.report_id);
+        assert.equal(pending.body.data[0].priority, 'High');
+        assert.equal((await call('GET', '/officer/nearby', { token: officers.far.token })).body.data.length, 0);
+        assert.ok(await Notification.findOne({ where: { user_id: officers.near1.user.user_id, report_id: r1.report_id } }));
+        assert.equal((await call('GET', `/admin/reports/${r1.report_id}`, { token: admin.token })).body.data.dispatch.state, 'alerting');
+
+        // first to respond wins; the others see who took it
+        assert.equal((await call('POST', `/officer/nearby/${r1.report_id}/respond`, { token: officers.far.token })).status, 404);
+        const won = await call('POST', `/officer/nearby/${r1.report_id}/respond`, { token: officers.near2.token });
+        assert.equal(won.status, 200);
+        assert.equal(won.body.data.assigned_officer_id, officers.near2.user.user_id);
+        assert.equal(won.body.data.record_type, 'public_submission', 'not verified until confirmed on scene');
+        assert.equal(won.body.data.dispatch.state, 'responding');
+        assert.ok(won.body.data.reporter.contact_email, 'the responding officer sees the reporter contact');
+        const lost = await call('POST', `/officer/nearby/${r1.report_id}/respond`, { token: officers.near1.token });
+        assert.equal(lost.status, 409);
+        assert.equal(lost.body.details.code, 'ALREADY_TAKEN');
+        assert.equal(lost.body.details.responder_name, 'near2');
+        assert.equal((await call('GET', '/officer/nearby', { token: officers.near1.token })).body.data.length, 0);
+
+        // the responder confirms on scene before any other update
+        const early = await call('PATCH', `/officer/reports/${r1.report_id}`, { token: officers.near2.token, body: { status: 'In Progress' } });
+        assert.equal(early.status, 409);
+        assert.equal(early.body.details.code, 'CONFIRM_FIRST');
+        assert.equal((await call('POST', `/officer/reports/${r1.report_id}/confirm`, { token: officers.near1.token, body: {} })).status, 404);
+        const confirmed = await call('POST', `/officer/reports/${r1.report_id}/confirm`, { token: officers.near2.token, body: { remarks: 'Two cars, one lane blocked.' } });
+        assert.equal(confirmed.status, 200);
+        assert.equal(confirmed.body.data.report_status, 'In Progress');
+        assert.equal(confirmed.body.data.record_type, 'verified_record');
+        assert.equal(confirmed.body.data.dispatch.state, 'confirmed');
+        assert.equal((await call('POST', `/officer/reports/${r1.report_id}/confirm`, { token: officers.near2.token, body: {} })).status, 409);
+        assert.ok(await AuditLog.findOne({ where: { user_id: officers.near2.user.user_id, action_taken: 'report.confirmed_on_scene' } }));
+        const listed = await call('GET', '/admin/reports?limit=100', { token: admin.token });
+        assert.equal(listed.body.data.find((r) => r.report_id === r1.report_id).dispatch.responder.full_name, 'near2');
+
+        // reject on scene: Rejected with the reason, admins are told, and the admin can reopen it
+        const r2 = (await call('POST', '/reports', { token: rep.token, body: report(at(0.2)) })).body.data;
+        assert.equal((await call('POST', `/officer/nearby/${r2.report_id}/decline`, { token: officers.near1.token })).status, 200);
+        assert.equal((await call('POST', `/officer/nearby/${r2.report_id}/respond`, { token: officers.near1.token })).status, 409, 'declined');
+        assert.equal((await call('POST', `/officer/nearby/${r2.report_id}/respond`, { token: officers.near3.token })).status, 200);
+        assert.equal((await call('POST', `/officer/reports/${r2.report_id}/reject`, { token: officers.near3.token, body: { rejection_reason: 'x' } })).status, 400);
+        const rejected = await call('POST', `/officer/reports/${r2.report_id}/reject`, { token: officers.near3.token, body: { rejection_reason: 'No accident at this spot.' } });
+        assert.equal(rejected.status, 200);
+        assert.equal(rejected.body.data.report_status, 'Rejected');
+        assert.equal(rejected.body.data.dispatch.state, 'rejected_on_scene');
+        assert.ok(await Notification.findOne({ where: { user_id: admin.user.user_id, report_id: r2.report_id } }));
+        const reopened = await call('PATCH', `/admin/reports/${r2.report_id}/status`, { token: admin.token, body: { status: 'Under Review' } });
+        assert.equal(reopened.status, 200);
+
+        // nobody responds in 10 minutes: the alert closes and the report waits for the administrator
+        const r3 = (await call('POST', '/reports', { token: rep.token, body: report(at(0.1)) })).body.data;
+        await ReportDispatch.update({ alerted_at: new Date(Date.now() - 12 * 60000) }, { where: { report_id: r3.report_id } });
+        const late = await call('POST', `/officer/nearby/${r3.report_id}/respond`, { token: officers.near1.token });
+        assert.equal(late.status, 409);
+        assert.equal(late.body.details.code, 'ALERT_CLOSED');
+        const waiting = (await call('GET', `/admin/reports/${r3.report_id}`, { token: admin.token })).body.data.dispatch;
+        assert.equal(waiting.state, 'no_response');
+        assert.ok(waiting.minutes_since_alert >= 12);
+
+        // the admin acting closes alerts nobody answered
+        const r4 = (await call('POST', '/reports', { token: rep.token, body: report(at(0.3)) })).body.data;
+        await call('PATCH', `/admin/reports/${r4.report_id}/status`, { token: admin.token, body: { status: 'Verified' } });
+        assert.equal(await ReportDispatch.count({ where: { report_id: r4.report_id, dispatch_status: 'alerted' } }), 0);
+        assert.equal((await call('POST', `/officer/nearby/${r4.report_id}/respond`, { token: officers.near1.token })).status, 409);
+
+        // no map pin, no alert
+        const r5 = (await call('POST', '/reports', { token: rep.token, body: report({ latitude: undefined, longitude: undefined }) })).body.data;
+        assert.equal(await ReportDispatch.count({ where: { report_id: r5.report_id } }), 0);
+      } finally {
+        await OfficerStatus.update({ is_on_duty: false, latitude: null, longitude: null, location_updated_at: null },
+          { where: { officer_id: Object.values(officers).map((o) => o.user.user_id) } });
+      }
     });
 
     await t.test('photo upload validates input (Cloudinary itself is not called)', async () => {

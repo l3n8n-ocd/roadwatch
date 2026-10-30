@@ -16,8 +16,9 @@ export const STATUSES = [
   'Rejected',
 ];
 
-// Workflow order (#30): admin verifies before assigning; officers do the rest in the mobile app (#36).
+// Workflow order (#30): admin verifies before assigning; officers do the rest (web portal #52 or the app).
 export const ADMIN_STATUSES = ['Under Review', 'Additional Information Required', 'Verified', 'Rejected'];
+export const OFFICER_STATUSES = ['In Progress', 'Additional Information Required', 'Resolved/Closed'];
 
 export const INJURY_OPTIONS = [
   { value: 'none', label: 'None' },
@@ -45,9 +46,11 @@ export const HOTLINES = {
   ],
 };
 
-// The web is for Administrators only (#36); Reporters and Traffic Officers use the Android app.
+// Staff use the web (#36, #52): Administrators and Traffic Officers. Reporters use the Android app.
 export function homePathFor(role) {
-  return role === ROLES.ADMIN ? '/admin' : '/';
+  if (role === ROLES.ADMIN) return '/admin';
+  if (role === ROLES.OFFICER) return '/officer';
+  return '/';
 }
 
 // Release APK: mobile-ci attaches roadwatch.apk to a GitHub Release on each v* tag (#22), so this link

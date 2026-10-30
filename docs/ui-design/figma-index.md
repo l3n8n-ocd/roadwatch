@@ -47,6 +47,9 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Button | `96:193` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-193) |
 | Icon button | `96:261` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=96-261) |
 | Text field (Show password toggle + Toggle icon eye / eye-off, #45) | `97:178` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-178) |
+| Password strength (Empty, Weak, Fair, Good, Strong; #44, under every field that sets a new password) | `422:4211` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=422-4211) |
+| Section/Tool logos (#49): 29 "Tool logo/*" tiles (logo + name), used by the Built with grids | `450:4108` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=450-4108) |
+| Top bar web (component set; boolean `Bell`: on only in Traffic Officer frames, #47) | `105:665` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=105-665) |
 | Select | `97:279` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-279) |
 | Date time field | `97:411` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-411) |
 | Calendar popover | `97:412` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=97-412) |
@@ -119,7 +122,7 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Settings/Appearance | `162:2465` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=162-2465) |
 | Settings/Language | `162:2516` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=162-2516) |
 | Settings/How to report | `164:2576` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=164-2576) |
-| Settings/About | `164:2646` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=164-2646) |
+| Settings/About (Built with logos, #49) | `164:2646` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=164-2646) |
 | Settings/Privacy | `177:2752` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=177-2752) |
 | Settings/Emergency hotlines (911, PNP, BFP; scrolls) | `252:2763` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=252-2763) |
 | Settings/Log out (confirm dialog; reporter and officer Settings, #40) | `347:36744` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-36744) |
@@ -145,6 +148,8 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | M3/Location/Full-screen map (move the pin; Cancel / Use this location, 12 px side padding so the label fits at 360) | `406:4431` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=406-4431) |
 | Settings/Demo video/Playing | `119:1923` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1923) |
 | Settings/Demo video/Coming soon (demoVideoUrl = null) | `119:1991` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=119-1991) |
+| Settings/Demo video/Per role, Reporter view (#48: Reporter clip, 30 s; replaces Playing and Coming soon) | `493:4668` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=493-4668) |
+| Settings/Demo video/Per role, Traffic Officer view (scrolls; Traffic Officer clip first, then Reporter) | `493:4718` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=493-4718) |
 | Accessibility checklist/Mobile | `120:1977` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=120-1977) |
 
 ## Web (1440 desktop, 390 responsive)
@@ -152,6 +157,8 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | Frame / asset | Node ID | Link |
 |---|---|---|
 | W0/Landing/Default (1440) (#40: Light/Dark switch, FAQ nav link, stats bar, full hotlines card, Meet the team link, FAQ chat, QR placeholder) | `137:4095` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=137-4095) |
+| W0 Watch the video (section, 1440; #48, id="video", hidden while promoVideoUrl is null; footer link "Watch the video") | `489:21200` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=489-21200) |
+| W0 Watch the video (section, 390) | `489:21224` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=489-21224) |
 | W0/Landing/Responsive (390) (#40; FAQ shows 4 then "Show 4 more questions"; no QR on phones) | `139:4275` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=139-4275) |
 | Handoff note/Public updates endpoint (confirmed) | `139:4434` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=139-4434) |
 | W1/Login/Administrator (1440) | `121:5` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=121-5) |
@@ -183,10 +190,13 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W8/Action log/Default (1440, admin) | `210:5390` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=210-5390) |
 | W8/Action log/Empty (1440, officer) | `214:5677` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=214-5677) |
 | W8/Action log/All staff (1440, admin only) | `245:6849` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=245-6849) |
-| W9/About (admin console, moves to /admin/about, #40) | `212:5577` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=212-5577) |
+| W9/About (staff console: /admin/about and /officer/about; team photos #48, Built with logos 212:5835 #49) | `212:5577` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=212-5577) |
 | Demo video/Web/Playing (1440) | `127:2829` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=127-2829) |
 | Demo video/Web/Coming soon (1440) | `127:2974` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=127-2974) |
-| W10/About/Public (1440) (/about, Meet our team, #40) | `345:15810` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=345-15810) |
+| Demo video/Web/Per role, Administrator view (1440) (#48: Administrator and Traffic Officer clips, your role first) | `492:21204` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=492-21204) |
+| Demo video/Web/Per role, Traffic Officer view (1440) | `492:21788` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=492-21788) |
+| Demo video/Web/Clip card, coming soon (clip URL is null; same on mobile) | `493:48058` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=493-48058) |
+| W10/About/Public (1440) (/about, Meet our team with photos, Built with, #40, #48, #49) | `345:15810` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=345-15810) |
 | W10/About/Public · Responsive (390) | `346:15885` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=346-15885) |
 | W11/404 Page not found (1440) | `347:15949` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-15949) |
 | W11/404 Page not found · Responsive (390) | `347:15995` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=347-15995) |
@@ -205,11 +215,48 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W4/Overlay/Full-screen map (one report) | `410:17163` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17163) |
 | W0/Overlay/Public road updates map (full screen, list beside it) | `410:17216` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17216) |
 | W2/Overlay/Accident hotspots map (full screen, Top locations beside it) | `410:17303` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=410-17303) |
+| W1/Staff sign-in/Choose role (1440) (/staff/sign-in, #52) | `465:17813` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-17813) |
+| W1/Staff sign-in/Choose role · Responsive (390) | `465:17862` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-17862) |
+| W1/Login/Traffic Officer (1440) (/staff/sign-in/officer) | `465:17927` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-17927) |
+| W1/Login/Administrator · Wrong role (1440) | `465:17972` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-17972) |
+| W5/Officer queue/Default (1440) (/officer, Traffic Officer console) | `465:18031` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18031) |
+| W5/Officer queue/Empty (1440) | `465:18076` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18076) |
+| W4/Report details/Officer (1440) (/officer/reports/:id) | `465:18086` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18086) |
+| W4/Report details/Officer · Update saved (1440) | `465:18164` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=465-18164) |
+| W5/Overlay/Notifications open (1440) (officer bell panel, #47) | `481:20505` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=481-20505) |
+| W5/Overlay/Notifications panel · Empty | `483:21192` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=483-21192) |
 | Accessibility checklist/Web | `132:4095` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=132-4095) |
+
+## v1.2.0: UI/UX defense recommendations (#54 to #57; DECISIONS #49, #50)
+
+Drawn Oct 29, approved by Lenon on Oct 30, then coded for v1.2.0. Sections: Components `527:4124`; Web #55 `528:22567`,
+#54 `531:23850`, #56 `543:26678`; Mobile #54 + #57 `537:4740`, #56 `543:32729`. PNGs in `screens/` (path in the last column).
+Code notes: on phones (below 1024 px) the web Guide button moves into the account menu under Help, so the top bar fits;
+the app's Assigned tab also has a Guide button (top bar), and the guide's first step on Assigned is On duty.
+
+| Page | Frame | Node | Link | PNG |
+|---|---|---|---|---|
+| Components | Section/Priority chip + Radio (#54, #55): Priority chip set `527:4117` (Low, Medium, High, Urgent; icon + text), Radio `527:4123`, icons accessibility `542:8`, volume `542:21`, pause `542:32` | `527:4124` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=527-4124) | `web/components-priority-chip-radio.png` |
+| Web | W6/Users & settings/Toolbar · Account selected (1440) (#55: + Create officer and Edit only; radio per row) | `528:22568` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=528-22568) | `web/w6-toolbar-selected-1440.png` |
+| Web | W6/Users & settings/Toolbar · No selection (1440) (Edit disabled; Nearby officers alert range card, #57) | `528:23244` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=528-23244) | `web/w6-toolbar-no-selection-1440.png` |
+| Web | W6/Overlay/Edit account · Traffic Officer (dialog) | `529:23706` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=529-23706) | `web/w6-edit-account-dialog.png` |
+| Web | W6/Overlay/Edit account · Your account (dialog; role, Reset password and Deactivate disabled) | `529:23828` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=529-23828) | `web/w6-edit-own-account-dialog.png` |
+| Web | W6/Overlay/Create officer (dialog) | `529:23958` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=529-23958) | `web/w6-create-officer-dialog.png` |
+| Web | W3/Report management/Priority column (1440) (#54: Priority filter, sorted by priority then newest; nearby-officer lines under the status, #57) | `531:23851` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=531-23851) | `web/w3-priority-column-1440.png` |
+| Web | W4/Report details/Admin · Priority automatic (1440) (Priority card) | `533:24612` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=533-24612) | `web/w4-priority-automatic-1440.png` |
+| Web | W4/Report details/Admin · Priority set by admin (1440) (Back to automatic) | `533:25357` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=533-25357) | `web/w4-priority-set-by-admin-1440.png` |
+| Web | W5/Officer queue/On duty + nearby alert (1440) (#54 Priority column and Sort by; #57 On duty and Respond / Not now) | `539:26111` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=539-26111) | `web/w5-on-duty-nearby-alert-1440.png` |
+| Web | W2/Dashboard · Guide tour step 2 of 6 (#56; Guide button in the top bar, Read aloud) | `543:26679` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-26679) | `web/w2-guide-tour-step-2-1440.png` |
+| Mobile | O1/Assigned/On duty + priority (#54, #57) | `537:4741` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-4741) | `mobile/o1-on-duty-priority.png` |
+| Mobile | O1/Overlay/Accident reported near you (#57; Respond / Not now) | `537:4936` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-4936) | `mobile/o1-nearby-alert-sheet.png` |
+| Mobile | O1/Overlay/Already taken (#57) | `537:5011` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-5011) | `mobile/o1-already-taken-sheet.png` |
+| Mobile | O2/Report details/Responding · Confirm on scene (#57; Confirm on scene / Reject report) | `537:5070` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-5070) | `mobile/o2-responding-confirm-on-scene.png` |
+| Mobile | M1/Home · Guide tour step 1 of 5 (#56; Guide button in the top bar) | `543:32730` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-32730) | `mobile/m1-guide-tour-step-1.png` |
+| Mobile | Settings/Accessibility (#56; Start the guide, Read aloud, Reading speed, Videos) | `543:32820` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-32820) | `mobile/settings-accessibility.png` |
 
 ## Flows (prototype)
 
-Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
+Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); I · Traffic Officer (web, starts at I1 483:47489, #52 and #47; Figma would not store a named start point, so open I1 directly); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
 
 | Frame / asset | Node ID | Link |
 |---|---|---|
@@ -291,7 +338,7 @@ Log out: every signed-in web frame in Flows (B2 to B7, D1 to D5, E2, F1, F2) has
 
 ## Archive (superseded Oct 20, 2026, decision #36)
 
-Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=316-14443)). The professor ruled that Reporter and Traffic Officer are mobile-only and Administrator is web-only, so these frames are no longer used by the apps or the prototype. They are kept for the record, and the officer frames are the reference for the officer mobile screens. Links that led from them to frames still in use were removed; links between archived frames still work on the Archive page.
+Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=316-14443)). The stakeholders ruled that Reporter and Traffic Officer are mobile-only and Administrator is web-only, so these frames are no longer used by the apps or the prototype. They are kept for the record, and the officer frames are the reference for the officer mobile screens. Links that led from them to frames still in use were removed; links between archived frames still work on the Archive page.
 
 | Frame / asset | Node ID | Link |
 |---|---|---|
@@ -329,8 +376,10 @@ Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69Rky
 
 ## Open items for the team
 
+- v1.2.0 (Oct 30): the #54 to #57 frames above are built; the Flows copies do not include them yet.
 - Endpoints approved in design but not built (Carl): `GET /api/public/updates` (#23), update own profile and change own password (#25). Proposed, needs approval: a read-only endpoint for the user's own Action log (#27), with `action_type` and period filters and pagination; W8 is designed against it. W9 About reads the server state from `GET /api/health`; the version is static in the web build.
 - Officer mobile screens O1 to O6 approved by the team on Oct 20 (#36), including "Call reporter" on O2 (opens the phone dialer). In the prototype, Update status sits at the end of the scrolling C3 screen because the plugin API cannot pin it; the app keeps it fixed at the bottom.
 - The APK download buttons open the latest GitHub release; switch them to `roadwatch-ph.me/app` once the domain is live (#38).
-- The demo video needs a WebVTT caption file and a transcript (WCAG 1.2.2), as promised on the Demo video screens.
+- The videos have burned-in captions and a transcript under each player (WCAG 1.2.2; transcripts in `api/src/config/videos.js`, #48).
+- Oct 27 (#48): the per-role Demo video frames and the landing "Watch the video" section were added on the Mobile and Web pages; the Flows copies (0 · W0, E1, E2) still show the earlier single video.
 - The draft emblem raster has a baked-in white haze; a transparent PNG or SVG export would render more cleanly.

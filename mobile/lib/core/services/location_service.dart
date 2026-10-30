@@ -33,7 +33,7 @@ class LocationResult {
 class LocationService {
   const LocationService();
 
-  /// Bulacan State University (Malolos) as the initial map center before any pin.
+  /// Malolos, Bulacan as the initial map center before any pin.
   static const defaultCenter = LatLng(14.8433, 120.8114);
 
   Future<LocationResult> current() async {

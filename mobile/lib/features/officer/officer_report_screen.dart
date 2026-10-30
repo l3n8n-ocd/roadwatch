@@ -122,6 +122,92 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
     );
   }
 
+  // ----- nearby officer (#57, Figma O2 537:5070) -----
+
+  /// "You're responding": the officer who took a nearby alert confirms the accident or rejects the report.
+  Widget _respondingCard(RwColors c, Report r) {
+    final d = r.dispatch;
+    final when = d?.respondedAt == null ? '' : 'Responded ${formatTime(d!.respondedAt!)}';
+    final far = d?.distanceKm == null ? '' : ' · ${d!.distanceKm!.toStringAsFixed(1)} km away';
+    return Container(
+      padding: const EdgeInsets.all(RwSpace.s16),
+      decoration: BoxDecoration(color: c.surfaceAmberSubtle, borderRadius: RwRadius.mdAll),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: Text('You’re responding', style: RwType.h3.copyWith(color: c.textPrimary)),
+          ),
+          const SizedBox(height: RwSpace.s12),
+          Text(
+            '$when$far. When you arrive, confirm the accident to make it an official record, or reject the '
+            'report with a reason.',
+            style: RwType.body.copyWith(color: c.textPrimary),
+          ),
+          const SizedBox(height: RwSpace.s12),
+          RwButton(label: 'Confirm on scene', icon: RwIcons.shieldCheck, onPressed: () => _confirmOnScene(r)),
+          const SizedBox(height: RwSpace.s12),
+          RwButton.destructive(
+            label: 'Reject report',
+            icon: RwIcons.xCircle,
+            onPressed: () => _rejectOnScene(r),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmOnScene(Report r) async {
+    final ok = await showRwConfirmDialog(
+      context,
+      title: 'Confirm ${reportCode(r.reportId)} on scene?',
+      message:
+          'The report becomes an official (verified) record and its status changes to In Progress. '
+          'The reporter is notified.',
+      confirmLabel: 'Confirm on scene',
+      confirmIcon: RwIcons.shieldCheck,
+    );
+    if (!ok || !mounted) return;
+    try {
+      final updated = await context.read<RoadWatchApi>().confirmOnScene(r.reportId);
+      if (!mounted) return;
+      setState(() => _report = updated);
+      showRwToast(
+        context,
+        type: RwToastType.success,
+        title: 'Confirmed on scene',
+        message:
+            '${reportCode(r.reportId)} is now a Verified record and In Progress. The reporter was notified.',
+      );
+    } on ApiException catch (e) {
+      if (mounted) {
+        showRwToast(context, type: RwToastType.error, title: "Couldn't confirm", message: e.message);
+      }
+    }
+  }
+
+  Future<void> _rejectOnScene(Report r) async {
+    final c = RwColors.of(context);
+    final updated = await showModalBottomSheet<Report>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: c.surfaceWhite,
+      barrierColor: c.brandNavy.withValues(alpha: 0.55),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => _RejectOnSceneSheet(report: r, api: context.read<RoadWatchApi>()),
+    );
+    if (updated == null || !mounted) return;
+    setState(() => _report = updated);
+    showRwToast(
+      context,
+      type: RwToastType.success,
+      title: 'Report rejected',
+      message: 'The reporter and the administrator were told. The administrator can reopen it.',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = RwColors.of(context);
@@ -193,7 +279,12 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(RwSpace.s16, RwSpace.s12, RwSpace.s16, RwSpace.s16),
                   // A rejected report is closed for the officer; the API refuses updates too (issue #44).
-                  child: report.status == Statuses.rejected
+                  child: report.awaitingOnSceneConfirmation
+                      ? const RwMetaRow(
+                          icon: RwIcons.info,
+                          text: 'Confirm the accident on scene or reject the report first. Then you can update its status.',
+                        )
+                      : report.status == Statuses.rejected
                       ? const RwMetaRow(
                           icon: RwIcons.info,
                           text:
@@ -258,6 +349,7 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
                     duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : RwMotion.short,
                     child: KeyedSubtree(key: ValueKey(r.status), child: RwStatusChip(r.status)),
                   ),
+                  if (r.priority != null) RwPriorityChip(r.priority!),
                   RwRecordBadge.fromRecordType(r.recordType),
                 ],
               ),
@@ -268,6 +360,7 @@ class _OfficerReportScreenState extends State<OfficerReportScreen> {
             ],
           ),
         ),
+        if (r.awaitingOnSceneConfirmation) ...[gap, _respondingCard(c, r)],
         gap,
         const RwSectionTitle('Location'),
         titleGap,
@@ -567,6 +660,102 @@ class _UpdateStatusSheetState extends State<_UpdateStatusSheet> {
             ],
             const SizedBox(height: RwSpace.s16),
             RwButton(label: 'Save update', loading: _saving, onPressed: _saving ? null : _save),
+            const SizedBox(height: RwSpace.s12),
+            RwButton.secondary(
+              label: 'Cancel',
+              onPressed: _saving ? null : () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Reject on scene (#57): the reason is required; the reporter sees it and the administrator can reopen the report.
+class _RejectOnSceneSheet extends StatefulWidget {
+  const _RejectOnSceneSheet({required this.report, required this.api});
+
+  final Report report;
+  final RoadWatchApi api;
+
+  @override
+  State<_RejectOnSceneSheet> createState() => _RejectOnSceneSheetState();
+}
+
+class _RejectOnSceneSheetState extends State<_RejectOnSceneSheet> {
+  final _reason = TextEditingController();
+  String? _error;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final text = _reason.text.trim();
+    if (text.length < 3) {
+      setState(() => _error = 'Give a reason (3 characters or more).');
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final updated = await widget.api.rejectOnScene(widget.report.reportId, reason: text);
+      if (mounted) Navigator.of(context).pop(updated);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = e.fieldError('rejection_reason') ?? e.message;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = RwColors.of(context);
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(RwSpace.s24, RwSpace.s24, RwSpace.s24, RwSpace.s32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(
+              header: true,
+              child: Text(
+                'Reject report ${reportCode(widget.report.reportId)}?',
+                style: RwType.h3.copyWith(color: c.textPrimary),
+              ),
+            ),
+            const SizedBox(height: RwSpace.s12),
+            Text(
+              'The reporter sees this reason. The administrator sees the report flagged “Rejected on scene” and can '
+              'reopen it.',
+              style: RwType.body.copyWith(color: c.textPrimary),
+            ),
+            const SizedBox(height: RwSpace.s16),
+            RwTextarea(
+              label: 'Rejection reason',
+              required: true,
+              controller: _reason,
+              hintText: 'e.g. No accident at this spot; the road is clear.',
+              errorText: _error,
+              maxLength: 2000,
+            ),
+            const SizedBox(height: RwSpace.s16),
+            RwButton.destructive(
+              label: 'Reject report',
+              icon: RwIcons.xCircle,
+              loading: _saving,
+              onPressed: _save,
+            ),
             const SizedBox(height: RwSpace.s12),
             RwButton.secondary(
               label: 'Cancel',

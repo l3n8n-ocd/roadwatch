@@ -1,8 +1,10 @@
 const { Op } = require('sequelize');
 const { Report, User, Role, AccidentType, ReportPhoto, ReportStatusHistory } = require('../models');
 const { STATUSES, ROLES } = require('../config/constants');
+const { dispatchSummaries } = require('./dispatchService');
+const { autoPriority } = require('./priorityService');
 
-// Reporter contact details are restricted (course UI spec): only the reporter, an Administrator,
+// Reporter contact details are restricted (UI spec): only the reporter, an Administrator,
 // or the Traffic Officer assigned to the report can see them.
 const reporterAttrs = ['user_id', 'full_name', 'contact_email', 'contact_phone'];
 
@@ -33,6 +35,30 @@ function serialize(report, viewer) {
     data.reporter = { user_id: data.reporter.user_id, full_name: data.reporter.full_name };
   }
   data.is_verified_record = data.record_type === 'verified_record';
+  // Priority is for staff only (#54): reporters never see it.
+  if (viewer.role === ROLES.REPORTER) {
+    delete data.priority;
+    delete data.priority_source;
+  } else if (data.accidentType) {
+    // What the automatic rule gives, so staff screens can show "Set by admin · was High".
+    data.priority_auto = autoPriority(data.accidentType.type_name, data.injury_information);
+  }
+  return data;
+}
+
+const isStaff = (viewer) => viewer.role === ROLES.ADMIN || viewer.role === ROLES.OFFICER;
+
+// Adds the nearby-officer summary (#57) to serialized reports for staff screens.
+async function withDispatch(list, viewer) {
+  if (!isStaff(viewer) || !list.length) return list;
+  const summaries = await dispatchSummaries(list.map((r) => r.report_id));
+  list.forEach((r) => { r.dispatch = summaries.get(r.report_id) || null; });
+  return list;
+}
+
+// One report as the viewer may see it, with the nearby-officer summary for staff.
+async function present(report, viewer) {
+  const [data] = await withDispatch([serialize(report, viewer)], viewer);
   return data;
 }
 
@@ -48,6 +74,7 @@ function reportIdFromSearch(text) {
 function buildWhere(q = {}) {
   const where = {};
   if (q.status) where.report_status = q.status;
+  if (q.priority) where.priority = q.priority;
   if (q.accident_type_id) where.accident_type_id = q.accident_type_id;
   if (q.record_type) where.record_type = q.record_type;
   if (q.assigned_officer_id) where.assigned_officer_id = q.assigned_officer_id;
@@ -73,15 +100,16 @@ async function listReports({ where, query, viewer }) {
   const result = await Report.findAndCountAll({
     where,
     include: includes(),
-    order: [['date_submitted', 'DESC']],
+    // sort=priority (#54): Urgent first (ENUM order in schema.sql), then newest.
+    order: query.sort === 'priority' ? [['priority', 'DESC'], ['date_submitted', 'DESC']] : [['date_submitted', 'DESC']],
     limit,
     offset: (page - 1) * limit,
     distinct: true,
   });
   return {
-    data: result.rows.map((r) => serialize(r, viewer)),
+    data: await withDispatch(result.rows.map((r) => serialize(r, viewer)), viewer),
     pagination: { page, limit, total: result.count, pages: Math.ceil(result.count / limit) },
   };
 }
 
-module.exports = { includes, serialize, buildWhere, listReports, STATUSES };
+module.exports = { includes, serialize, present, buildWhere, listReports, STATUSES };

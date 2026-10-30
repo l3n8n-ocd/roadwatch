@@ -9,6 +9,10 @@ erDiagram
     USERS ||--o{ NOTIFICATIONS : "receives"
     REPORTS |o--o{ NOTIFICATIONS : "triggers"
     USERS ||--o{ AUDIT_LOGS : "performs"
+    USERS ||--o| OFFICER_STATUS : "on duty (officer_id)"
+    REPORTS ||--o{ REPORT_DISPATCH : "alerts nearby officers"
+    USERS ||--o{ REPORT_DISPATCH : "is alerted (officer_id)"
+    USERS |o--o{ APP_SETTINGS : "updates"
 
     ROLES {
         INT role_id PK
@@ -44,6 +48,8 @@ erDiagram
         TEXT accident_description
         ENUM report_status
         TEXT official_remarks "nullable"
+        ENUM priority "default Medium"
+        ENUM priority_source "default auto"
         TIMESTAMP date_submitted
     }
     REPORT_PHOTOS {
@@ -74,4 +80,30 @@ erDiagram
         VARCHAR action_taken
         TEXT action_details "nullable"
         TIMESTAMP timestamp
+    }
+
+    OFFICER_STATUS {
+        INT officer_id PK, FK
+        TINYINT is_on_duty "default 0"
+        DECIMAL latitude "nullable"
+        DECIMAL longitude "nullable"
+        TIMESTAMP location_updated_at "nullable"
+        TIMESTAMP updated_at
+    }
+    REPORT_DISPATCH {
+        INT dispatch_id PK
+        INT report_id FK
+        INT officer_id FK
+        DECIMAL distance_km
+        ENUM dispatch_status
+        ENUM outcome "nullable"
+        TIMESTAMP alerted_at
+        TIMESTAMP responded_at "nullable"
+        TIMESTAMP outcome_at "nullable"
+    }
+    APP_SETTINGS {
+        VARCHAR setting_key PK
+        VARCHAR setting_value
+        INT updated_by_user_id FK "nullable"
+        TIMESTAMP updated_at
     }

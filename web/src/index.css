@@ -51,3 +51,23 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* "Built with" logos (#49): a one-color logo has a white "-dark" twin for dark surfaces. Same theme
+   rules as tokens.css: data-theme wins, otherwise the system setting. */
+.rw-logo-dark {
+  display: none;
+}
+:root[data-theme="dark"] .rw-logo-light {
+  display: none;
+}
+:root[data-theme="dark"] .rw-logo-dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .rw-logo-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .rw-logo-dark {
+    display: block;
+  }
+}

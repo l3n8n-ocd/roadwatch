@@ -5,11 +5,14 @@ const { includes, serialize, listReports } = require('../services/reportService'
 const { recordAudit } = require('../services/auditService');
 const { notifyUser } = require('../services/notificationService');
 const { uploadImageBuffer } = require('../services/cloudinaryService');
+const { autoPriority } = require('../services/priorityService');
+const { dispatchNearby } = require('../services/dispatchService');
 const HttpError = require('../utils/httpError');
 
 async function create(req, res) {
   const b = req.body;
-  if (!(await AccidentType.findByPk(b.accident_type_id))) throw new HttpError(400, 'Unknown accident_type_id');
+  const type = await AccidentType.findByPk(b.accident_type_id);
+  if (!type) throw new HttpError(400, 'Unknown accident_type_id');
   const t = await sequelize.transaction();
   let report;
   try {
@@ -26,6 +29,8 @@ async function create(req, res) {
       accident_description: b.accident_description,
       record_type: 'public_submission',
       report_status: 'Submitted',
+      priority: autoPriority(type.type_name, b.injury_information),
+      priority_source: 'auto',
     }, { transaction: t });
     await ReportStatusHistory.create(
       { report_id: report.report_id, changed_by_user_id: req.user.user_id, previous_status: null, new_status: 'Submitted' },
@@ -44,6 +49,12 @@ async function create(req, res) {
   // Tell administrators (in-app only).
   const admins = await User.findAll({ include: [{ model: Role, as: 'role', where: { role_name: ROLES.ADMIN }, attributes: [] }], where: { is_active: true } });
   await Promise.all(admins.map((a) => notifyUser(a.user_id, report.report_id, `New accident report #${report.report_id} at ${report.accident_location}`)));
+  // Alert nearby on-duty officers (#57). Best effort: the report is already saved.
+  try {
+    await dispatchNearby(report);
+  } catch (err) {
+    console.warn('Nearby-officer alert failed:', err.message);
+  }
   const full = await Report.findByPk(report.report_id, { include: includes({ withHistory: true }) });
   res.status(201).json({ success: true, data: serialize(full, req.user) });
 }
@@ -52,7 +63,8 @@ async function create(req, res) {
 async function listMine(req, res) {
   const where = { reporter_id: req.user.user_id };
   if (req.validQuery.status) where.report_status = req.validQuery.status;
-  const result = await listReports({ where, query: req.validQuery, viewer: req.user });
+  // Reporters never see priority (#54), so their list is always newest first.
+  const result = await listReports({ where, query: { ...req.validQuery, sort: 'newest' }, viewer: req.user });
   res.json({ success: true, ...result });
 }
 

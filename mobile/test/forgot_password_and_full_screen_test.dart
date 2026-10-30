@@ -125,8 +125,8 @@ void main() {
 
     final fields = find.byType(TextField);
     await tester.enterText(fields.at(0), 'AAAAAAAA');
-    await tester.enterText(fields.at(1), 'newpass123');
-    await tester.enterText(fields.at(2), 'newpass123');
+    await tester.enterText(fields.at(1), 'Lantern#456b');
+    await tester.enterText(fields.at(2), 'Lantern#456b');
     await tester.tap(find.text('Change password'));
     await tester.pumpAndSettle();
     expect(find.text('This code is wrong or has expired. Send a new code.'), findsOneWidget);
@@ -140,7 +140,7 @@ void main() {
     await tester.enterText(fields.at(0), 'k7q2m9xp');
     await tester.tap(find.text('Change password'));
     await tester.pumpAndSettle();
-    expect(api.resets.last['password'], 'newpass123');
+    expect(api.resets.last['password'], 'Lantern#456b');
     expect(find.text('Log in'), findsWidgets, reason: 'back on Log in');
     expect(find.text('Password changed'), findsOneWidget);
     expect(find.text('Log in with your new password.'), findsOneWidget);
@@ -291,8 +291,8 @@ void main() {
       await tester.pumpAndSettle();
       final fields = find.byType(TextField);
       await tester.enterText(fields.at(0), 'K7Q2M9XB');
-      await tester.enterText(fields.at(1), 'roadwatch2026');
-      await tester.enterText(fields.at(2), 'roadwatch2026');
+      await tester.enterText(fields.at(1), 'Roadwatch#2026');
+      await tester.enterText(fields.at(2), 'Roadwatch#2026');
       await tester.tap(find.bySemanticsLabel('Show password').first);
       await tester.tap(find.text('Change password'));
       await shot(tester, 'm0_forgot_code_wrong');

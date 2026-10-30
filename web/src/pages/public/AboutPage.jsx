@@ -1,14 +1,15 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Icon } from '../../components/ui';
+import { BuiltWith, Icon } from '../../components/ui';
 import PublicLayout from '../../layouts/PublicLayout';
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from '../../lib/constants';
 import { cx } from '../../lib/cx';
 import { SECTION, WRAP } from '../../lib/publicStyles';
+import { TEAM } from '../../lib/team';
 import useReveals from '../../lib/useReveals';
 
-// W10 public About and Meet our team (Figma 345:15810, 390: 346:15885; #40). The admin console's
-// About (version, server status) is a separate page at /admin/about (W9).
+// W10 public About, Meet our team and Built with (Figma 345:15810, 390: 346:15885; #40, #48, #49). The staff
+// console's About (version, server status) is a separate page (W9).
 
 const SUPPORTS = [
   'Accident reporting from the Android app, with GPS location and photos',
@@ -17,34 +18,6 @@ const SUPPORTS = [
   'Status tracking with alerts at every change',
   'Review and management by authorized staff',
   'A clear line between public submissions and verified records',
-];
-
-// Team member card (Figma 344:36590): initials until photos exist.
-const TEAM = [
-  {
-    initials: 'LA',
-    name: 'Lenon Adriano',
-    role: 'Project Leader · Front-End (Mobile)',
-    bio: 'Leads the project and builds the RoadWatch Android app in Flutter. Keeps the repository, CI and releases running.',
-  },
-  {
-    initials: 'PL',
-    name: 'Pauline Lapuz',
-    role: 'QA Testing · Front-End (Web)',
-    bio: 'Builds the administrator web dashboard in React and runs the test plan for both apps, including accessibility checks.',
-  },
-  {
-    initials: 'CS',
-    name: 'Carl Ernest Santos',
-    role: 'Back-End and Database',
-    bio: 'Designs the MySQL database and builds the Express API, from sign-in and reports to exports and email.',
-  },
-  {
-    initials: 'PI',
-    name: 'Princess Lorellyn Isip',
-    role: 'Documentation Lead',
-    bio: 'Writes the user guide and project documents, and produces the demo video and contribution report.',
-  },
 ];
 
 export default function AboutPage() {
@@ -92,7 +65,7 @@ export default function AboutPage() {
                 administrator checks it, and the public road updates show verified records only.
               </p>
               <p className="type-body-sm text-text-muted">
-                A student project. It does not replace official emergency services. In an emergency, call 911.
+                RoadWatch does not replace official emergency services. In an emergency, call 911.
               </p>
             </div>
             <div data-reveal className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 sm:p-8">
@@ -117,7 +90,7 @@ export default function AboutPage() {
               </h2>
               <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
               <p className="type-body text-text-muted sm:type-body-lg">
-                Four BSIT 3I-G1 students built RoadWatch for IT 305 Advance Web Development at Bulacan State University.
+                RoadWatch is built and run by a four-person product team.
               </p>
             </div>
             <ul data-reveal-list className="grid gap-4 md:grid-cols-2 lg:gap-6">
@@ -126,21 +99,33 @@ export default function AboutPage() {
                   key={member.name}
                   className="flex items-start gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-4 shadow-rw-sm sm:gap-5 sm:p-6"
                 >
-                  <span
+                  <img
                     data-pop
-                    aria-hidden="true"
-                    className="flex size-16 shrink-0 items-center justify-center rounded-full bg-surface-navy-subtle type-h2 text-text-primary sm:size-18"
-                  >
-                    {member.initials}
-                  </span>
+                    src={member.photo}
+                    alt={`Photo of ${member.name}`}
+                    className="size-16 shrink-0 rounded-full bg-surface-navy-subtle object-cover sm:size-18"
+                  />
                   <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
                     <h3 className="type-h3 text-text-primary">{member.name}</h3>
-                    <p className="rounded-full bg-surface-blue-subtle px-3 py-1 type-caption text-text-blue">{member.role}</p>
-                    <p className="type-body text-text-muted">{member.bio}</p>
+                    <p className="rounded-full bg-surface-blue-subtle px-3 py-1 type-caption text-text-blue">{member.title}</p>
+                    <p className="type-body text-text-muted max-sm:line-clamp-2">{member.bio}</p>
                   </div>
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section aria-labelledby="built-title" className={cx(SECTION, 'bg-surface-light-gray pt-0 sm:pt-0 lg:pt-0')}>
+          <div className={cx(WRAP, 'flex flex-col gap-6 lg:gap-8')}>
+            <div data-reveal className="flex flex-col gap-2">
+              <h2 id="built-title" className="type-h2 text-text-primary sm:type-h1">
+                Built with
+              </h2>
+              <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
+              <p className="type-body text-text-muted sm:type-body-lg">The tools and services behind RoadWatch.</p>
+            </div>
+            <BuiltWith />
           </div>
         </section>
 
@@ -150,7 +135,7 @@ export default function AboutPage() {
               <h2 id="contact-title" className="type-h2 text-text-primary">
                 Questions about RoadWatch?
               </h2>
-              <p className="type-body text-text-muted">Email the team. We usually reply within two school days.</p>
+              <p className="type-body text-text-muted">Email the team. We usually reply within two working days.</p>
             </div>
             <a
               href={SUPPORT_MAILTO}

@@ -65,17 +65,29 @@ router.post('/reports/:id/photos', allowRoles(REPORTER), id, uploadImages, wrap(
 router.get('/officer/reports', allowRoles(OFFICER), validate(s.listQuery, 'query'), wrap(officerReports.list));
 router.get('/officer/reports/:id', allowRoles(OFFICER), id, wrap(officerReports.getOne));
 router.patch('/officer/reports/:id', allowRoles(OFFICER), id, validate(s.officerUpdate), wrap(officerReports.update));
+// Nearby on-duty officers (#57).
+router.get('/officer/duty', allowRoles(OFFICER), wrap(officerReports.getDuty));
+router.put('/officer/duty', allowRoles(OFFICER), validate(s.duty), wrap(officerReports.setDuty));
+router.get('/officer/nearby', allowRoles(OFFICER), wrap(officerReports.nearby));
+router.post('/officer/nearby/:id/respond', allowRoles(OFFICER), id, wrap(officerReports.respond));
+router.post('/officer/nearby/:id/decline', allowRoles(OFFICER), id, wrap(officerReports.decline));
+router.post('/officer/reports/:id/confirm', allowRoles(OFFICER), id, validate(s.confirmOnScene), wrap(officerReports.confirmOnScene));
+router.post('/officer/reports/:id/reject', allowRoles(OFFICER), id, validate(s.rejectOnScene), wrap(officerReports.rejectOnScene));
 
 // ----- administrator -----
 router.get('/admin/reports', allowRoles(ADMIN), validate(s.listQuery, 'query'), wrap(adminReports.list));
 router.get('/admin/reports/:id', allowRoles(ADMIN), id, wrap(adminReports.getOne));
 router.patch('/admin/reports/:id/status', allowRoles(ADMIN), id, validate(s.adminStatus), wrap(adminReports.setStatus));
 router.patch('/admin/reports/:id/assign', allowRoles(ADMIN), id, validate(s.assign), wrap(adminReports.assign));
+router.patch('/admin/reports/:id/priority', allowRoles(ADMIN), id, validate(s.setPriority), wrap(adminReports.setPriority));
+router.get('/admin/settings', allowRoles(ADMIN), wrap(misc.settings));
+router.patch('/admin/settings', allowRoles(ADMIN), validate(s.updateSettings), wrap(misc.updateSettings));
 router.post('/admin/accident-types', allowRoles(ADMIN), validate(s.accidentType), wrap(misc.createType));
 router.get('/admin/audit-logs', allowRoles(ADMIN), validate(s.auditLogQuery, 'query'), wrap(misc.auditLogs));
 
 router.post('/users', allowRoles(ADMIN), validate(s.createUser), wrap(users.create));
 router.get('/users', allowRoles(ADMIN), validate(s.listUsersQuery, 'query'), wrap(users.list));
+router.patch('/users/:id', allowRoles(ADMIN), id, validate(s.updateUser), wrap(users.update));
 router.patch('/users/:id/role', allowRoles(ADMIN), id, validate(s.setRole), wrap(users.setRole));
 router.patch('/users/:id/active', allowRoles(ADMIN), id, validate(s.setActive), wrap(users.setActive));
 router.patch('/users/:id/password', allowRoles(ADMIN), id, validate(s.adminResetPassword), wrap(users.resetPassword));

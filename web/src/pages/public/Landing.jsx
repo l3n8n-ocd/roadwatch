@@ -13,6 +13,7 @@ import {
   StatusChip,
   Timeline,
   TimelineItem,
+  VideoPlayer,
 } from '../../components/ui';
 import { publicApi } from '../../api/endpoints';
 import PublicLayout from '../../layouts/PublicLayout';
@@ -110,7 +111,7 @@ const FAQ = [
   },
   {
     q: 'How do traffic officers get an account?',
-    a: 'The RoadWatch administrator creates traffic officer accounts. Officers then sign in on the same Android app.',
+    a: 'The RoadWatch administrator creates traffic officer accounts. Officers then sign in on the Android app or on this website.',
   },
   { q: 'Is there an iPhone app?', a: 'Not yet. RoadWatch is a free Android app (APK) for now.' },
 ];
@@ -149,6 +150,7 @@ export default function Landing() {
         <Hero />
         <StatsBar />
         <HowItWorks />
+        <WatchTheVideo />
         <PublicUpdates />
         <SafetyTips />
         <About />
@@ -207,8 +209,8 @@ function Hero() {
             </a>
           </div>
           <p data-hero-fade className="type-body-sm text-text-inverse-muted max-sm:hidden">
-            Free Android app (APK). Reporters and traffic officers use the app; this website is for browsing and for
-            administrators.
+            Free Android app (APK). Reporters and traffic officers use the app; administrators and traffic officers can
+            also sign in on this website.
           </p>
           <p
             data-hero-fade
@@ -412,6 +414,62 @@ function HowItWorks() {
             </li>
           ))}
         </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Watch the video (#48; Figma 489:21200, 390: 489:21224) ---------- */
+
+// The promotional video, from GET /app-info (PROMO_VIDEO_URL on the API). Hidden until the URL is set.
+const VIDEO_ROLES = ['Reporter app', 'Administrator', 'Traffic Officer'];
+
+function WatchTheVideo() {
+  const [video, setVideo] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    publicApi
+      .appInfo()
+      .then((info) => {
+        if (!cancelled && info?.promoVideo?.url) setVideo(info.promoVideo);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!video) return null;
+  return (
+    <section id="video" aria-labelledby="video-title" className={cx(SECTION, 'scroll-mt-20 bg-brand-navy')}>
+      <div className={cx(WRAP, 'flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-16')}>
+        <div className="flex flex-col gap-4 lg:w-100 lg:shrink-0">
+          <p className="type-overline text-brand-amber uppercase">Watch the video</p>
+          <h2 id="video-title" className="type-h2 text-text-inverse sm:type-h1">
+            See RoadWatch in three minutes
+          </h2>
+          <p className="type-body text-text-inverse-muted sm:type-body-lg">
+            <span className="sm:hidden">
+              A reporter sends an accident, the administrator verifies and assigns it, and an officer closes the case.
+            </span>
+            <span className="max-sm:hidden">
+              The team walks through the whole system: a reporter sends an accident from the app, the administrator
+              verifies and assigns it, and a traffic officer closes the case. We also show how RoadWatch was built.
+            </span>
+          </p>
+          <ul aria-label="Roles shown" className="flex flex-wrap gap-2 max-sm:hidden">
+            {VIDEO_ROLES.map((role) => (
+              <li key={role} className="rounded-full bg-surface-navy-hover px-3 py-1.5 type-label text-text-inverse">
+                {role}
+              </li>
+            ))}
+          </ul>
+          <p className="type-body-sm text-text-inverse-muted max-sm:hidden">
+            Captions are on in the player{video.transcript ? ', and a transcript is below the video' : ''}.
+          </p>
+        </div>
+        <VideoPlayer src={video.url} label="RoadWatch promotional video" transcript={video.transcript} tone="dark" className="min-w-0 flex-1" />
       </div>
     </section>
   );
@@ -729,6 +787,7 @@ function EmergencyCard() {
 
 /* ---------- About ---------- */
 
+// Phone width (Figma 139:4275): only the heading, the 911 disclaimer and the link to /about, which has the full text.
 function About() {
   return (
     <section id="about" aria-labelledby="about-title" className={cx(SECTION, 'scroll-mt-20 bg-surface-white')}>
@@ -738,13 +797,14 @@ function About() {
             About RoadWatch
           </h2>
           <span data-heading-bar aria-hidden="true" className="block h-1 w-8 rounded-full bg-brand-amber" />
-          <p className="type-body text-text-primary sm:type-body-lg">
-            RoadWatch is a web and mobile road accident reporting system made by BSIT 3I-G1 students at Bulacan State
-            University for IT 305 Advanced Web Development. It makes it easier for the public to submit accident
-            information, and helps administrators and traffic officers review, verify and manage every report in one
-            place.
+          <p className="type-body text-text-primary max-sm:hidden sm:type-body-lg">
+            RoadWatch is a web and mobile road accident reporting system. It makes it easier for the public to submit
+            accident information, and helps administrators and traffic officers review, verify and manage every report
+            in one place.
           </p>
-          <p className="type-body-sm text-text-muted">A student project. It does not replace official emergency services.</p>
+          <p className="type-body-sm text-text-muted">
+            RoadWatch does not replace official emergency services. In an emergency, call 911.
+          </p>
           <Link
             to="/about"
             className="flex min-h-12 items-center gap-2 self-start rounded-rw-sm type-button text-text-blue underline underline-offset-2 sm:min-h-11"
@@ -753,7 +813,7 @@ function About() {
             <Icon name="chevron-right" size={20} />
           </Link>
         </div>
-        <div data-reveal className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 sm:p-8">
+        <div data-reveal className="flex flex-col gap-4 rounded-rw-md bg-surface-light-gray p-6 max-sm:hidden sm:p-8">
           <h3 className="type-h3 text-text-primary">What RoadWatch supports</h3>
           <ul data-ticks className="flex flex-col gap-4">
             {SUPPORTS.map((item) => (

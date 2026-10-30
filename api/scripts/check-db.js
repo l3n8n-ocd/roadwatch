@@ -5,8 +5,8 @@ const mysql = require('mysql2/promise');
 const { getDbConfig } = require('../src/config/dbConfig');
 
 const EXPECTED = [
-  'accident_types', 'audit_logs', 'notifications', 'report_photos',
-  'report_status_history', 'reports', 'roles', 'users',
+  'accident_types', 'app_settings', 'audit_logs', 'notifications', 'officer_status', 'report_dispatch',
+  'report_photos', 'report_status_history', 'reports', 'roles', 'users',
 ];
 
 (async () => {
@@ -31,6 +31,10 @@ const EXPECTED = [
     if (found.includes('users')) {
       const [col] = await conn.query("SHOW COLUMNS FROM users LIKE 'is_active'");
       console.log(`users.is_active column: ${col.length ? 'present' : 'MISSING (reload schema.sql)'}`);
+    }
+    if (found.includes('reports')) {
+      const [col] = await conn.query("SHOW COLUMNS FROM reports LIKE 'priority'");
+      console.log(`reports.priority column: ${col.length ? 'present' : 'MISSING (run npm run migrate)'}`);
     }
     if (missing.length) process.exitCode = 1;
   } finally {

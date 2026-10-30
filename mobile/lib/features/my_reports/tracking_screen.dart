@@ -337,7 +337,7 @@ class _HistoryRow {
   final String? remarks;
 }
 
-/// Who sets each status in the course workflow (#30). The API sends staff names, which the
+/// Who sets each status in the RoadWatch workflow (#30). The API sends staff names, which the
 /// reporter must not see, so the role is derived from the status instead.
 String _actorFor(String status) {
   switch (status) {

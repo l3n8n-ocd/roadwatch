@@ -8,6 +8,7 @@ import '../../core/api/roadwatch_api.dart';
 import '../../core/constants.dart';
 import '../../core/state/auth_provider.dart';
 import '../../core/state/notifications_provider.dart';
+import '../../core/state/settings_provider.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/widgets.dart';
 import '../../routes.dart';
@@ -33,10 +34,69 @@ class _HomeTabState extends State<HomeTab> {
   List<Report> _reports = const [];
   String? _error;
 
+  // Parts the accessibility guide points at (#56).
+  final _ctaKey = GlobalKey();
+  final _emergencyKey = GlobalKey();
+  final _recentKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _load();
+    rwGuideStart.addListener(_guideRequested);
+  }
+
+  @override
+  void dispose() {
+    rwGuideStart.removeListener(_guideRequested);
+    super.dispose();
+  }
+
+  // Settings > Accessibility > Start the guide (only the visible tab answers).
+  void _guideRequested() {
+    if (mounted && TickerMode.valuesOf(context).enabled) _startGuide();
+  }
+
+  void _startGuide() {
+    final settings = context.read<SettingsProvider?>();
+    showRwGuideTour(
+      context,
+      readAloud: settings?.readAloud ?? false,
+      readingSpeed: settings?.readingSpeed ?? 1.0,
+      steps: [
+        RwGuideStep(
+          target: _ctaKey,
+          title: 'Report an Accident',
+          text:
+              'Start here when you see a road accident. You’ll add what happened, the place and photos. It takes '
+              'about a minute.',
+        ),
+        RwGuideStep(
+          target: _emergencyKey,
+          title: 'Emergencies',
+          text:
+              'If someone is hurt or in danger, call 911 first. RoadWatch does not replace emergency services. More '
+              'hotlines are in Settings.',
+        ),
+        RwGuideStep(
+          target: _recentKey,
+          title: 'Your recent reports',
+          text: 'Your newest reports with their status in words. Tap one to follow its status and remarks.',
+        ),
+        const RwGuideStep(
+          title: 'Notifications',
+          text:
+              'The bell at the top shows how many updates you haven’t read. Every update is shown on screen, '
+              'so nothing depends on sound.',
+        ),
+        const RwGuideStep(
+          title: 'Tabs',
+          text:
+              'Home, My reports, Notifications and Settings are at the bottom. Settings > Accessibility starts '
+              'this guide again and turns on Read aloud.',
+        ),
+      ],
+    );
   }
 
   Future<void> _load() async {
@@ -79,6 +139,7 @@ class _HomeTabState extends State<HomeTab> {
       appBar: RwTopBar.home(
         unreadCount: unread,
         onNotifications: () => HomeShell.selectTab(context, RwTab.notifications),
+        onGuide: _startGuide,
       ),
       body: RefreshIndicator(
         onRefresh: _load,
@@ -87,8 +148,9 @@ class _HomeTabState extends State<HomeTab> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            _GreetingBand(name: name, onReport: _startReport),
+            _GreetingBand(name: name, onReport: _startReport, ctaKey: _ctaKey, emergencyKey: _emergencyKey),
             Padding(
+              key: _recentKey,
               padding: const EdgeInsets.fromLTRB(RwSpace.s16, 20, RwSpace.s16, 20),
               child: _recent(context, c),
             ),
@@ -170,10 +232,12 @@ class _HomeTabState extends State<HomeTab> {
 
 /// Navy band (street photo at 15 %): greeting, "Report an Accident" card, emergency shortcut.
 class _GreetingBand extends StatelessWidget {
-  const _GreetingBand({required this.name, required this.onReport});
+  const _GreetingBand({required this.name, required this.onReport, this.ctaKey, this.emergencyKey});
 
   final String? name;
   final VoidCallback onReport;
+  final GlobalKey? ctaKey;
+  final GlobalKey? emergencyKey;
 
   String _greeting() {
     final h = DateTime.now().hour;
@@ -211,9 +275,16 @@ class _GreetingBand extends StatelessWidget {
                 ),
                 const SizedBox(height: RwSpace.s16),
                 // #41, M1: the card grows in from 96% as Home opens.
-                RwEntrance(fromScale: 0.96, offset: 0, child: _ReportCta(onTap: onReport)),
+                RwEntrance(
+                  fromScale: 0.96,
+                  offset: 0,
+                  child: KeyedSubtree(
+                    key: ctaKey,
+                    child: _ReportCta(onTap: onReport),
+                  ),
+                ),
                 const SizedBox(height: RwSpace.s16),
-                const _EmergencyShortcut(),
+                KeyedSubtree(key: emergencyKey, child: const _EmergencyShortcut()),
               ],
             ),
           ),
