@@ -1,9 +1,17 @@
-// Administrator side: review, filter, verify, assign, change status.
-const { Report, User, Role } = require('../models');
+// Administrator side: review, filter, verify, assign, change status, set priority.
+const { Report, User, Role, AccidentType } = require('../models');
 const { ROLES } = require('../config/constants');
-const { includes, serialize, buildWhere, listReports } = require('../services/reportService');
+const { includes, present, buildWhere, listReports } = require('../services/reportService');
 const { changeStatus } = require('../services/statusService');
+const { autoPriority } = require('../services/priorityService');
+const { closeAlerts } = require('../services/dispatchService');
+const { recordAudit } = require('../services/auditService');
 const HttpError = require('../utils/httpError');
+
+async function respondWithReport(res, reportId, viewer) {
+  const full = await Report.findByPk(reportId, { include: includes({ withHistory: true }) });
+  res.json({ success: true, data: await present(full, viewer) });
+}
 
 async function list(req, res) {
   const result = await listReports({ where: buildWhere(req.validQuery), query: req.validQuery, viewer: req.user });
@@ -13,7 +21,7 @@ async function list(req, res) {
 async function getOne(req, res) {
   const report = await Report.findByPk(req.params.id, { include: includes({ withHistory: true }) });
   if (!report) throw new HttpError(404, 'Report not found');
-  res.json({ success: true, data: serialize(report, req.user) });
+  res.json({ success: true, data: await present(report, req.user) });
 }
 
 async function setStatus(req, res) {
@@ -22,8 +30,9 @@ async function setStatus(req, res) {
   const report = await Report.findByPk(req.params.id);
   if (!report) throw new HttpError(404, 'Report not found');
   await changeStatus({ report, status, actor: req.user, remarks, rejectionReason: rejection_reason });
-  const full = await Report.findByPk(report.report_id, { include: includes({ withHistory: true }) });
-  res.json({ success: true, data: serialize(full, req.user) });
+  // The administrator is handling it now, so nearby-officer alerts nobody answered are closed (#57).
+  await closeAlerts(report.report_id);
+  await respondWithReport(res, report.report_id, req.user);
 }
 
 async function assign(req, res) {
@@ -40,8 +49,28 @@ async function assign(req, res) {
     throw new HttpError(400, 'officer_id must be an active Traffic Officer');
   }
   await changeStatus({ report, status: 'Assigned', actor: req.user, remarks: req.body.remarks, assignedOfficerId: officer.user_id });
-  const full = await Report.findByPk(report.report_id, { include: includes({ withHistory: true }) });
-  res.json({ success: true, data: serialize(full, req.user) });
+  await closeAlerts(report.report_id);
+  await respondWithReport(res, report.report_id, req.user);
 }
 
-module.exports = { list, getOne, setStatus, assign };
+// Priority (#54): the administrator overrides the automatic priority, or sends null to go back to it.
+// Officers see the priority but cannot change it; every change is in the action log.
+async function setPriority(req, res) {
+  const report = await Report.findByPk(req.params.id, { include: [{ model: AccidentType, as: 'accidentType' }] });
+  if (!report) throw new HttpError(404, 'Report not found');
+  const from = { priority: report.priority, source: report.priority_source };
+  if (req.body.priority === null) {
+    report.priority = autoPriority(report.accidentType?.type_name, report.injury_information);
+    report.priority_source = 'auto';
+  } else {
+    report.priority = req.body.priority;
+    report.priority_source = 'admin';
+  }
+  await report.save();
+  await recordAudit(req.user.user_id, 'report.priority_changed', {
+    report_id: report.report_id, from: from.priority, to: report.priority, source: report.priority_source,
+  });
+  await respondWithReport(res, report.report_id, req.user);
+}
+
+module.exports = { list, getOne, setStatus, assign, setPriority };

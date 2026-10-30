@@ -12,7 +12,8 @@
     "test": "node --test",
     "seed:admin": "node scripts/seed-admin.js",
     "check:db": "node scripts/check-db.js",
-    "lint": "echo \"No linter configured yet\""
+    "lint": "echo \"No linter configured yet\"",
+    "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

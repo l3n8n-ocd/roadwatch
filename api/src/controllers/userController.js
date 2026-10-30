@@ -77,4 +77,19 @@ async function resetPassword(req, res) {
   res.json({ success: true, data: { user_id: user.user_id } });
 }
 
-module.exports = { create, list, setRole, setActive, resetPassword };
+// Users & settings Edit dialog (#55): another account's name and phone. Email stays fixed (it is the sign-in).
+async function update(req, res) {
+  const user = await User.findByPk(req.params.id, { include: [{ model: Role, as: 'role', attributes: ['role_name'] }] });
+  if (!user) throw new HttpError(404, 'User not found');
+  const changed = [];
+  if (req.body.full_name !== user.full_name) changed.push('full_name');
+  const phone = req.body.contact_phone === undefined ? user.contact_phone : (req.body.contact_phone || null);
+  if (phone !== user.contact_phone) changed.push('contact_phone');
+  user.full_name = req.body.full_name;
+  user.contact_phone = phone;
+  await user.save();
+  if (changed.length) await recordAudit(req.user.user_id, 'user.updated', { target_user_id: user.user_id, fields: changed });
+  res.json({ success: true, data: { ...user.toJSON(), role: user.role.role_name } });
+}
+
+module.exports = { create, list, update, setRole, setActive, resetPassword };

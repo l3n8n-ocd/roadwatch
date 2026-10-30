@@ -23,6 +23,7 @@ async function exportRows(where) {
     latitude: r.latitude ?? '',
     longitude: r.longitude ?? '',
     injury_information: r.injury_information,
+    priority: r.priority,
     vehicles_involved: r.vehicles_involved || '',
     reporter: r.reporter?.full_name || '',
     reporter_email: r.reporter?.contact_email || '',
@@ -39,7 +40,7 @@ const safeCell = (v) => (typeof v === 'string' && /^[=+\-@\t\r]/.test(v) ? `'${v
 async function csvBuffer(where) {
   const rows = (await exportRows(where)).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, safeCell(v)])));
   const fields = ['report_id', 'record_type', 'status', 'accident_type', 'accident_date', 'accident_time', 'location', 'latitude',
-    'longitude', 'injury_information', 'vehicles_involved', 'reporter', 'reporter_email', 'assigned_officer', 'official_remarks',
+    'longitude', 'injury_information', 'priority', 'vehicles_involved', 'reporter', 'reporter_email', 'assigned_officer', 'official_remarks',
     'description', 'date_submitted'];
   return Buffer.from(new Parser({ fields }).parse(rows));
 }
@@ -54,12 +55,13 @@ const PDF_COLUMNS = [
   { label: 'Report', width: 58, value: (r) => `RW-${String(r.report_id).padStart(6, '0')}` },
   { label: 'Date and time', width: 78, value: (r) => `${r.accident_date} ${String(r.accident_time || '').slice(0, 5)}` },
   { label: 'Type', width: 80, value: (r) => r.accident_type },
-  { label: 'Location', width: 160, value: (r) => r.location },
+  { label: 'Location', width: 130, value: (r) => r.location },
   { label: 'Injuries', width: 58, value: (r) => r.injury_information.charAt(0).toUpperCase() + r.injury_information.slice(1) },
+  { label: 'Priority', width: 52, value: (r) => r.priority },
   { label: 'Status', width: 92, value: (r) => r.status },
   { label: 'Record', width: 78, value: (r) => (r.record_type === 'verified_record' ? 'Verified record' : 'Public submission') },
-  { label: 'Reporter', width: 82, value: (r) => r.reporter || '-' },
-  { label: 'Officer', width: 84, value: (r) => r.assigned_officer || 'Unassigned' },
+  { label: 'Reporter', width: 70, value: (r) => r.reporter || '-' },
+  { label: 'Officer', width: 74, value: (r) => r.assigned_officer || 'Unassigned' },
 ];
 const PAD = 4;
 

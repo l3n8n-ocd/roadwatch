@@ -3,6 +3,7 @@ const { dashboardStats, publicStats: countPublicStats, publicUpdates: listPublic
 const { buildWhere } = require('../services/reportService');
 const { csvBuffer, pdfBuffer } = require('../services/exportService');
 const { recordAudit, listAuditLogs } = require('../services/auditService');
+const { getSettings, setAlertRangeKm } = require('../services/settingsService');
 const HttpError = require('../utils/httpError');
 
 // ----- notifications -----
@@ -71,4 +72,12 @@ async function exportPdf(req, res) {
   res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="roadwatch-reports.pdf"' }).send(buf);
 }
 
-module.exports = { publicStats, publicUpdates, auditLogs, listNotifications, markRead, markAllRead, listTypes, createType, stats, summary, exportCsv, exportPdf };
+// ----- admin settings (#57) -----
+async function settings(req, res) {
+  res.json({ success: true, data: await getSettings() });
+}
+async function updateSettings(req, res) {
+  res.json({ success: true, data: await setAlertRangeKm(req.body.alert_range_km, req.user) });
+}
+
+module.exports = { settings, updateSettings, publicStats, publicUpdates, auditLogs, listNotifications, markRead, markAllRead, listTypes, createType, stats, summary, exportCsv, exportPdf };

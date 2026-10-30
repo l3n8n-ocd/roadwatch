@@ -1,6 +1,6 @@
 // All request validation (zod) in one place. Unknown fields are stripped, so a client cannot sneak in extra data.
 const { z } = require('zod');
-const { STATUSES, OFFICER_STATUSES, INJURY_VALUES, ROLES, PLATFORMS } = require('../config/constants');
+const { STATUSES, OFFICER_STATUSES, INJURY_VALUES, PRIORITIES, ROLES, PLATFORMS, DISPATCH } = require('../config/constants');
 
 const id = z.coerce.number().int().positive();
 const email = z.string().trim().toLowerCase().email().max(120);
@@ -81,6 +81,9 @@ const listQuery = z.object({
   date_to: z.preprocess(emptyToUndef, date.optional()),
   location: z.preprocess(emptyToUndef, z.string().trim().max(100).optional()),
   q: z.preprocess(emptyToUndef, z.string().trim().max(100).optional()),
+  // Staff lists only (#54); ignored for reporters.
+  priority: z.preprocess(emptyToUndef, z.enum(PRIORITIES).optional()),
+  sort: z.preprocess(emptyToUndef, z.enum(['newest', 'priority']).default('newest')),
 });
 
 const adminStatus = z.object({
@@ -96,6 +99,28 @@ const officerUpdate = z.object({
   remarks: z.string().trim().min(1).max(10000).optional(),
 }).refine((d) => d.status || d.remarks, { message: 'Send a status, remarks, or both', path: ['status'] });
 
+// Admin priority override (#54). null goes back to the automatic priority.
+const setPriority = z.object({ priority: z.enum(PRIORITIES).nullable() });
+
+// Users & settings (#55): another account's name and phone.
+const updateUser = z.object({
+  full_name: z.string().trim().min(2).max(100),
+  contact_phone: z.string().trim().max(20).nullable().optional(),
+});
+
+// Admin settings (#57).
+const updateSettings = z.object({ alert_range_km: z.coerce.number().min(0.5).max(DISPATCH.MAX_RANGE_KM) });
+
+// Officer duty switch (#57). The location is sent while on duty.
+const duty = z.object({
+  on_duty: z.boolean(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
+}).refine((d) => (d.latitude === undefined) === (d.longitude === undefined), { message: 'Send latitude and longitude together', path: ['latitude'] });
+
+const confirmOnScene = z.object({ remarks: z.string().trim().min(1).max(10000).optional() });
+const rejectOnScene = z.object({ rejection_reason: z.string().trim().min(3, 'Give a reason (3 characters or more)').max(2000) });
+
 const summaryQuery = z.object({
   period: z.enum(['daily', 'weekly', 'monthly', 'annual']),
   date: z.preprocess(emptyToUndef, date.optional()),
@@ -105,5 +130,5 @@ const idParam = z.object({ id });
 
 module.exports = {
   register, login, updateMe, changePassword, forgotPassword, resetPassword, adminResetPassword, activityQuery, auditLogQuery, createUser, setRole, setActive, listUsersQuery, createReport, listQuery, adminStatus, assign,
-  officerUpdate, summaryQuery, accidentType, idParam,
+  officerUpdate, summaryQuery, accidentType, idParam, setPriority, updateUser, updateSettings, duty, confirmOnScene, rejectOnScene,
 };

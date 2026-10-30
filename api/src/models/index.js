@@ -1,7 +1,7 @@
 // Sequelize models. They mirror database/schema.sql exactly (tables are created by the SQL files, never by Sequelize).
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const { STATUSES, INJURY_VALUES } = require('../config/constants');
+const { STATUSES, INJURY_VALUES, PRIORITIES } = require('../config/constants');
 
 const Role = sequelize.define('roles', {
   role_id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
@@ -44,6 +44,8 @@ const Report = sequelize.define('reports', {
   accident_description: { type: DataTypes.TEXT, allowNull: false },
   report_status: { type: DataTypes.ENUM(...STATUSES), allowNull: false, defaultValue: 'Submitted' },
   official_remarks: { type: DataTypes.TEXT, allowNull: true },
+  priority: { type: DataTypes.ENUM(...PRIORITIES), allowNull: false, defaultValue: 'Medium' },
+  priority_source: { type: DataTypes.ENUM('auto', 'admin'), allowNull: false, defaultValue: 'auto' },
   date_submitted: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
 });
 
@@ -80,6 +82,35 @@ const AuditLog = sequelize.define('audit_logs', {
   timestamp: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
 });
 
+// Nearby on-duty officers (#57).
+const OfficerStatus = sequelize.define('officer_status', {
+  officer_id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true },
+  is_on_duty: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  latitude: { type: DataTypes.DECIMAL(10, 7), allowNull: true },
+  longitude: { type: DataTypes.DECIMAL(10, 7), allowNull: true },
+  location_updated_at: { type: DataTypes.DATE, allowNull: true },
+  updated_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+});
+
+const ReportDispatch = sequelize.define('report_dispatch', {
+  dispatch_id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
+  report_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+  officer_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+  distance_km: { type: DataTypes.DECIMAL(6, 2), allowNull: false },
+  dispatch_status: { type: DataTypes.ENUM('alerted', 'responded', 'declined', 'taken', 'expired'), allowNull: false, defaultValue: 'alerted' },
+  outcome: { type: DataTypes.ENUM('confirmed', 'rejected_on_scene'), allowNull: true },
+  alerted_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+  responded_at: { type: DataTypes.DATE, allowNull: true },
+  outcome_at: { type: DataTypes.DATE, allowNull: true },
+});
+
+const AppSetting = sequelize.define('app_settings', {
+  setting_key: { type: DataTypes.STRING(60), primaryKey: true },
+  setting_value: { type: DataTypes.STRING(255), allowNull: false },
+  updated_by_user_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
+  updated_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+});
+
 Role.hasMany(User, { foreignKey: 'role_id' });
 User.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
 User.hasMany(Report, { foreignKey: 'reporter_id', as: 'submittedReports' });
@@ -98,5 +129,13 @@ Notification.belongsTo(User, { foreignKey: 'user_id' });
 Notification.belongsTo(Report, { foreignKey: 'report_id' });
 User.hasMany(AuditLog, { foreignKey: 'user_id' });
 AuditLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+User.hasOne(OfficerStatus, { foreignKey: 'officer_id', as: 'dutyStatus' });
+OfficerStatus.belongsTo(User, { foreignKey: 'officer_id', as: 'officer' });
+Report.hasMany(ReportDispatch, { foreignKey: 'report_id', as: 'dispatches' });
+ReportDispatch.belongsTo(Report, { foreignKey: 'report_id', as: 'report' });
+ReportDispatch.belongsTo(User, { foreignKey: 'officer_id', as: 'officer' });
 
-module.exports = { sequelize, Role, User, AccidentType, Report, ReportPhoto, ReportStatusHistory, Notification, AuditLog };
+module.exports = {
+  sequelize, Role, User, AccidentType, Report, ReportPhoto, ReportStatusHistory, Notification, AuditLog, OfficerStatus,
+  ReportDispatch, AppSetting,
+};
