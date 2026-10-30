@@ -148,6 +148,13 @@ class _SettingsTabState extends State<SettingsTab> {
           const _GroupLabel('Accessibility'),
           _Group(
             children: [
+              // #56: the guide (a text tour) with optional Read aloud, and the reading speed.
+              RwSettingsRow.navigation(
+                icon: RwIcons.accessibility,
+                label: 'Accessibility',
+                description: 'Guide, Read aloud and captions',
+                onTap: () => _push(Routes.accessibility),
+              ),
               RwSettingsRow.toggle(
                 icon: RwIcons.sliders,
                 label: 'Reduce motion',

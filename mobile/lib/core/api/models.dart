@@ -136,6 +136,10 @@ class Report {
     this.reporterEmail,
     this.photos = const [],
     this.statusHistory = const [],
+    this.priority,
+    this.prioritySource,
+    this.dispatch,
+    this.assignedOfficerId,
   });
 
   final int reportId;
@@ -161,6 +165,19 @@ class Report {
   final String? reporterEmail;
   final List<ReportPhoto> photos;
   final List<StatusHistoryEntry> statusHistory;
+  final int? assignedOfficerId;
+
+  /// Low, Medium, High or Urgent (#54). Staff only: the API never sends it to reporters.
+  final String? priority;
+
+  /// 'auto' or 'admin'.
+  final String? prioritySource;
+
+  /// The nearby-officer path (#57), staff only; null when no officer was alerted.
+  final DispatchInfo? dispatch;
+
+  /// This officer took the report from a nearby alert and must confirm it on scene or reject it.
+  bool get awaitingOnSceneConfirmation => dispatch?.state == DispatchInfo.responding;
 
   bool get isVerifiedRecord => recordType == RecordTypes.verifiedRecord;
   bool get hasLocation => latitude != null && longitude != null;
@@ -191,8 +208,62 @@ class Report {
       photos: _list(j['photos']).map(ReportPhoto.fromJson).toList(),
       // Newest first, so statusHistory.first is the current status.
       statusHistory: history,
+      priority: _str(j['priority']),
+      prioritySource: _str(j['priority_source']),
+      dispatch: _map(j['dispatch']) == null ? null : DispatchInfo.fromJson(_map(j['dispatch'])!),
+      assignedOfficerId: _intOrNull(j['assigned_officer_id']),
     );
   }
+}
+
+/// What staff see about a report's nearby-officer path (#57): alerting, no_response (nobody answered in
+/// 10 minutes), responding, confirmed or rejected_on_scene.
+class DispatchInfo {
+  const DispatchInfo({required this.state, this.responderName, this.respondedAt, this.distanceKm});
+
+  static const responding = 'responding';
+  static const confirmed = 'confirmed';
+  static const rejectedOnScene = 'rejected_on_scene';
+
+  final String state;
+  final String? responderName;
+  final DateTime? respondedAt;
+  final double? distanceKm;
+
+  factory DispatchInfo.fromJson(Map<String, dynamic> j) => DispatchInfo(
+    state: _str(j['state']) ?? '',
+    responderName: _str(_map(j['responder'])?['full_name']),
+    respondedAt: _date(j['responded_at']),
+    distanceKm: _double(j['distance_km']),
+  );
+}
+
+/// An open "Accident reported near you" alert (#57, GET /officer/nearby).
+class NearbyAlert {
+  const NearbyAlert({
+    required this.reportId,
+    required this.location,
+    required this.distanceKm,
+    this.priority,
+    this.accidentType,
+    this.dateSubmitted,
+  });
+
+  final int reportId;
+  final String? priority;
+  final String? accidentType;
+  final String location;
+  final double distanceKm;
+  final DateTime? dateSubmitted;
+
+  factory NearbyAlert.fromJson(Map<String, dynamic> j) => NearbyAlert(
+    reportId: _int(j['report_id']),
+    priority: _str(j['priority']),
+    accidentType: _str(j['accident_type']),
+    location: _str(j['accident_location']) ?? '',
+    distanceKm: _double(j['distance_km']) ?? 0,
+    dateSubmitted: _date(j['date_submitted']),
+  );
 }
 
 /// Body for POST /reports. Photos are uploaded afterwards with uploadPhotos().

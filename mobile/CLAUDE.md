@@ -68,6 +68,16 @@ report detail parts, shared by tracking and officer details), `RwDialog` +
 Motion (#41): `RwMotion` tokens, `RwEntrance` (+ `.listItem`, 40 ms stagger, max 8), `RwPulse` (stops after N),
 `RwDrawIn`, `RwSharedAxisPageTransitionsBuilder` (app.dart). All respect `disableAnimations` (short fades).
 
+## v1.2.0 (#54, #56, #57, DECISIONS #49, #50)
+- `RwPriorityChip` (+ `priorityRank`); `RwReportCard` shows it when the report has a priority (staff only).
+- Officers: `features/officer/nearby_alerts.dart` (`RwOnDutyCard`, `showNearbyAlertSheet`, `showAlreadyTakenSheet`);
+  O1 sends the location and checks `GET /officer/nearby` every 30 s while On duty (the tab stays alive in the IndexedStack);
+  O2 shows "You're responding" (Confirm on scene / Reject report) and hides Update status until then.
+- Guide: `RwGuideTour` / `showRwGuideTour` (steps with GlobalKey targets, Read aloud via `flutter_tts`, speed from
+  `SettingsProvider.readAloud/readingSpeed`); Home (5 steps) and Assigned (4 steps) have a Guide button; Settings >
+  Accessibility (`features/settings/accessibility_screen.dart`, route `Routes.accessibility`) can start it through
+  `rwGuideRequests` -> HomeShell (first tab) -> `rwGuideStart`.
+
 ## Rules
 - Colors only through `RwColors.of(context)`; text styles from `RwType`; spacing `RwSpace`.
   Never hard-code hex values (dark mode depends on the tokens).

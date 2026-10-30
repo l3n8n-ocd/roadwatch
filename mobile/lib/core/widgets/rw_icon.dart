@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Names of the 58 Figma icons (Foundations > Iconography, Lucide-style outline, 2 px stroke).
+/// Names of the 64 Figma icons (Foundations > Iconography, Lucide-style outline, 2 px stroke; v1.2.0 added
+/// accessibility, arrow-up, arrow-down, equal, pause and volume for #54 and #56).
 /// Files live in `assets/icons/<name>.svg` (generated from the Figma icon components).
 abstract final class RwIcons {
+  static const accessibility = 'accessibility';
   static const alertCircle = 'alert-circle';
   static const alertTriangle = 'alert-triangle';
+  static const arrowDown = 'arrow-down';
   static const arrowLeft = 'arrow-left';
+  static const arrowUp = 'arrow-up';
   static const barChart = 'bar-chart';
   static const bell = 'bell';
   static const calendar = 'calendar';
@@ -20,6 +24,7 @@ abstract final class RwIcons {
   static const clock = 'clock';
   static const dashboard = 'dashboard';
   static const download = 'download';
+  static const equal = 'equal';
   static const eye = 'eye';
   static const eyeOff = 'eye-off';
   static const fileText = 'file-text';
@@ -43,6 +48,7 @@ abstract final class RwIcons {
   static const message = 'message';
   static const minus = 'minus';
   static const moon = 'moon';
+  static const pause = 'pause';
   static const pencil = 'pencil';
   static const phone = 'phone';
   static const playCircle = 'play-circle';
@@ -59,6 +65,7 @@ abstract final class RwIcons {
   static const userCheck = 'user-check';
   static const userX = 'user-x';
   static const users = 'users';
+  static const volume = 'volume';
   static const wifiOff = 'wifi-off';
   static const x = 'x';
   static const xCircle = 'x-circle';

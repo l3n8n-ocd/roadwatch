@@ -12,6 +12,7 @@ import 'features/report/report_details_screen.dart';
 import 'features/report/report_location_screen.dart';
 import 'features/report/report_photos_screen.dart';
 import 'features/settings/about_screen.dart';
+import 'features/settings/accessibility_screen.dart';
 import 'features/settings/appearance_screen.dart';
 import 'features/settings/change_password_screen.dart';
 import 'features/settings/demo_video_screen.dart';
@@ -55,6 +56,7 @@ abstract final class Routes {
   static const privacy = '/settings/privacy';
   static const hotlines = '/settings/hotlines';
   static const demoVideo = '/settings/demo-video';
+  static const accessibility = '/settings/accessibility';
 
   /// Reachable without signing in.
   static const public = {login, register, forgotPassword};
@@ -96,6 +98,7 @@ abstract final class Routes {
       privacy => const PrivacyScreen(),
       hotlines => const HotlinesScreen(),
       demoVideo => const DemoVideoScreen(),
+      accessibility => const AccessibilityScreen(),
       _ => const HomeShell(initialTab: RwTab.home),
     };
     return _page(page, settings);

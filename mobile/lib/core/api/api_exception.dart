@@ -42,6 +42,9 @@ class ApiException implements Exception {
   /// 403 from POST /auth/login: the account signs in on the web dashboard, not here (#36).
   bool get isWrongPlatform => code == 'WRONG_PLATFORM';
 
+  /// 409 from POST /officer/nearby/:id/respond: another nearby officer responded first (#57).
+  bool get isAlreadyTaken => code == 'ALREADY_TAKEN';
+
   /// First validation message for a field (e.g. 'contact_email'), if any.
   String? fieldError(String field) {
     final list = fieldErrors[field];

@@ -19,7 +19,7 @@ class RwTopBarAction {
 /// - [RwTopBar.home]: navy bar, logo, bell with unread badge.
 /// - [RwTopBar.inner]: white bar with bottom border, back button, H3 title, optional action.
 class RwTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const RwTopBar.home({super.key, this.unreadCount = 0, this.onNotifications})
+  const RwTopBar.home({super.key, this.unreadCount = 0, this.onNotifications, this.onGuide})
     : title = null,
       onBack = null,
       action = null,
@@ -28,6 +28,7 @@ class RwTopBar extends StatelessWidget implements PreferredSizeWidget {
   const RwTopBar.inner({super.key, required String this.title, this.onBack, this.action})
     : unreadCount = 0,
       onNotifications = null,
+      onGuide = null,
       _home = false;
 
   final bool _home;
@@ -39,6 +40,9 @@ class RwTopBar extends StatelessWidget implements PreferredSizeWidget {
   final RwTopBarAction? action;
   final int unreadCount;
   final VoidCallback? onNotifications;
+
+  /// Home only (#56, Figma M1 543:32730): the Guide button after the bell.
+  final VoidCallback? onGuide;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -68,6 +72,13 @@ class RwTopBar extends StatelessWidget implements PreferredSizeWidget {
                 tone: RwIconButtonTone.dark,
                 badgeCount: unreadCount,
                 onPressed: onNotifications,
+              ),
+            if (onGuide != null)
+              RwIconButton(
+                icon: RwIcons.accessibility,
+                semanticLabel: 'Guide',
+                tone: RwIconButtonTone.dark,
+                onPressed: onGuide,
               ),
           ],
         ),

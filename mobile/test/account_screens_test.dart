@@ -19,10 +19,13 @@ import 'package:roadwatch_mobile/core/state/auth_provider.dart';
 import 'package:roadwatch_mobile/core/state/notifications_provider.dart';
 import 'package:roadwatch_mobile/core/state/settings_provider.dart';
 import 'package:roadwatch_mobile/core/theme/app_theme.dart';
+import 'package:roadwatch_mobile/core/widgets/widgets.dart';
+import 'package:roadwatch_mobile/features/home/home_screen.dart';
 import 'package:roadwatch_mobile/features/my_reports/my_reports_screen.dart';
 import 'package:roadwatch_mobile/features/my_reports/tracking_screen.dart';
 import 'package:roadwatch_mobile/features/notifications/notifications_screen.dart';
 import 'package:roadwatch_mobile/features/settings/about_screen.dart';
+import 'package:roadwatch_mobile/features/settings/accessibility_screen.dart';
 import 'package:roadwatch_mobile/features/settings/appearance_screen.dart';
 import 'package:roadwatch_mobile/features/settings/change_password_screen.dart';
 import 'package:roadwatch_mobile/features/settings/demo_video_screen.dart';
@@ -340,6 +343,49 @@ void main() {
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
     expect(settings.themeMode, ThemeMode.dark);
+  });
+
+  testWidgets('Accessibility: Read aloud and reading speed are saved on the phone (#56)', (tester) async {
+    final api = _FakeApi();
+    final settings = SettingsProvider();
+    await tester.pumpWidget(
+      _app(const AccessibilityScreen(), api: api, auth: await _signedIn(api), settings: settings),
+    );
+    expect(find.text('Start the guide'), findsOneWidget);
+    expect(find.text('Captions and a full transcript are always available'), findsOneWidget);
+    expect(settings.readAloud, isFalse);
+    await tester.tap(find.text('Read aloud'));
+    await tester.pumpAndSettle();
+    expect(settings.readAloud, isTrue);
+    expect(find.text('1×'), findsOneWidget);
+    await tester.tap(find.text('Reading speed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('1.25×'));
+    await tester.pumpAndSettle();
+    expect(settings.readingSpeed, 1.25);
+    expect(find.text('1.25×'), findsOneWidget);
+  });
+
+  testWidgets('Home: the Guide button starts a 5-step text tour; reporters never see priority (#54, #56)', (
+    tester,
+  ) async {
+    final api = _FakeApi(reports: _reports);
+    await tester.pumpWidget(_app(const HomeTab(), api: api, auth: await _signedIn(api)));
+    await tester.pumpAndSettle();
+    expect(find.byType(RwPriorityChip), findsNothing);
+    await tester.tap(find.bySemanticsLabel('Guide'));
+    await tester.pumpAndSettle();
+    expect(find.text('STEP 1 OF 5'), findsOneWidget);
+    expect(find.textContaining('Start here when you see a road accident'), findsOneWidget);
+    expect(find.widgetWithText(RwButton, 'Read aloud'), findsOneWidget);
+    for (var step = 2; step <= 5; step++) {
+      await tester.tap(find.widgetWithText(RwButton, 'Next'));
+      await tester.pumpAndSettle();
+      expect(find.text('STEP $step OF 5'), findsOneWidget);
+    }
+    await tester.tap(find.widgetWithText(RwButton, 'Done'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('STEP '), findsNothing);
   });
 
   testWidgets('Change password validates, then shows the not-built-yet error', (tester) async {

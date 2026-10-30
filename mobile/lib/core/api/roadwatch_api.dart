@@ -170,6 +170,56 @@ class RoadWatchApi {
     return Report.fromJson(body.dataMap);
   }
 
+  // ----- nearby on-duty officers (#57) -----
+
+  /// GET /officer/duty -> whether this officer is On duty.
+  Future<bool> duty() async => (await client.get('/officer/duty')).dataMap['on_duty'] == true;
+
+  /// PUT /officer/duty. On duty sends the latest location (kept only while on duty); off duty clears it.
+  Future<bool> setDuty({required bool onDuty, double? latitude, double? longitude}) async {
+    final body = await client.put(
+      '/officer/duty',
+      body: {
+        'on_duty': onDuty,
+        if (latitude != null && longitude != null) 'latitude': latitude,
+        if (latitude != null && longitude != null) 'longitude': longitude,
+      },
+    );
+    return body.dataMap['on_duty'] == true;
+  }
+
+  /// GET /officer/nearby: alerts this officer can still answer (checked every 30 seconds while On duty).
+  Future<List<NearbyAlert>> nearbyAlerts() async =>
+      (await client.get('/officer/nearby')).dataList.map(NearbyAlert.fromJson).toList();
+
+  /// POST /officer/nearby/:id/respond. The first alerted officer wins; the others get 409 ALREADY_TAKEN
+  /// with `details.responder_name`.
+  Future<Report> respondToAlert(int reportId) async =>
+      Report.fromJson((await client.post('/officer/nearby/$reportId/respond')).dataMap);
+
+  /// POST /officer/nearby/:id/decline ("Not now").
+  Future<void> declineAlert(int reportId) async {
+    await client.post('/officer/nearby/$reportId/decline');
+  }
+
+  /// POST /officer/reports/:id/confirm: the report becomes a verified record and In Progress.
+  Future<Report> confirmOnScene(int reportId, {String? remarks}) async {
+    final body = await client.post(
+      '/officer/reports/$reportId/confirm',
+      body: {if (remarks != null && remarks.trim().isNotEmpty) 'remarks': remarks.trim()},
+    );
+    return Report.fromJson(body.dataMap);
+  }
+
+  /// POST /officer/reports/:id/reject: Rejected with the reason; the administrator can reopen it.
+  Future<Report> rejectOnScene(int reportId, {required String reason}) async {
+    final body = await client.post(
+      '/officer/reports/$reportId/reject',
+      body: {'rejection_reason': reason.trim()},
+    );
+    return Report.fromJson(body.dataMap);
+  }
+
   // ----- notifications -----
 
   /// GET /notifications: newest 100 plus the unread count.

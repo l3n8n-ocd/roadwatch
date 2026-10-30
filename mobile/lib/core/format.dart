@@ -24,6 +24,13 @@ String formatDateTime(Object? value) {
   return '${formatDate(d)} · ${_two(d.hour)}:${_two(d.minute)}';
 }
 
+/// "09:14" (24 h, local time).
+String formatTime(Object? value) {
+  final d = _parse(value);
+  if (d == null) return value?.toString() ?? '';
+  return '${_two(d.hour)}:${_two(d.minute)}';
+}
+
 /// Accident date (YYYY-MM-DD) and time (HH:MM[:SS]) as "Oct 17, 2026 · 08:15".
 String formatAccidentDateTime(String? date, String? time) {
   final d = DateTime.tryParse(date ?? '');

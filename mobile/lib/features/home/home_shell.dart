@@ -41,6 +41,21 @@ class _HomeShellState extends State<HomeShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<NotificationsProvider>().refresh();
     });
+    rwGuideRequests.addListener(_guideRequested);
+  }
+
+  @override
+  void dispose() {
+    rwGuideRequests.removeListener(_guideRequested);
+    super.dispose();
+  }
+
+  // Start the guide (#56): show the first tab (Home or Assigned), then let it start its tour.
+  void _guideRequested() {
+    if (!mounted) return;
+    final officer = context.read<AuthProvider>().user?.isOfficer ?? false;
+    setState(() => _tab = officer ? RwTab.assigned : RwTab.home);
+    WidgetsBinding.instance.addPostFrameCallback((_) => rwGuideStart.value++);
   }
 
   void _select(RwTab tab) {
