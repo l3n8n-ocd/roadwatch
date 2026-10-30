@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Button,
   ConfirmDialog,
@@ -10,9 +11,11 @@ import {
   Radio,
   Select,
   Skeleton,
+  Tabs,
   TextField,
   Toast,
 } from '../../components/ui';
+import { tabPanelProps } from '../../lib/tabs';
 import { admin, lookups, users } from '../../api/endpoints';
 import useServerError from '../../lib/useServerError';
 import { useAuth } from '../../context/AuthContext';
@@ -23,12 +26,19 @@ import { cx } from '../../lib/cx';
 // W6 Users & settings (Figma 128:2944, after deactivation 128:3348; v1.2.0 toolbar 528:22568, no selection 528:23244).
 // #55: one toolbar with + Create officer and Edit; no buttons in the rows. Select an account (radio), then Edit opens
 // one dialog (529:23706; own account 529:23828) with name, phone, role, Reset password and Deactivate/Reactivate.
-// Create officer opens a dialog (529:23958). Accident types and the Nearby officers alert range (#57) below.
+// Create officer opens a dialog (529:23958).
+// v1.2.1 (Figma 564:27407, phone 568:29575): Accounts, Accident types and Nearby officers (#57 alert range) are tabs;
+// Accounts is the default, and the open tab is kept in the address (?tab=types or ?tab=nearby).
 // Reset password (#37, dialog 404:16418, toast 404:16490): Reporters and Traffic Officers only.
 // An administrator cannot change or deactivate their own account (#16); the API also refuses it.
 
 const ROLE_OPTIONS = [ROLES.REPORTER, ROLES.ADMIN, ROLES.OFFICER].map((r) => ({ value: r, label: r }));
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SECTIONS = [
+  { id: 'accounts', label: 'Accounts' },
+  { id: 'types', label: 'Accident types' },
+  { id: 'nearby', label: 'Nearby officers' },
+];
 
 function Card({ titleId, title, className = '', children, aside, guide }) {
   return (
@@ -608,6 +618,18 @@ export default function Users() {
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState('');
   const raiseServerError = useServerError();
+  const [params, setParams] = useSearchParams();
+  const tab = SECTIONS.some((t) => t.id === params.get('tab')) ? params.get('tab') : 'accounts';
+  const setTab = (id) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id === 'accounts') next.delete('tab');
+        else next.set('tab', id);
+        return next;
+      },
+      { replace: true },
+    );
 
   const load = useCallback(() => {
     setLoadError(null);
@@ -696,135 +718,156 @@ export default function Users() {
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
       <h1 className="type-h1 text-text-primary">Users and settings</h1>
 
+      <Tabs
+        label="Users and settings sections"
+        tabs={SECTIONS}
+        value={tab}
+        onChange={setTab}
+        idPrefix="users"
+        data-guide="users-tabs"
+        className="-mt-2"
+      />
+
       {toast && (
         <Toast type={toast.type || 'success'} title={toast.title} onClose={() => setToast(null)} className="max-w-[400px]">
           {toast.body}
         </Toast>
       )}
 
-      <Card
-        titleId="accounts-title"
-        title="Accounts"
-        aside={
-          <Select
-            label="Role"
-            value={roleFilter}
-            onChange={(e) => {
-              setList(null);
-              setRoleFilter(e.target.value);
-            }}
-            className="w-full sm:w-50"
+      {tab === 'accounts' && (
+        <div {...tabPanelProps('users', 'accounts')} className="min-w-0 focus-visible:outline-none">
+          <Card
+            titleId="accounts-title"
+            title="Accounts"
+            aside={
+              <Select
+                label="Role"
+                value={roleFilter}
+                onChange={(e) => {
+                  setList(null);
+                  setRoleFilter(e.target.value);
+                }}
+                className="w-full sm:w-50"
+              >
+                <option value="">All roles</option>
+                {ROLE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            }
           >
-            <option value="">All roles</option>
-            {ROLE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </Select>
-        }
-      >
-        <p className="-mt-3 type-body-sm text-text-muted" aria-live="polite">
-          {list
-            ? `${count} ${count === 1 ? 'account' : 'accounts'} · ${
-                roleFilter ? `role: ${roleFilter}` : 'roles: Reporter, Administrator, Traffic Officer'
-              }`
-            : 'Loading accounts…'}
-        </p>
+            <p className="-mt-3 type-body-sm text-text-muted" aria-live="polite">
+              {list
+                ? `${count} ${count === 1 ? 'account' : 'accounts'} · ${
+                    roleFilter ? `role: ${roleFilter}` : 'roles: Reporter, Administrator, Traffic Officer'
+                  }`
+                : 'Loading accounts…'}
+            </p>
 
-        {/* Toolbar (#55): the only buttons on this card. */}
-        <div data-guide="accounts-toolbar" role="toolbar" aria-label="Account actions" aria-controls="accounts-table" className="flex flex-wrap items-center gap-3">
-          <Button icon="plus" onClick={() => setCreating(true)} aria-haspopup="dialog" className="max-sm:min-w-0 max-sm:flex-1">
-            Create officer
-          </Button>
-          <Button
-            variant="secondary"
-            icon="pencil"
-            disabled={!selected}
-            onClick={() => setEditing(true)}
-            aria-haspopup="dialog"
-            aria-describedby={selfNoteId}
-            className="min-w-[178px] max-sm:min-w-0 max-sm:flex-1"
-          >
-            Edit<span className="sr-only">{selected ? ` ${selected.full_name}` : ''}</span>
-          </Button>
-          <p className="type-body-sm text-text-muted" aria-live="polite">
-            {selected ? `Selected: ${selected.full_name} (${selected.role})` : 'Select an account to edit it.'}
-          </p>
-        </div>
-
-        {loadError ? (
-          <EmptyState
-            type="error"
-            title="Could not load accounts"
-            description={loadError.message}
-            action={
-              <Button icon="refresh" onClick={load}>
-                Try again
+            {/* Toolbar (#55): the only buttons on this card. */}
+            <div data-guide="accounts-toolbar" role="toolbar" aria-label="Account actions" aria-controls="accounts-table" className="flex flex-wrap items-center gap-3">
+              <Button icon="plus" onClick={() => setCreating(true)} aria-haspopup="dialog" className="max-sm:min-w-0 max-sm:flex-1">
+                Create officer
               </Button>
+              <Button
+                variant="secondary"
+                icon="pencil"
+                disabled={!selected}
+                onClick={() => setEditing(true)}
+                aria-haspopup="dialog"
+                aria-describedby={selfNoteId}
+                className="min-w-[178px] max-sm:min-w-0 max-sm:flex-1"
+              >
+                Edit<span className="sr-only">{selected ? ` ${selected.full_name}` : ''}</span>
+              </Button>
+              <p className="type-body-sm text-text-muted max-sm:basis-full" aria-live="polite">
+                {selected ? `Selected: ${selected.full_name} (${selected.role})` : 'Select an account to edit it.'}
+              </p>
+            </div>
+
+            {loadError ? (
+              <EmptyState
+                type="error"
+                title="Could not load accounts"
+                description={loadError.message}
+                action={
+                  <Button icon="refresh" onClick={load}>
+                    Try again
+                  </Button>
+                }
+              />
+            ) : !list ? (
+              <div aria-busy="true" className="flex flex-col">
+                <Skeleton type="table-row" />
+                <Skeleton type="table-row" />
+                <Skeleton type="table-row" />
+              </div>
+            ) : list.length === 0 ? (
+              <EmptyState type="no-results" title="No accounts" description="No accounts have this role yet." />
+            ) : (
+              <div id="accounts-table" data-guide="accounts-table">
+                {/* Table from 768 px; a stacked list on phones (no horizontal page scroll). Selecting a row selects its radio. */}
+                <DataTable
+                  className="hidden md:block"
+                  caption="User accounts. Select an account, then choose Edit."
+                  columns={columns}
+                  rows={list}
+                  getRowKey={(u) => u.user_id}
+                  selectedKey={selectedId}
+                />
+                <ul className="flex flex-col md:hidden" aria-label="User accounts">
+                  {list.map((u) => (
+                    <li
+                      key={u.user_id}
+                      className={cx(
+                        'flex items-start gap-2 border-b border-border-subtle px-1 py-3',
+                        selectedId === u.user_id && 'bg-surface-blue-subtle',
+                      )}
+                    >
+                      {columns[0].render(u, 'account-list')}
+                      <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        {columns[1].render(u)}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                          <span className="type-body-sm text-text-primary">{u.role}</span>
+                          <ActiveStatus active={u.is_active} />
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <p id={selfNoteId} className="flex items-start gap-2 type-body-sm text-text-primary">
+              <Icon name="info" size={20} className="text-text-blue" />
+              Select an account, then choose Edit to change its details, role, password or access. You can&apos;t deactivate
+              your own account.
+            </p>
+          </Card>
+        </div>
+      )}
+
+      {tab === 'types' && (
+        <div {...tabPanelProps('users', 'types')} className="min-w-0 focus-visible:outline-none">
+          <AccidentTypesCard
+            onAdded={(name) =>
+              setToast({ title: 'Accident type added', body: `${name} is now available on the report form.` })
             }
           />
-        ) : !list ? (
-          <div aria-busy="true" className="flex flex-col">
-            <Skeleton type="table-row" />
-            <Skeleton type="table-row" />
-            <Skeleton type="table-row" />
-          </div>
-        ) : list.length === 0 ? (
-          <EmptyState type="no-results" title="No accounts" description="No accounts have this role yet." />
-        ) : (
-          <div id="accounts-table" data-guide="accounts-table">
-            {/* Table from 768 px; a stacked list on phones (no horizontal page scroll). Selecting a row selects its radio. */}
-            <DataTable
-              className="hidden md:block"
-              caption="User accounts. Select an account, then choose Edit."
-              columns={columns}
-              rows={list}
-              getRowKey={(u) => u.user_id}
-              selectedKey={selectedId}
-            />
-            <ul className="flex flex-col md:hidden" aria-label="User accounts">
-              {list.map((u) => (
-                <li
-                  key={u.user_id}
-                  className={cx(
-                    'flex items-start gap-2 border-b border-border-subtle px-1 py-3',
-                    selectedId === u.user_id && 'bg-surface-blue-subtle',
-                  )}
-                >
-                  {columns[0].render(u, 'account-list')}
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    {columns[1].render(u)}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <span className="type-body-sm text-text-primary">{u.role}</span>
-                      <ActiveStatus active={u.is_active} />
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        </div>
+      )}
 
-        <p id={selfNoteId} className="flex items-start gap-2 type-body-sm text-text-primary">
-          <Icon name="info" size={20} className="text-text-blue" />
-          Select an account, then choose Edit to change its details, role, password or access. You can&apos;t deactivate
-          your own account.
-        </p>
-      </Card>
-
-      <div className="grid items-start gap-6 md:grid-cols-2">
-        <AccidentTypesCard
-          onAdded={(name) =>
-            setToast({ title: 'Accident type added', body: `${name} is now available on the report form.` })
-          }
-        />
-        <NearbyOfficersCard
-          onSaved={(km) =>
-            setToast({ title: 'Alert range saved', body: `Nearby on-duty officers within ${km} km are alerted about new reports.` })
-          }
-        />
-      </div>
+      {tab === 'nearby' && (
+        <div {...tabPanelProps('users', 'nearby')} className="min-w-0 focus-visible:outline-none">
+          <NearbyOfficersCard
+            onSaved={(km) =>
+              setToast({ title: 'Alert range saved', body: `Nearby on-duty officers within ${km} km are alerted about new reports.` })
+            }
+          />
+        </div>
+      )}
 
       {creating && (
         <CreateOfficerDialog

@@ -196,6 +196,12 @@ Before these: run `npm run migrate` on the database once (Aiven), and have two o
 | TC-V.15 | App R1: Home > Guide (top bar); Settings > Accessibility > Read aloud on, Reading speed 1.25×, Start the guide | 5-step tour of Home; with Read aloud on each step is spoken; Start the guide goes back to Home and starts it; the Videos row says captions and transcripts are always available | As expected (live system and APK v1.2.0, Oct 30) | Pass |
 | TC-V.16 | App O1: Assigned > Guide | 4-step tour: On duty, Filter by status, Sort by, the list | As expected (live system and APK v1.2.0, Oct 30) | Pass |
 
+### v1.2.1: Users & settings tabs (DECISIONS #51)
+
+| ID | Steps | Expected | Actual | Result |
+|---|---|---|---|---|
+| TC-V.17 | A1 opens Users & settings; presses Accident types, then Nearby officers; with the keyboard, Tab to the tabs and use ← → Home End; refresh on Nearby officers; repeat on a phone (390 px) and in Dark mode; press Guide | Accounts opens first with the Role filter, + Create officer and Edit inside it; each tab shows only its section; the address shows `?tab=types` / `?tab=nearby` and a refresh keeps the tab; arrow keys move and select; on a phone the tab row scrolls sideways and the page does not; the Guide's first step is "Three sections" | | |
+
 ## Accessibility (WCAG 2.1 AA target)
 
 | ID | Check | Expected | Actual | Result |

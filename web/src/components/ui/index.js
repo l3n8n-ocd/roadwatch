@@ -35,6 +35,7 @@ export { default as SidebarItem } from './SidebarItem';
 export { default as Sidebar } from './Sidebar';
 export { default as Dialog, ConfirmDialog } from './Dialog';
 export { default as SegmentedControl } from './SegmentedControl';
+export { default as Tabs } from './Tabs';
 export { default as Pagination } from './Pagination';
 export { default as Switch } from './Switch';
 export { default as MenuItem } from './MenuItem';
