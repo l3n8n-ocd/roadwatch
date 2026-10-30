@@ -31,7 +31,7 @@ Use the scripts in sections 2 and 3. At a normal pace people say about **2.3 wor
 holds about **65 words** of voice-over. Read each script aloud with a stopwatch before recording.
 
 ### Step 2: Record the screens and voices
-- **Before recording:** open `https://roadwatch-api-gnky.onrender.com/api/health` (wakes the free Render server), and
+- **Before recording:** open `https://api.roadwatch-ph.me/api/health` (wakes the free Render server), and
   use demo accounts and made-up report data only. Never show a real password, a real email inbox, or a real person's
   phone number. Type passwords off camera or cut that part.
 - **Android app:** the phone's built-in screen recorder (Quick Settings > Screen record, no audio). Turn on Do Not

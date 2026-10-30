@@ -9,8 +9,8 @@ report.
 
 | Item | Where | Check |
 |---|---|---|
-| Website | `https://roadwatch-theta.vercel.app` (and `https://roadwatch-ph.me` if connected, SETUP-GUIDE Part G) | [ ] opens, landing and staff sign-in work |
-| API health | `https://roadwatch-api-gnky.onrender.com/api/health` (or `https://api.roadwatch-ph.me/api/health`) | [ ] `{"status":"ok"}` |
+| Website | `https://www.roadwatch-ph.me` (old address `https://roadwatch-theta.vercel.app` also works) | [ ] opens, landing and staff sign-in work |
+| API health | `https://api.roadwatch-ph.me/api/health` (or `https://roadwatch-api-gnky.onrender.com/api/health`) | [ ] `{"status":"ok"}` |
 | Android app (APK) | `https://github.com/l3n8n-ocd/roadwatch/releases/latest/download/roadwatch.apk` (release v1.2.0) | [ ] installs, shows Version 1.2.0 |
 | Source code | `https://github.com/l3n8n-ocd/roadwatch` (public), tag `v1.2.0` | [ ] the tag exists on `main` |
 | Promotional video | Cloudinary URL (`PROMO_VIDEO_URL`), and on the landing page | [ ] plays |

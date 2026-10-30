@@ -67,4 +67,4 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" build/roadwatch.apk \
             --title "RoadWatch $GITHUB_REF_NAME" \
-            --notes "Android app for reporters and traffic officers. Install roadwatch.apk on the phone (allow installs from this source when Android asks). Administrators use https://roadwatch-theta.vercel.app."
+            --notes "Android app for reporters and traffic officers. Install roadwatch.apk on the phone (allow installs from this source when Android asks). Administrators and traffic officers can also use https://www.roadwatch-ph.me."

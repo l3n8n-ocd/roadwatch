@@ -91,7 +91,7 @@ New since v1.0.2
 - Product wording across the apps and the website; new README.
 
 Install: download roadwatch.apk below on an Android phone and allow installs from this source.
-Website: https://roadwatch-theta.vercel.app (or https://roadwatch-ph.me once connected)
+Website: https://www.roadwatch-ph.me
 ```
 
 ## 7. After the release

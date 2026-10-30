@@ -490,6 +490,8 @@ Register a reporter on the phone, submit a report with a photo, then refresh the
 
 # PART G: Connect the domain `roadwatch-ph.me` (added Oct 27, DECISIONS #38)
 
+> **Done Oct 30.** Lenon chose **`www.roadwatch-ph.me` as the main address** in Vercel (`roadwatch-ph.me` redirects to it with a 308), the reverse of G1 below; both work. `api.roadwatch-ph.me` is verified on Render, `CLIENT_ORIGIN` lists `https://www.roadwatch-ph.me`, `https://roadwatch-ph.me` and the old Vercel address, and Vercel builds with `VITE_API_URL=https://api.roadwatch-ph.me/api`. A network that looked the name up before the records existed can say "site can't be reached" (`DNS_PROBE_FINISHED_NXDOMAIN`) for up to a few hours: flush DNS, use Chrome's secure DNS, or wait.
+
 Goal: `https://roadwatch-ph.me` opens the website (Vercel), `https://www.roadwatch-ph.me` redirects to it, and
 `https://api.roadwatch-ph.me/api/health` answers from Render. The old addresses (`roadwatch-theta.vercel.app`,
 `roadwatch-api-gnky.onrender.com`) keep working, so nothing breaks while DNS updates, and APKs already installed keep

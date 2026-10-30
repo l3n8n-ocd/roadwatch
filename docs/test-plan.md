@@ -8,8 +8,8 @@ testing. First run Oct 23: fixes in issues #39 to #44 (APK v1.0.1); re-tested Oc
 
 | Item | Value |
 |---|---|
-| Web (Administrator only) | https://roadwatch-theta.vercel.app |
-| API | https://roadwatch-api-gnky.onrender.com/api (open `/api/health` first; the free tier sleeps and the first request can take up to a minute) |
+| Web (Administrator and Traffic Officer) | https://www.roadwatch-ph.me (old address https://roadwatch-theta.vercel.app also works) |
+| API | https://api.roadwatch-ph.me/api (open `/api/health` first; the free tier sleeps and the first request can take up to a minute) |
 | Mobile (Reporter and Traffic Officer) | `roadwatch.apk` from the latest GitHub Release (#22), Android phone with GPS and camera |
 | Accounts | A1 Administrator (from `npm run seed:admin`); O1 Traffic Officer (created in TC-13.1); R1 and R2 Reporters (registered in TC-01.1) |
 | Email | A real inbox for R1 (Brevo sends from `no-reply@roadwatch-ph.me`; check Spam too) |
