@@ -21,7 +21,9 @@ planned v1.0.3. Owner: Lenon (merge and tag), with Pauline (live tests) and Carl
 - [ ] **Database first (v1.2.0):** upgrade Aiven before the merge, because the new API needs the new columns and tables.
       In `api/` with the Aiven settings in `.env` (never committed): `npm run migrate`, then `npm run check:db` must say
       11 tables, `reports.priority column: present`. It is safe on the running v1.0.x API (new columns have defaults) and
-      safe to run again.
+      safe to run again. **`DB_NAME` must be the one Render uses (`roadwatch`), not Aiven's `defaultdb`.** Safest route
+      (used Oct 30): Render, roadwatch-api, Settings, Build Command `npm ci && npm run migrate`, Manual Deploy, check the
+      log says `Connected to database "roadwatch"` and `Tables: 11`, then set the Build Command back to `npm ci`.
 - [ ] `docs/DECISIONS.md`, `CLAUDE.md` and `docs/test-plan.md` describe what is in the PR.
 - [ ] Nothing secret in the diff (`.env`, keys, `ca.pem`, real passwords).
 
