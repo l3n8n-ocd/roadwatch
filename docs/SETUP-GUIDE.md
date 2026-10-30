@@ -214,7 +214,7 @@ On the service **Overview** page, under **Connection information**, find:
 | Port | usually **not** 3306, copy the real one |
 | User | usually `avnadmin` |
 | Password | click to reveal |
-| Database name | usually `defaultdb` |
+| Database name | Aiven shows `defaultdb`, but **RoadWatch's live database is `roadwatch`** (see Render's `DB_NAME`) |
 | SSL mode | `REQUIRED` |
 | CA certificate | click **Download** and save as `ca.pem` |
 
@@ -232,11 +232,13 @@ If a connection later times out, check the service's **Allowed IP addresses** se
 5. Open the **SSL** tab. Set **Use SSL** to **Require and Verify CA**. Set **SSL CA File** to your `ca.pem`.
 6. Click **Test Connection**. It must say it succeeded. Then click **OK** and open the connection.
 
-(Command-line alternative: `mysql --host HOST --port PORT --user avnadmin --password --ssl-ca=ca.pem --ssl-mode=VERIFY_CA defaultdb`.)
+(Command-line alternative: `mysql --host HOST --port PORT --user avnadmin --password --ssl-ca=ca.pem --ssl-mode=VERIFY_CA roadwatch`.)
+
+> **Which database? (Oct 30)** The live API uses the database named in Render's `DB_NAME`, which is **`roadwatch`**. `defaultdb` on the same server is an unused older copy. Always check Render's `DB_NAME` before running SQL or `npm run migrate`.
 
 ## B5. Load the schema and the seed
 In the Workbench query tab:
-1. Run `USE defaultdb;` (use your database name if it differs).
+1. Run `USE roadwatch;` (the name in Render's `DB_NAME`).
 2. **File, Open SQL Script**, choose `database/schema.sql`, and run it (lightning bolt button, "execute all").
 3. Open `database/seed.sql` and run it.
 
@@ -282,7 +284,7 @@ DB_HOST=your-host.aivencloud.com
 DB_PORT=your-port
 DB_USER=avnadmin
 DB_PASSWORD=your-password
-DB_NAME=defaultdb
+DB_NAME=roadwatch
 DB_SSL=true
 DB_SSL_CA_PATH=./ca.pem
 ```
@@ -309,7 +311,7 @@ npm run check:db
 ```
 Expected output (host and numbers will match your service):
 ```
-Connecting to your-host.aivencloud.com:PORT as avnadmin, database "defaultdb", TLS on
+Connecting to your-host.aivencloud.com:PORT as avnadmin, database "roadwatch", TLS on
 Connected. 8 tables found.
 roles rows: 3 (expected 3)
 accident_types rows: 5 (expected 5)
@@ -407,7 +409,7 @@ Today's date is the Oct 16 milestone. If these are not done tonight, shift the O
 | Workbench: `SSL connection error` | CA file not set | Set SSL to Require and Verify CA with `ca.pem` (B4) |
 | Workbench or `check:db`: timeout | Wrong host or port, or IP not allowed | Recopy host and port from Aiven; check Allowed IP addresses |
 | `Access denied for user` | Wrong password or user | Recopy from the Aiven Overview page; quote the password in `.env` if it has special characters |
-| `No database selected` when running the SQL | Skipped `USE defaultdb;` | Run it, or double-click the database in Workbench to make it the default |
+| `No database selected` when running the SQL | Skipped `USE roadwatch;` | Run it, or double-click the database in Workbench to make it the default |
 | `Table already exists` | Ran the schema twice | Harmless, the file uses IF NOT EXISTS. Verify with B6 |
 | `check:db` prints `Missing tables` | Schema did not finish | Rerun `schema.sql` (safe to repeat), then `seed.sql` |
 | `users.is_active column: MISSING` | An older schema was loaded | Get the latest `dev` branch ZIP and rerun `schema.sql`. For an existing `users` table ask Lenon before altering anything |
@@ -443,7 +445,7 @@ Render needs its GitHub app on the repo, and the repo lives on **Lenon's** perso
 | Key | What to enter |
 |---|---|
 | `CLIENT_ORIGIN` | `http://localhost:5173` for now. Later add the Vercel address, comma separated, no spaces needed. |
-| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | From Aiven, service Overview, Connection information. `DB_NAME` is the database you loaded in B5 (usually `defaultdb`). |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | From Aiven, service Overview, Connection information. `DB_NAME` is the database you loaded in B5 (live: `roadwatch`). |
 | `DB_SSL_CA` | Open `ca.pem` in a text editor and paste **all** of it, including the `BEGIN` and `END` lines. |
 | `CLOUDINARY_URL` | `cloudinary://API_KEY:API_SECRET@CLOUD_NAME` |
 
@@ -487,6 +489,8 @@ Register a reporter on the phone, submit a report with a photo, then refresh the
 ---
 
 # PART G: Connect the domain `roadwatch-ph.me` (added Oct 27, DECISIONS #38)
+
+> **Done Oct 30.** Lenon chose **`www.roadwatch-ph.me` as the main address** in Vercel (`roadwatch-ph.me` redirects to it with a 308), the reverse of G1 below; both work. `api.roadwatch-ph.me` is verified on Render, `CLIENT_ORIGIN` lists `https://www.roadwatch-ph.me`, `https://roadwatch-ph.me` and the old Vercel address, and Vercel builds with `VITE_API_URL=https://api.roadwatch-ph.me/api`. A network that looked the name up before the records existed can say "site can't be reached" (`DNS_PROBE_FINISHED_NXDOMAIN`) for up to a few hours: flush DNS, use Chrome's secure DNS, or wait.
 
 Goal: `https://roadwatch-ph.me` opens the website (Vercel), `https://www.roadwatch-ph.me` redirects to it, and
 `https://api.roadwatch-ph.me/api/health` answers from Render. The old addresses (`roadwatch-theta.vercel.app`,

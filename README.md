@@ -16,9 +16,9 @@ Report an accident from the Android app with its location and photos, then follo
 </p>
 
 <p align="center">
-  <a href="https://roadwatch-theta.vercel.app"><b>Website</b></a> ·
+  <a href="https://www.roadwatch-ph.me"><b>Website</b></a> ·
   <a href="https://github.com/l3n8n-ocd/roadwatch/releases/latest/download/roadwatch.apk"><b>Download the Android app (APK)</b></a> ·
-  <a href="https://roadwatch-api-gnky.onrender.com/api/health">API status</a> ·
+  <a href="https://api.roadwatch-ph.me/api/health">API status</a> ·
   <a href="docs/API.md">API reference</a>
 </p>
 
@@ -26,9 +26,9 @@ Report an accident from the Android app with its location and photos, then follo
 
 ## Watch the video
 
-<a href="https://roadwatch-theta.vercel.app/#video"><img src="docs/ui-design/screens/web/w0-watch-the-video-1440.png" alt="Watch the RoadWatch video on the website" width="720"></a>
+<a href="https://www.roadwatch-ph.me/#video"><img src="docs/ui-design/screens/web/w0-watch-the-video-1440.png" alt="Watch the RoadWatch video on the website" width="720"></a>
 
-The promotional video (about 3 minutes) plays on the [website](https://roadwatch-theta.vercel.app/#video); the file is
+The promotional video (about 3 minutes) plays on the [website](https://www.roadwatch-ph.me/#video); the file is
 `docs/video/roadwatch-promo.mp4`. Each app also has a 30-second demo clip for its roles (Settings > Demo video in the
 Android app, Demo video in the staff website).
 

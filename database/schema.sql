@@ -1,7 +1,8 @@
 -- RoadWatch schema (MySQL). Matches docs/erd/erd.png.
 -- An existing database from before v1.2.0 is upgraded with `npm run migrate` in /api (database/migrations/).
 -- This file has no CREATE DATABASE or USE line on purpose: it loads into whichever database you are connected to.
---   Aiven:  connect to `defaultdb` (the database Aiven gives you), then run this file.
+--   Aiven:  connect to the database named in Render's DB_NAME (live: `roadwatch`; Aiven's default `defaultdb` is
+--           not the live one), then run this file.
 --   Local:  run database/local-init.sql once, then run this file against `roadwatch`.
 
 CREATE TABLE IF NOT EXISTS roles (
