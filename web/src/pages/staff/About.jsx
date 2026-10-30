@@ -9,7 +9,7 @@ import { TEAM } from '../../lib/team';
 // Administrators at /admin/about, Traffic Officers at /officer/about (#52).
 
 // Shown as "1.2.0 (web) · Oct 2026". Update with each release tag (v*).
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const RELEASE_MONTH = 'Oct 2026';
 
 const PRIVACY = [

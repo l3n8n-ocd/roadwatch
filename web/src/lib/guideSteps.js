@@ -61,6 +61,11 @@ const ADMIN_PAGES = {
   ],
   '/admin/users': [
     {
+      target: 'users-tabs',
+      title: 'Three sections',
+      text: 'Accounts, Accident types and Nearby officers. Accounts opens first; choose a tab (or use the arrow keys) to switch. Nearby officers sets how far new reports alert on-duty officers.',
+    },
+    {
       target: 'accounts-toolbar',
       title: 'Create officer and Edit',
       text: 'Create officer adds a Traffic Officer account. Select an account in the table, then Edit changes its name, phone and role, resets its password, or deactivates it.',
@@ -69,11 +74,6 @@ const ADMIN_PAGES = {
       target: 'accounts-table',
       title: 'Accounts',
       text: 'Every account with its role and whether it is active. Use the round button at the start of a row to select it.',
-    },
-    {
-      target: 'nearby-range',
-      title: 'Nearby officers',
-      text: 'New reports alert up to 3 on-duty officers within this range. If nobody responds in 10 minutes, the report waits for you to verify and assign.',
     },
   ],
 };
