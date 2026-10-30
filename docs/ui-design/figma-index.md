@@ -254,6 +254,20 @@ the app's Assigned tab also has a Guide button (top bar), and the guide's first 
 | Mobile | M1/Home · Guide tour step 1 of 5 (#56; Guide button in the top bar) | `543:32730` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-32730) | `mobile/m1-guide-tour-step-1.png` |
 | Mobile | Settings/Accessibility (#56; Start the guide, Read aloud, Reading speed, Videos) | `543:32820` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-32820) | `mobile/settings-accessibility.png` |
 
+## v1.2.1: Users & settings tabs (DECISIONS #51)
+
+Drawn and approved by Lenon on Oct 30, then coded for v1.2.1 (website only). Section `564:27406` on the Web page.
+Accounts, Accident types and Nearby officers are underline tabs; the Role filter and toolbar are inside Accounts only;
+on phones the tab row scrolls sideways.
+
+| Frame | Node | Link | PNG |
+|---|---|---|---|
+| W6/Users & settings/Tabs · Accounts (1440, default) | `564:27407` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=564-27407) | `web/w6-tabs-accounts-1440.png` |
+| W6/Users & settings/Tabs · Accident types (1440) | `564:28068` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=564-28068) | `web/w6-tabs-accident-types-1440.png` |
+| W6/Users & settings/Tabs · Nearby officers (1440) | `564:28729` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=564-28729) | `web/w6-tabs-nearby-officers-1440.png` |
+| W6/Users & settings/Tabs · Accounts · Dark (1440) | `564:29390` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=564-29390) | `web/w6-tabs-accounts-dark-1440.png` |
+| W6/Users & settings/Tabs · Accounts · Responsive (390) | `568:29575` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=568-29575) | `web/w6-tabs-accounts-390.png` |
+
 ## Flows (prototype)
 
 Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); I · Traffic Officer (web, starts at I1 483:47489, #52 and #47; Figma would not store a named start point, so open I1 directly); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
@@ -377,6 +391,7 @@ Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69Rky
 ## Open items for the team
 
 - v1.2.0 (Oct 30): the #54 to #57 frames above are built; the Flows copies do not include them yet.
+- v1.2.1 (Oct 30): the W6 tabs frames (#51) replace the stacked W6 layout in the website; the Flows copy D1 still shows the stacked layout.
 - Endpoints approved in design but not built (Carl): `GET /api/public/updates` (#23), update own profile and change own password (#25). Proposed, needs approval: a read-only endpoint for the user's own Action log (#27), with `action_type` and period filters and pagination; W8 is designed against it. W9 About reads the server state from `GET /api/health`; the version is static in the web build.
 - Officer mobile screens O1 to O6 approved by the team on Oct 20 (#36), including "Call reporter" on O2 (opens the phone dialer). In the prototype, Update status sits at the end of the scrolling C3 screen because the plugin API cannot pin it; the app keeps it fixed at the bottom.
 - The APK download buttons open the latest GitHub release; switch them to `roadwatch-ph.me/app` once the domain is live (#38).

@@ -85,6 +85,11 @@ src/
   `lib/guideSteps.js`, pointing at `data-guide="..."` anchors. Top bar Guide button from 1024 px; below that it is in the
   account menu (Help), so the top bar fits at 390 px (the logo shows the emblem only below 420 px).
 
+## v1.2.1 (DECISIONS #51, Figma section 564:27406)
+- W6 Users & settings uses `Tabs` (`components/ui/Tabs.jsx`, underline tabs, WAI-ARIA, scrolls sideways on phones; panel
+  props from `lib/tabs.js`): Accounts (default, with the Role filter and toolbar), Accident types, Nearby officers. The open
+  tab is in the address (`?tab=types|nearby`). The W6 Guide starts with the `users-tabs` step.
+
 ## Motion (#41, docs/ui-design/motion-spec.md)
 - `lib/motion.js`: GSAP + ScrollTrigger + DrawSVG, tokens (`DUR`, `EASE`), `reveal()`, `countTo()`, `useRefreshOnResize()`.
   Everything goes through `gsap.matchMedia()`: reduced motion = 200 ms fades. Use `fromTo` with explicit end values.
