@@ -46,6 +46,14 @@ export default function StaffLayout() {
   const [dialog, setDialog] = useState(null); // 'profile' | 'password' | 'support' | 'logout'
   const [toast, setToast] = useState('');
   const [guideOpen, setGuideOpen] = useState(false);
+  const [guideSteps, setGuideSteps] = useState([]);
+  // Skip steps whose part of the page is not there (for example the Accounts table while the Nearby officers tab is open).
+  const openGuide = () => {
+    const all = guideStepsFor(pathname, role);
+    const present = all.filter((s) => document.querySelector(`[data-guide="${s.target}"]`));
+    setGuideSteps(present.length ? present : all);
+    setGuideOpen(true);
+  };
   const drawerRef = useRef(null);
 
   useFocusTrap(drawerRef, drawerOpen, () => setDrawerOpen(false));
@@ -90,7 +98,7 @@ export default function StaffLayout() {
       label: 'Help',
       items: [
         // On phones the Guide button lives here instead of the top bar (#56).
-        { key: 'guide', label: 'Guide', icon: 'accessibility', onSelect: () => setGuideOpen(true) },
+        { key: 'guide', label: 'Guide', icon: 'accessibility', onSelect: openGuide },
         { key: 'support', label: 'Contact support', icon: 'mail', onSelect: () => setDialog('support') },
         { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate(aboutPath) },
       ],
@@ -150,7 +158,7 @@ export default function StaffLayout() {
             icon="accessibility"
             aria-pressed={guideOpen}
             aria-haspopup="dialog"
-            onClick={() => setGuideOpen(true)}
+            onClick={openGuide}
             className="hidden lg:inline-flex"
           >
             Guide
@@ -191,7 +199,7 @@ export default function StaffLayout() {
         confirmIcon="log-out"
       />
 
-      <GuideTour open={guideOpen} steps={guideStepsFor(pathname, role)} onClose={() => setGuideOpen(false)} />
+      <GuideTour open={guideOpen} steps={guideSteps} onClose={() => setGuideOpen(false)} />
 
       {toast && (
         <div className="fixed right-4 bottom-4 z-[2500]">
