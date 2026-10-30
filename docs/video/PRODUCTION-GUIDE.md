@@ -166,7 +166,7 @@ leave one second of silence before and after each take for clean cuts.
 - [ ] Each demo clip is **exactly 0:30** in the CapCut export dialog; the promo is **3:00 or longer**.
 - [ ] Captions are burned in and spelled correctly.
 - [ ] No passwords, real emails, real phone numbers or real people's data on screen.
-- [ ] The app version shown is 1.1.0 (Settings) and the web About says 1.1.0.
+- [ ] The app version shown is 1.2.0 (Settings) and the web About says 1.2.0.
 - [ ] Logos used are ours or the official tool logos from `docs/assets/logos/`; no PNP or BFP seals in AI shots.
 - [ ] Every member is heard in the promo.
 - [ ] Files are named exactly as in the table at the top and are under 100 MB each.

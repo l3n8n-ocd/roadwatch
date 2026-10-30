@@ -1,6 +1,6 @@
 # User guide
 
-`RoadWatch-User-Guide.pptx`: the PowerPoint user guide for v1.1.0 (31 slides, 16:9), one section per role:
+`RoadWatch-User-Guide.pptx`: the PowerPoint user guide drafted for v1.1.0 (31 slides, 16:9; v1.2.0 adds priority, On duty and nearby alerts, the Users toolbar and the Guide, still to add), one section per role:
 Introduction, Reporter (Android app), Traffic Officer (app and website), Administrator (website), For everyone
 (account, troubleshooting, privacy and accessibility) and Closing. Speaker notes are on the title and section slides.
 

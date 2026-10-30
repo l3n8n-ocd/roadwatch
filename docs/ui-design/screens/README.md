@@ -7,8 +7,8 @@ export it again under the same file name. Node IDs for every frame are in `../fi
 
 | Folder | Frames | Size |
 |---|---|---|
-| `mobile/` | 58: M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
-| `web/` | 61: W0 landing, W1 staff sign-in (role chooser, Administrator, Traffic Officer), W2-W12 (W5 and officer W4 since #52), Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
+| `mobile/` | 64 (6 added for v1.2.0, Oct 30: O1 on duty + priority, nearby alert, already taken, O2 responding, M1 guide, Settings/Accessibility): M0-M6 (Reporter), Notifications, Settings and its sub-screens, O1-O6 (Traffic Officer), mobile accessibility checklist | 360 x 800 (O2 report details is the full scroll, 360 x 2197) |
+| `web/` | 72 (11 added for v1.2.0, Oct 30: W3 priority, W4 priority x2, W5 on duty + alert, W6 toolbar x2 and dialogs x3, W2 guide, components): W0 landing, W1 staff sign-in (role chooser, Administrator, Traffic Officer), W2-W12 (W5 and officer W4 since #52), Demo video, dialogs, web accessibility checklist | 1440 desktop, 390 phone, 480 dialogs |
 
 File names follow the frame names: `<screen>-<state>[-dark][-<width>].png`, for example
 `w4-report-verified-1440.png` is "W4/Report details/Verified (1440)" and `m6-my-reports-empty.png` is

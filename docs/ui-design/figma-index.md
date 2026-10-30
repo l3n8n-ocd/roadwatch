@@ -227,6 +227,33 @@ Text styles: Heading/Hero, Display, H1, H2, H3, Stat; Body/Large, Default, Small
 | W5/Overlay/Notifications panel · Empty | `483:21192` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=483-21192) |
 | Accessibility checklist/Web | `132:4095` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=132-4095) |
 
+## v1.2.0: UI/UX defense recommendations (#54 to #57; DECISIONS #49, #50)
+
+Drawn Oct 29, approved by Lenon on Oct 30, then coded for v1.2.0. Sections: Components `527:4124`; Web #55 `528:22567`,
+#54 `531:23850`, #56 `543:26678`; Mobile #54 + #57 `537:4740`, #56 `543:32729`. PNGs in `screens/` (path in the last column).
+Code notes: on phones (below 1024 px) the web Guide button moves into the account menu under Help, so the top bar fits;
+the app's Assigned tab also has a Guide button (top bar), and the guide's first step on Assigned is On duty.
+
+| Page | Frame | Node | Link | PNG |
+|---|---|---|---|---|
+| Components | Section/Priority chip + Radio (#54, #55): Priority chip set `527:4117` (Low, Medium, High, Urgent; icon + text), Radio `527:4123`, icons accessibility `542:8`, volume `542:21`, pause `542:32` | `527:4124` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=527-4124) | `web/components-priority-chip-radio.png` |
+| Web | W6/Users & settings/Toolbar · Account selected (1440) (#55: + Create officer and Edit only; radio per row) | `528:22568` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=528-22568) | `web/w6-toolbar-selected-1440.png` |
+| Web | W6/Users & settings/Toolbar · No selection (1440) (Edit disabled; Nearby officers alert range card, #57) | `528:23244` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=528-23244) | `web/w6-toolbar-no-selection-1440.png` |
+| Web | W6/Overlay/Edit account · Traffic Officer (dialog) | `529:23706` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=529-23706) | `web/w6-edit-account-dialog.png` |
+| Web | W6/Overlay/Edit account · Your account (dialog; role, Reset password and Deactivate disabled) | `529:23828` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=529-23828) | `web/w6-edit-own-account-dialog.png` |
+| Web | W6/Overlay/Create officer (dialog) | `529:23958` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=529-23958) | `web/w6-create-officer-dialog.png` |
+| Web | W3/Report management/Priority column (1440) (#54: Priority filter, sorted by priority then newest; nearby-officer lines under the status, #57) | `531:23851` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=531-23851) | `web/w3-priority-column-1440.png` |
+| Web | W4/Report details/Admin · Priority automatic (1440) (Priority card) | `533:24612` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=533-24612) | `web/w4-priority-automatic-1440.png` |
+| Web | W4/Report details/Admin · Priority set by admin (1440) (Back to automatic) | `533:25357` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=533-25357) | `web/w4-priority-set-by-admin-1440.png` |
+| Web | W5/Officer queue/On duty + nearby alert (1440) (#54 Priority column and Sort by; #57 On duty and Respond / Not now) | `539:26111` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=539-26111) | `web/w5-on-duty-nearby-alert-1440.png` |
+| Web | W2/Dashboard · Guide tour step 2 of 6 (#56; Guide button in the top bar, Read aloud) | `543:26679` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-26679) | `web/w2-guide-tour-step-2-1440.png` |
+| Mobile | O1/Assigned/On duty + priority (#54, #57) | `537:4741` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-4741) | `mobile/o1-on-duty-priority.png` |
+| Mobile | O1/Overlay/Accident reported near you (#57; Respond / Not now) | `537:4936` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-4936) | `mobile/o1-nearby-alert-sheet.png` |
+| Mobile | O1/Overlay/Already taken (#57) | `537:5011` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-5011) | `mobile/o1-already-taken-sheet.png` |
+| Mobile | O2/Report details/Responding · Confirm on scene (#57; Confirm on scene / Reject report) | `537:5070` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=537-5070) | `mobile/o2-responding-confirm-on-scene.png` |
+| Mobile | M1/Home · Guide tour step 1 of 5 (#56; Guide button in the top bar) | `543:32730` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-32730) | `mobile/m1-guide-tour-step-1.png` |
+| Mobile | Settings/Accessibility (#56; Start the guide, Read aloud, Reading speed, Videos) | `543:32820` | [Open](https://www.figma.com/design/psx52NYL69RkycK7Z44EAb/RoadWatch-Wireframes?node-id=543-32820) | `mobile/settings-accessibility.png` |
+
 ## Flows (prototype)
 
 Flow starting points: 0 · Public landing (web); A · Reporter (mobile); B · Admin (starts at B1 Administrator sign-in): review, verify, assign; C · Officer (mobile, starts at C1, added Oct 20, #36); I · Traffic Officer (web, starts at I1 483:47489, #52 and #47; Figma would not store a named start point, so open I1 directly); D · Admin: users and export; E1 · Settings and demo video (mobile); E2 · Demo video (web). The old web flows C (officer) and R (reporter) are on the Archive page.
@@ -349,6 +376,7 @@ Page **Archive** (`316:14443`, [Open](https://www.figma.com/design/psx52NYL69Rky
 
 ## Open items for the team
 
+- v1.2.0 (Oct 30): the #54 to #57 frames above are built; the Flows copies do not include them yet.
 - Endpoints approved in design but not built (Carl): `GET /api/public/updates` (#23), update own profile and change own password (#25). Proposed, needs approval: a read-only endpoint for the user's own Action log (#27), with `action_type` and period filters and pagination; W8 is designed against it. W9 About reads the server state from `GET /api/health`; the version is static in the web build.
 - Officer mobile screens O1 to O6 approved by the team on Oct 20 (#36), including "Call reporter" on O2 (opens the phone dialer). In the prototype, Update status sits at the end of the scrolling C3 screen because the plugin API cannot pin it; the app keeps it fixed at the bottom.
 - The APK download buttons open the latest GitHub release; switch them to `roadwatch-ph.me/app` once the domain is live (#38).

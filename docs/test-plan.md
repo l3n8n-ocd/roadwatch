@@ -173,6 +173,29 @@ Never put real passwords in this file. Use made-up test data (no real accident v
 | TC-P.6 | Mobile: Settings (version row), Settings > About RoadWatch, Settings > Demo video, in Light and Dark (#48, #49) | Version row says only "Version 1.1.0"; About has the 911 disclaimer and the Built with card (3 tiles per row); Settings > Demo video shows the Reporter clip with "Your role" (a Traffic Officer sees the Traffic Officer clip first, then the Reporter clip); "Read the transcript" opens the text; a clip without a URL says "Clip coming soon" (#48) | | |
 | TC-P.7 | Landing page with and without `PROMO_VIDEO_URL` on Render, at 1440 and on a phone (#48) | Without it: no "Watch the video" section and no footer link. With it: a navy "Watch the video" section after How it works plays the promo (captions on, Transcript when `PROMO_VIDEO_TRANSCRIPT` is set); the footer link "Watch the video" scrolls to it | | |
 
+### v1.2.0: priority, Users toolbar, guide, nearby on-duty officers (#54 to #57, DECISIONS #49, #50)
+
+Before these: run `npm run migrate` on the database once (Aiven), and have two officers (O1, O2) on the app with location on.
+
+| ID | Steps | Expected | Actual | Result |
+|---|---|---|---|---|
+| TC-V.1 | R1 submits a Pedestrian accident with Fatalities, then a Collision with no injuries; A1 opens Reports (#54) | The first is **Urgent**, the second **Medium**; Reports is sorted Urgent first, each row shows the Priority chip (icon + word); the Priority filter shows only that level; R1's app never shows a priority | | |
+| TC-V.2 | A1 opens the Collision report, Change priority > High > Save priority; then Back to automatic | Chip shows High and "Set by admin · was Medium"; the Action log has "report.priority_changed"; Back to automatic returns to Medium with "Auto · Collision, no injuries" | | |
+| TC-V.3 | O1 on the app: Assigned > Sort by Priority (Urgent first), then Newest first | The order changes; each card shows its Priority chip; O1 cannot change the priority anywhere | | |
+| TC-V.4 | A1: Users & settings; press Edit with no row selected; select an officer's round button > Edit; change the phone > Save changes (#55) | Edit is disabled until a row is selected; no buttons in the rows; the dialog shows name, phone, role, Reset password and Deactivate; the phone saves and the Action log has "user.updated" | | |
+| TC-V.5 | A1 selects their own row > Edit | Role, Reset password and Deactivate are disabled with "aren't available for your own account"; name and phone can be saved | | |
+| TC-V.6 | A1: + Create officer (dialog) creates O2; Nearby officers > Alert range 5 > Save range | O2 can sign in; "Alert range saved"; the Action log has "settings.updated" | | |
+| TC-V.7 | O1 and O2 switch **On duty** on the app (allow location), both within 5 km of a spot; R1 reports an accident there with GPS on (#57) | Within 30 seconds both phones show "Accident reported near you" with the priority, "Not yet verified", the distance and Respond / Not now; both get an email | | |
+| TC-V.8 | O2 presses Respond first, then O1 presses Respond | O2 opens the report with "You're responding"; O1 sees "Already taken: O2 responded first..." | | |
+| TC-V.9 | O2: Confirm on scene > confirm | Status **In Progress**, badge **Verified record**; R1 is notified; A1's Reports row says "Responded on scene · O2" | | |
+| TC-V.10 | Repeat TC-V.7; the responding officer presses Reject report with a reason | Status Rejected with the reason; A1 gets an in-app note and sees "Rejected on scene"; A1 can set it back to Under Review | | |
+| TC-V.11 | Repeat TC-V.7 but nobody responds for 10 minutes | The alert disappears from the phones; A1's Reports row says "No nearby officer responded · N min"; A1 verifies and assigns as usual | | |
+| TC-V.12 | O1 switches On duty off; R1 reports near O1 | O1 gets no alert; the location is cleared on the server | | |
+| TC-V.13 | Web O1: Assigned to me > On duty on (allow location in the browser) and repeat TC-V.7 | The web shows the same alert card with Respond / Not now; Respond opens the report with Confirm on scene / Reject report | | |
+| TC-V.14 | Web A1 and O1: press **Guide** in the top bar (on a phone: account menu > Guide) on Dashboard, Reports, a report, Users & settings and Assigned to me (#56) | A text tour of that page: "STEP n OF m", a ring around the part explained, Back / Next / Done, Esc closes, ← → change steps; Read aloud speaks the step and Speed changes it; nothing depends on sound | | |
+| TC-V.15 | App R1: Home > Guide (top bar); Settings > Accessibility > Read aloud on, Reading speed 1.25×, Start the guide | 5-step tour of Home; with Read aloud on each step is spoken; Start the guide goes back to Home and starts it; the Videos row says captions and transcripts are always available | | |
+| TC-V.16 | App O1: Assigned > Guide | 4-step tour: On duty, Filter by status, Sort by, the list | | |
+
 ## Accessibility (WCAG 2.1 AA target)
 
 | ID | Check | Expected | Actual | Result |
