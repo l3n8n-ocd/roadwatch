@@ -217,7 +217,7 @@ Before these: run `npm run migrate` on the database once (Aiven), and have two o
 
 | Bug | Test ID | Issue link | Fixed in | Re-test result |
 |---|---|---|---|---|
-| | | | | |
+| Web Guide on Users & settings showed the Accounts steps while the Accident types or Nearby officers tab was open (card with no ring) | TC-V.14, TC-V.17 | (found in the Oct 30 bug sweep) | v1.2.1 bug fix, `StaffLayout` skips steps whose part is not on the page | Pass (Chromium, Oct 30: Accounts 3 steps, the other tabs 1 step, Dashboard 6) |
 
 ## Sign-off
 
