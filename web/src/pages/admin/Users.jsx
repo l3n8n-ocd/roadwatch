@@ -7,6 +7,7 @@ import {
   EmptyState,
   Icon,
   PasswordField,
+  Radio,
   Select,
   Skeleton,
   TextField,
@@ -19,17 +20,20 @@ import { ROLES } from '../../lib/constants';
 import { NOT_STRONG, isStrong } from '../../lib/passwordStrength';
 import { cx } from '../../lib/cx';
 
-// W6 Users & settings (Figma 128:2944, after deactivation 128:3348, dialog 128:3709).
-// Accounts table (role, reset password, deactivate/reactivate), create officer form, accident types.
+// W6 Users & settings (Figma 128:2944, after deactivation 128:3348; v1.2.0 toolbar 528:22568, no selection 528:23244).
+// #55: one toolbar with + Create officer and Edit; no buttons in the rows. Select an account (radio), then Edit opens
+// one dialog (529:23706; own account 529:23828) with name, phone, role, Reset password and Deactivate/Reactivate.
+// Create officer opens a dialog (529:23958). Accident types and the Nearby officers alert range (#57) below.
 // Reset password (#37, dialog 404:16418, toast 404:16490): Reporters and Traffic Officers only.
 // An administrator cannot change or deactivate their own account (#16); the API also refuses it.
 
 const ROLE_OPTIONS = [ROLES.REPORTER, ROLES.ADMIN, ROLES.OFFICER].map((r) => ({ value: r, label: r }));
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function Card({ titleId, title, className = '', children, aside }) {
+function Card({ titleId, title, className = '', children, aside, guide }) {
   return (
     <section
+      data-guide={guide}
       aria-labelledby={titleId}
       className={cx('flex min-w-0 flex-col gap-4 rounded-rw-md border border-border-subtle bg-surface-white p-6', className)}
     >
@@ -61,61 +65,50 @@ function ActiveStatus({ active }) {
 
 // ---------- accounts ----------
 
-// Phones: the buttons share the row width with less side padding.
-const ACTION_BTN = 'max-md:min-w-0 max-md:flex-1 max-md:px-3';
-
-function UserActions({ user, isSelf, selfNoteId, onChangeRole, onResetPassword, onDeactivate, onReactivate, busy }) {
-  const name = user.full_name;
-  if (isSelf) {
-    return (
-      <Button variant="destructive" disabled aria-describedby={selfNoteId} className={ACTION_BTN}>
-        Deactivate
-      </Button>
-    );
-  }
-  if (!user.is_active) {
-    return (
-      <Button variant="secondary" icon="refresh" onClick={() => onReactivate(user)} disabled={busy} className={ACTION_BTN}>
-        Reactivate<span className="sr-only"> {name}</span>
-      </Button>
-    );
-  }
-  return (
-    <>
-      <Button variant="secondary" onClick={() => onChangeRole(user)} className={ACTION_BTN}>
-        Change role<span className="sr-only"> for {name}</span>
-      </Button>
-      {user.role !== ROLES.ADMIN && (
-        <Button variant="secondary" onClick={() => onResetPassword(user)} className={ACTION_BTN}>
-          Reset password<span className="sr-only"> for {name}</span>
-        </Button>
-      )}
-      <Button variant="destructive" onClick={() => onDeactivate(user)} className={ACTION_BTN}>
-        Deactivate<span className="sr-only"> {name}</span>
-      </Button>
-    </>
-  );
-}
-
-function ChangeRoleDialog({ user, onClose, onSaved }) {
-  const [role, setRole] = useState(user?.role || ROLES.OFFICER);
-  const [busy, setBusy] = useState(false);
+// Edit account (#55): name and phone (PATCH /users/:id), role (PATCH /users/:id/role), and the account actions.
+// Own account: name and phone only. Another administrator: no Reset password (they use Forgot password).
+function EditAccountDialog({ user, isSelf, onClose, onSaved, onResetPassword, onDeactivate, onReactivate, busy }) {
+  const [form, setForm] = useState({ full_name: user.full_name, contact_phone: user.contact_phone || '', role: user.role });
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const set = (key) => (event) => {
+    setForm((f) => ({ ...f, [key]: event.target.value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+  const canReset = !isSelf && user.role !== ROLES.ADMIN && user.is_active;
 
   const save = async (event) => {
     event.preventDefault();
-    if (role === user.role) {
-      onClose();
+    const name = form.full_name.trim();
+    if (name.length < 2) {
+      setErrors({ full_name: 'Enter the full name (2 characters or more).' });
+      document.getElementById('edit-full_name')?.focus();
       return;
     }
-    setBusy(true);
+    setSaving(true);
     setError('');
     try {
-      await users.setRole(user.user_id, role);
-      onSaved(user, role);
+      const phone = form.contact_phone.trim() || null;
+      const changes = {};
+      if (name !== user.full_name || phone !== (user.contact_phone || null)) {
+        await users.update(user.user_id, { full_name: name, contact_phone: phone });
+        Object.assign(changes, { full_name: name, contact_phone: phone });
+      }
+      if (!isSelf && form.role !== user.role) {
+        await users.setRole(user.user_id, form.role);
+        changes.role = form.role;
+      }
+      onSaved(user, changes);
     } catch (err) {
-      setError(err.message);
-      setBusy(false);
+      if (err.details) {
+        const mapped = {};
+        Object.entries(err.details).forEach(([k, v]) => {
+          mapped[k] = Array.isArray(v) ? v[0] : String(v);
+        });
+        setErrors(mapped);
+      } else setError(err.message);
+      setSaving(false);
     }
   };
 
@@ -123,22 +116,89 @@ function ChangeRoleDialog({ user, onClose, onSaved }) {
     <Dialog
       open
       onClose={onClose}
-      title={`Change role for ${user.full_name}`}
-      description="The change is recorded in the audit log. Role names match the database."
+      title={`Edit account: ${user.full_name}`}
+      description={
+        isSelf
+          ? 'This is your own account. You can change your name and phone here; your role and access can only be changed by another administrator.'
+          : `${user.contact_email} · ${user.role}. Changes are saved to the action log.`
+      }
     >
-      <form noValidate onSubmit={save} className="flex flex-col gap-6">
-        <Select label="Role" required value={role} onChange={(e) => setRole(e.target.value)} options={ROLE_OPTIONS} data-autofocus />
+      <form noValidate onSubmit={save} className="flex flex-col gap-4">
+        <TextField
+          id="edit-full_name"
+          label="Full name"
+          required
+          icon="user"
+          autoComplete="off"
+          value={form.full_name}
+          onChange={set('full_name')}
+          error={errors.full_name}
+          data-autofocus
+        />
+        <TextField
+          id="edit-contact_phone"
+          label="Mobile number"
+          optional
+          type="tel"
+          autoComplete="off"
+          placeholder="09XX XXX XXXX"
+          value={form.contact_phone}
+          onChange={set('contact_phone')}
+          error={errors.contact_phone}
+        />
+        <Select label="Role" required disabled={isSelf} value={form.role} onChange={set('role')} options={ROLE_OPTIONS} />
+        <div className="flex flex-col gap-2">
+          <p className="type-body-sm text-text-muted">
+            {isSelf
+              ? 'Reset password and Deactivate aren’t available for your own account.'
+              : user.role === ROLES.ADMIN && user.is_active
+                ? 'Account actions · Administrators reset their own password with Forgot password.'
+                : 'Account actions'}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="secondary"
+              icon="lock"
+              disabled={!canReset}
+              onClick={() => onResetPassword(user)}
+              className="max-sm:min-w-0 max-sm:flex-1"
+            >
+              Reset password
+            </Button>
+            {user.is_active || isSelf ? (
+              <Button
+                variant="destructive"
+                icon="user-x"
+                disabled={isSelf}
+                onClick={() => onDeactivate(user)}
+                className="max-sm:min-w-0 max-sm:flex-1"
+              >
+                Deactivate
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                icon="refresh"
+                disabled={busy}
+                onClick={() => onReactivate(user)}
+                className="max-sm:min-w-0 max-sm:flex-1"
+              >
+                Reactivate
+              </Button>
+            )}
+          </div>
+        </div>
         {error && (
           <p role="alert" className="type-body-sm text-text-danger">
             {error}
           </p>
         )}
-        <div className="flex flex-wrap justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3 pt-2">
           <Button variant="secondary" onClick={onClose} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
             Cancel
           </Button>
-          <Button type="submit" disabled={busy} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
-            {busy ? 'Saving…' : 'Save role'}
+          <Button type="submit" disabled={saving} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
+            {saving ? 'Saving…' : 'Save changes'}
           </Button>
         </div>
       </form>
@@ -244,7 +304,7 @@ function validate(form) {
   return errors;
 }
 
-function CreateOfficerCard({ onCreated }) {
+function CreateOfficerDialog({ onClose, onCreated }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -291,10 +351,16 @@ function CreateOfficerCard({ onCreated }) {
   };
 
   return (
-    <Card titleId="create-officer-title" title="Create officer account">
+    <Dialog
+      open
+      onClose={onClose}
+      title="Create officer account"
+      description="The new Traffic Officer signs in with this email and the temporary password, then changes it."
+    >
       <form noValidate onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           id="officer-full_name"
+          data-autofocus
           label="Full name"
           required
           icon="user"
@@ -354,11 +420,16 @@ function CreateOfficerCard({ onCreated }) {
             {formError}
           </p>
         )}
-        <Button type="submit" icon="plus" fullWidth disabled={busy}>
-          {busy ? 'Creating…' : 'Create account'}
-        </Button>
+        <div className="flex flex-wrap justify-end gap-3 pt-2">
+          <Button variant="secondary" onClick={onClose} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
+            Cancel
+          </Button>
+          <Button type="submit" icon="plus" disabled={busy} className="min-w-[184px] max-sm:min-w-0 max-sm:flex-1">
+            {busy ? 'Creating…' : 'Create account'}
+          </Button>
+        </div>
       </form>
-    </Card>
+    </Dialog>
   );
 }
 
@@ -443,6 +514,83 @@ function AccidentTypesCard({ onAdded }) {
   );
 }
 
+// ---------- nearby officers (#57) ----------
+
+function NearbyOfficersCard({ onSaved }) {
+  const [saved, setSaved] = useState(null);
+  const [value, setValue] = useState('');
+  const [error, setError] = useState('');
+  const [loadError, setLoadError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    admin
+      .settings()
+      .then((s) => {
+        setSaved(s.alert_range_km);
+        setValue(String(s.alert_range_km));
+      })
+      .catch((err) => setLoadError(err.message));
+  }, []);
+
+  const save = async (event) => {
+    event.preventDefault();
+    const km = Number(value);
+    if (!Number.isFinite(km) || km < 0.5 || km > 50) {
+      setError('Enter a range from 0.5 to 50 km.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const s = await admin.updateSettings({ alert_range_km: km });
+      setSaved(s.alert_range_km);
+      setValue(String(s.alert_range_km));
+      onSaved(s.alert_range_km);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card titleId="nearby-title" title="Nearby officers" guide="nearby-range">
+      <p className="type-body text-text-muted">
+        When a report comes in, up to 3 nearest on-duty officers within this range are alerted. The first to respond
+        confirms it on scene. If nobody responds in 10 minutes, the report comes to you to verify and assign.
+      </p>
+      {loadError ? (
+        <p role="alert" className="type-body-sm text-text-danger">
+          Could not load the alert range. {loadError}
+        </p>
+      ) : (
+        <form noValidate onSubmit={save} className="flex flex-col gap-4">
+          <TextField
+            label="Alert range (km)"
+            type="number"
+            inputMode="decimal"
+            min="0.5"
+            max="50"
+            step="0.5"
+            disabled={saved == null}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setError('');
+            }}
+            helper="Straight-line distance from the report’s pin."
+            error={error}
+          />
+          <Button type="submit" variant="secondary" icon="check" disabled={busy || saved == null || Number(value) === saved} className="self-start">
+            {busy ? 'Saving…' : 'Save range'}
+          </Button>
+        </form>
+      )}
+    </Card>
+  );
+}
+
 // ---------- page ----------
 
 export default function Users() {
@@ -452,7 +600,9 @@ export default function Users() {
   const [list, setList] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [toast, setToast] = useState(null);
-  const [roleTarget, setRoleTarget] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [deactivateTarget, setDeactivateTarget] = useState(null);
   const [resetTarget, setResetTarget] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -470,6 +620,7 @@ export default function Users() {
   useEffect(load, [load]);
 
   const isSelf = (u) => me && u.user_id === me.user_id;
+  const selected = list?.find((u) => u.user_id === selectedId) || null;
   const updateRow = (id, patch) => setList((rows) => rows.map((r) => (r.user_id === id ? { ...r, ...patch } : r)));
 
   const deactivate = async () => {
@@ -480,6 +631,7 @@ export default function Users() {
       await users.setActive(target.user_id, false);
       updateRow(target.user_id, { is_active: false });
       setDeactivateTarget(null);
+      setEditing(false);
       setToast({
         title: `${target.full_name} deactivated`,
         body: 'They can no longer log in. Their reports and history are kept. Reactivate any time.',
@@ -496,6 +648,7 @@ export default function Users() {
     try {
       await users.setActive(target.user_id, true);
       updateRow(target.user_id, { is_active: true });
+      setEditing(false);
       setToast({ title: `${target.full_name} reactivated`, body: 'They can log in again.' });
     } catch (err) {
       setToast({ type: 'error', title: 'Could not reactivate', body: err.message });
@@ -505,6 +658,20 @@ export default function Users() {
   };
 
   const columns = [
+    {
+      key: 'select',
+      header: <span className="sr-only">Select</span>,
+      className: 'w-14',
+      // The table and the phone list each get their own radio group (both are in the page, one is hidden).
+      render: (u, group = 'account') => (
+        <Radio
+          name={group}
+          checked={selectedId === u.user_id}
+          onChange={() => setSelectedId(u.user_id)}
+          label={`Select ${u.full_name}`}
+        />
+      ),
+    },
     {
       key: 'name',
       header: 'Name',
@@ -521,28 +688,6 @@ export default function Users() {
     },
     { key: 'role', header: 'Role', className: 'whitespace-nowrap' },
     { key: 'status', header: 'Status', className: 'whitespace-nowrap', render: (u) => <ActiveStatus active={u.is_active} /> },
-    {
-      key: 'actions',
-      header: 'Actions',
-      className: 'text-right',
-      render: (u) => (
-        <div className="flex flex-wrap gap-2 md:flex-nowrap md:justify-end">
-          <UserActions
-            user={u}
-            isSelf={isSelf(u)}
-            selfNoteId={selfNoteId}
-            busy={busyId === u.user_id}
-            onChangeRole={setRoleTarget}
-            onResetPassword={setResetTarget}
-            onDeactivate={(target) => {
-              setActionError('');
-              setDeactivateTarget(target);
-            }}
-            onReactivate={reactivate}
-          />
-        </div>
-      ),
-    },
   ];
 
   const count = list?.length ?? 0;
@@ -587,6 +732,27 @@ export default function Users() {
             : 'Loading accounts…'}
         </p>
 
+        {/* Toolbar (#55): the only buttons on this card. */}
+        <div data-guide="accounts-toolbar" role="toolbar" aria-label="Account actions" aria-controls="accounts-table" className="flex flex-wrap items-center gap-3">
+          <Button icon="plus" onClick={() => setCreating(true)} aria-haspopup="dialog" className="max-sm:min-w-0 max-sm:flex-1">
+            Create officer
+          </Button>
+          <Button
+            variant="secondary"
+            icon="pencil"
+            disabled={!selected}
+            onClick={() => setEditing(true)}
+            aria-haspopup="dialog"
+            aria-describedby={selfNoteId}
+            className="min-w-[178px] max-sm:min-w-0 max-sm:flex-1"
+          >
+            Edit<span className="sr-only">{selected ? ` ${selected.full_name}` : ''}</span>
+          </Button>
+          <p className="type-body-sm text-text-muted" aria-live="polite">
+            {selected ? `Selected: ${selected.full_name} (${selected.role})` : 'Select an account to edit it.'}
+          </p>
+        </div>
+
         {loadError ? (
           <EmptyState
             type="error"
@@ -607,45 +773,64 @@ export default function Users() {
         ) : list.length === 0 ? (
           <EmptyState type="no-results" title="No accounts" description="No accounts have this role yet." />
         ) : (
-          <>
-            {/* Table from 768 px; a stacked list on phones (no horizontal page scroll). */}
+          <div id="accounts-table" data-guide="accounts-table">
+            {/* Table from 768 px; a stacked list on phones (no horizontal page scroll). Selecting a row selects its radio. */}
             <DataTable
               className="hidden md:block"
-              caption="User accounts"
+              caption="User accounts. Select an account, then choose Edit."
               columns={columns}
               rows={list}
               getRowKey={(u) => u.user_id}
+              selectedKey={selectedId}
             />
             <ul className="flex flex-col md:hidden" aria-label="User accounts">
               {list.map((u) => (
                 <li
                   key={u.user_id}
                   className={cx(
-                    'flex flex-col gap-3 border-b border-border-subtle px-2 py-4',
-                    isSelf(u) && 'bg-surface-navy-subtle',
+                    'flex items-start gap-2 border-b border-border-subtle px-1 py-3',
+                    selectedId === u.user_id && 'bg-surface-blue-subtle',
                   )}
                 >
-                  {columns[0].render(u)}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <span className="type-body-sm text-text-primary">{u.role}</span>
-                    <ActiveStatus active={u.is_active} />
+                  {columns[0].render(u, 'account-list')}
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    {columns[1].render(u)}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                      <span className="type-body-sm text-text-primary">{u.role}</span>
+                      <ActiveStatus active={u.is_active} />
+                    </div>
                   </div>
-                  {columns[3].render(u)}
                 </li>
               ))}
             </ul>
-          </>
+          </div>
         )}
 
         <p id={selfNoteId} className="flex items-start gap-2 type-body-sm text-text-primary">
           <Icon name="info" size={20} className="text-text-blue" />
-          You can&apos;t deactivate your own account. Ask another administrator.
+          Select an account, then choose Edit to change its details, role, password or access. You can&apos;t deactivate
+          your own account.
         </p>
       </Card>
 
       <div className="grid items-start gap-6 md:grid-cols-2">
-        <CreateOfficerCard
+        <AccidentTypesCard
+          onAdded={(name) =>
+            setToast({ title: 'Accident type added', body: `${name} is now available on the report form.` })
+          }
+        />
+        <NearbyOfficersCard
+          onSaved={(km) =>
+            setToast({ title: 'Alert range saved', body: `Nearby on-duty officers within ${km} km are alerted about new reports.` })
+          }
+        />
+      </div>
+
+      {creating && (
+        <CreateOfficerDialog
+          onClose={() => setCreating(false)}
           onCreated={(created) => {
+            setCreating(false);
             setToast({
               title: 'Account created',
               body: `${created.full_name} can now sign in as a ${created.role || ROLES.OFFICER}. Share the temporary password privately.`,
@@ -653,22 +838,29 @@ export default function Users() {
             load();
           }}
         />
-        <AccidentTypesCard
-          onAdded={(name) =>
-            setToast({ title: 'Accident type added', body: `${name} is now available on the report form.` })
-          }
-        />
-      </div>
+      )}
 
-      {roleTarget && (
-        <ChangeRoleDialog
-          user={roleTarget}
-          onClose={() => setRoleTarget(null)}
-          onSaved={(target, role) => {
-            updateRow(target.user_id, { role });
-            setRoleTarget(null);
-            setToast({ title: 'Role changed', body: `${target.full_name} is now a ${role}.` });
-            if (roleFilter && role !== roleFilter) load();
+      {editing && selected && !resetTarget && !deactivateTarget && (
+        <EditAccountDialog
+          user={selected}
+          isSelf={isSelf(selected)}
+          busy={busyId === selected.user_id}
+          onClose={() => setEditing(false)}
+          onResetPassword={setResetTarget}
+          onDeactivate={(target) => {
+            setActionError('');
+            setDeactivateTarget(target);
+          }}
+          onReactivate={reactivate}
+          onSaved={(target, changes) => {
+            setEditing(false);
+            if (!Object.keys(changes).length) return;
+            updateRow(target.user_id, changes);
+            setToast({
+              title: 'Account saved',
+              body: changes.role ? `${changes.full_name || target.full_name} is now a ${changes.role}.` : `${changes.full_name || target.full_name}’s details were updated.`,
+            });
+            if (roleFilter && changes.role && changes.role !== roleFilter) load();
           }}
         />
       )}
@@ -679,6 +871,7 @@ export default function Users() {
           onClose={() => setResetTarget(null)}
           onSaved={(target) => {
             setResetTarget(null);
+            setEditing(false);
             setToast({
               title: 'Password reset',
               body: `${target.full_name} can log in with the temporary password. We emailed them that it changed.`,

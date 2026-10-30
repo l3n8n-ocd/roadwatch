@@ -73,6 +73,18 @@ src/
   footer link appear only when `promoVideo.url` is set. `/app` on Vercel redirects to the newest APK (`vercel.json`).
 - Landing stats bar reads `GET /public/stats`. Support email: `SUPPORT_EMAIL` in `lib/constants.js`.
 
+## v1.2.0 (#54 to #57, DECISIONS #49, #50; Figma frames in `docs/ui-design/figma-index.md`)
+- Priority: `PriorityChip` (+ `priorityMeta.js`, icon + word), W3 Priority column and filter (sorted `sort=priority`), W4
+  Priority card (admin override / Back to automatic), W5 Priority column and Sort by. `ReportCard` takes `priority` and `note`.
+- Nearby officers: `lib/dispatch.js` `dispatchTag()` (line under the status), W5 On duty card + "Accident reported near
+  you" (`pages/officer/useNearbyAlerts.js`: browser location, 30-second checks), "Already taken" dialog, W4 officer
+  `RespondingPanel` (Confirm on scene / Reject report). W6 Nearby officers card saves the alert range.
+- Users & settings (#55): toolbar (+ Create officer, Edit), `Radio` per row (the table and the phone list use different
+  radio groups), Edit and Create officer dialogs.
+- Guide (#56): `GuideTour` (focus trap, ← →, Esc, Read aloud via `speechSynthesis`, speed) with steps per page in
+  `lib/guideSteps.js`, pointing at `data-guide="..."` anchors. Top bar Guide button from 1024 px; below that it is in the
+  account menu (Help), so the top bar fits at 390 px (the logo shows the emblem only below 420 px).
+
 ## Motion (#41, docs/ui-design/motion-spec.md)
 - `lib/motion.js`: GSAP + ScrollTrigger + DrawSVG, tokens (`DUR`, `EASE`), `reveal()`, `countTo()`, `useRefreshOnResize()`.
   Everything goes through `gsap.matchMedia()`: reduced motion = 200 ms fades. Use `fromTo` with explicit end values.

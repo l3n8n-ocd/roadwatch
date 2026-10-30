@@ -1,15 +1,17 @@
 import { startTransition, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button, ConfirmDialog, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu, useFocusTrap } from '../components/ui';
+import { Button, ConfirmDialog, GuideTour, Sidebar, ThemeSwitch, Toast, TopBarWeb, UserMenu, useFocusTrap } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, homePathFor } from '../lib/constants';
 import { reportCode } from '../lib/format';
+import { guideStepsFor } from '../lib/guideSteps';
 import { DUR, gsap, useGSAP } from '../lib/motion';
 import { ChangePasswordDialog, ContactSupportDialog, EditProfileDialog } from './AccountDialogs';
 import NotificationsBell from './NotificationsBell';
 
 // Staff shell for Administrators and Traffic Officers (#52) (Figma W2 123:108, W5 465:18031): navy sidebar + top bar (breadcrumb, Light/Dark switch, user menu,
 // Log out). Below 1024 px the sidebar becomes a drawer opened from the menu button (131:3837).
+// Guide (#56, Figma 543:26679): a text tour of the current page with optional Read aloud.
 
 // Breadcrumb for the current route ("Reports / RW-000128", "Help / About").
 function breadcrumbsFor(pathname) {
@@ -43,12 +45,16 @@ export default function StaffLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dialog, setDialog] = useState(null); // 'profile' | 'password' | 'support' | 'logout'
   const [toast, setToast] = useState('');
+  const [guideOpen, setGuideOpen] = useState(false);
   const drawerRef = useRef(null);
 
   useFocusTrap(drawerRef, drawerOpen, () => setDrawerOpen(false));
 
   // Close the drawer when the route changes; hide the toast after a few seconds.
-  useEffect(() => setDrawerOpen(false), [pathname]);
+  useEffect(() => {
+    setDrawerOpen(false);
+    setGuideOpen(false);
+  }, [pathname]);
   useEffect(() => {
     if (!toast) return undefined;
     const timer = setTimeout(() => setToast(''), 5000);
@@ -83,6 +89,8 @@ export default function StaffLayout() {
     {
       label: 'Help',
       items: [
+        // On phones the Guide button lives here instead of the top bar (#56).
+        { key: 'guide', label: 'Guide', icon: 'accessibility', onSelect: () => setGuideOpen(true) },
         { key: 'support', label: 'Contact support', icon: 'mail', onSelect: () => setDialog('support') },
         { key: 'about', label: 'About', icon: 'info', onSelect: () => navigate(aboutPath) },
       ],
@@ -102,7 +110,7 @@ export default function StaffLayout() {
       </a>
 
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen shrink-0 lg:block">
+      <aside data-guide="sidebar" className="sticky top-0 hidden h-screen shrink-0 lg:block">
         <Sidebar role={role} pathname={pathname} />
       </aside>
 
@@ -135,7 +143,18 @@ export default function StaffLayout() {
           menuOpen={drawerOpen}
           homeTo={homePathFor(role)}
           className="sticky top-0 z-[1100]"
+          data-guide="top-bar"
         >
+          <Button
+            variant="secondary"
+            icon="accessibility"
+            aria-pressed={guideOpen}
+            aria-haspopup="dialog"
+            onClick={() => setGuideOpen(true)}
+            className="hidden lg:inline-flex"
+          >
+            Guide
+          </Button>
           <ThemeSwitch />
           {/* Officers only: administrators get no in-app notifications (Figma top bar "Bell" property). */}
           {role === ROLES.OFFICER && <NotificationsBell />}
@@ -171,6 +190,8 @@ export default function StaffLayout() {
         confirmLabel="Log out"
         confirmIcon="log-out"
       />
+
+      <GuideTour open={guideOpen} steps={guideStepsFor(pathname, role)} onClose={() => setGuideOpen(false)} />
 
       {toast && (
         <div className="fixed right-4 bottom-4 z-[2500]">

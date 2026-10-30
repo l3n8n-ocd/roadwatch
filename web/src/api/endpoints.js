@@ -35,6 +35,14 @@ export const officer = {
   list: (params) => api.get('/officer/reports', { params }),
   get: (id) => api.get(`/officer/reports/${id}`),
   update: (id, body) => api.patch(`/officer/reports/${id}`, body), // { status?, remarks? }
+  // Nearby on-duty officers (#57)
+  duty: () => api.get('/officer/duty'),
+  setDuty: (body) => api.put('/officer/duty', body), // { on_duty, latitude?, longitude? }
+  nearby: () => api.get('/officer/nearby'), // open alerts, polled every 30 s while on duty
+  respond: (id) => api.post(`/officer/nearby/${id}/respond`), // 409 ALREADY_TAKEN { responder_name }
+  decline: (id) => api.post(`/officer/nearby/${id}/decline`),
+  confirmOnScene: (id, body) => api.post(`/officer/reports/${id}/confirm`, body), // { remarks? }
+  rejectOnScene: (id, body) => api.post(`/officer/reports/${id}/reject`, body), // { rejection_reason }
 };
 
 export const admin = {
@@ -43,6 +51,9 @@ export const admin = {
   get: (id) => api.get(`/admin/reports/${id}`),
   setStatus: (id, body) => api.patch(`/admin/reports/${id}/status`, body),
   assign: (id, body) => api.patch(`/admin/reports/${id}/assign`, body),
+  setPriority: (id, priority) => api.patch(`/admin/reports/${id}/priority`, { priority }), // #54; null = automatic
+  settings: () => api.get('/admin/settings'), // #57 { alert_range_km }
+  updateSettings: (body) => api.patch('/admin/settings', body),
   addAccidentType: (type_name) => api.post('/admin/accident-types', { type_name }),
   auditLogs: (params) => api.get('/admin/audit-logs', { params, withPagination: true }), // #27, { data, pagination }
 };
@@ -50,6 +61,7 @@ export const admin = {
 export const users = {
   list: (params) => api.get('/users', { params }),
   create: (body) => api.post('/users', body),
+  update: (id, body) => api.patch(`/users/${id}`, body), // #55 { full_name, contact_phone }
   setRole: (id, role) => api.patch(`/users/${id}/role`, { role }),
   setActive: (id, is_active) => api.patch(`/users/${id}/active`, { is_active }),
   resetPassword: (id, new_password) => api.patch(`/users/${id}/password`, { new_password }), // #37

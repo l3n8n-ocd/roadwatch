@@ -8,6 +8,8 @@ import {
   EmptyState,
   IconButton,
   Pagination,
+  PRIORITIES,
+  PriorityChip,
   RecordBadge,
   ReportCard,
   Select,
@@ -21,14 +23,16 @@ import { admin, lookups } from '../../api/endpoints';
 import useServerError from '../../lib/useServerError';
 import { RECORD_TYPES, STATUSES } from '../../lib/constants';
 import { formatDate, formatDateTime, reportCode } from '../../lib/format';
+import { dispatchTag } from '../../lib/dispatch';
 
 // W3 Report management (Figma: Default 124:492, No results 124:1091, Loading 124:1321,
-// Responsive 390 131:3837). GET /admin/reports with search and filters (FR-11).
+// Responsive 390 131:3837; Priority column 531:23851, #54). GET /admin/reports with search and filters (FR-11),
+// sorted by priority (Urgent first), then newest.
 // The filters live in the URL query string (?q=…&status=…&page=2), so a filtered list can be
 // bookmarked, shared and restored with the browser Back button.
 
 const PAGE_SIZE = 10;
-const FILTER_KEYS = ['q', 'status', 'accident_type_id', 'record_type', 'location', 'date_from', 'date_to'];
+const FILTER_KEYS = ['q', 'status', 'priority', 'accident_type_id', 'record_type', 'location', 'date_from', 'date_to'];
 
 const card = 'rounded-rw-md border border-border-subtle bg-surface-white';
 const linkButton =
@@ -54,6 +58,7 @@ function describeFilters(filters, typeName) {
   const parts = [];
   if (filters.q) parts.push(`“${filters.q}”`);
   if (filters.status) parts.push(filters.status);
+  if (filters.priority) parts.push(`${filters.priority} priority`);
   if (filters.accident_type_id) parts.push(typeName || 'One accident type');
   if (filters.record_type) parts.push(RECORD_TYPES[filters.record_type]);
   if (filters.location) parts.push(`near “${filters.location}”`);
@@ -73,6 +78,7 @@ function noResultsText(filters) {
 }
 
 const STATUS_OPTIONS = [{ value: '', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))];
+const PRIORITY_OPTIONS = [{ value: '', label: 'All priorities' }, ...PRIORITIES.slice().reverse().map((p) => ({ value: p, label: p }))];
 const RECORD_OPTIONS = [
   { value: '', label: 'All records' },
   ...Object.entries(RECORD_TYPES).map(([value, label]) => ({ value, label })),
@@ -84,7 +90,7 @@ function FilterFields({ filters, setFilter, locationDraft, setLocationDraft, typ
   return (
     <div
       className={
-        layout === 'row' ? 'grid grid-cols-3 gap-4 xl:grid-cols-6' : 'flex flex-col gap-4'
+        layout === 'row' ? 'grid grid-cols-4 gap-4 xl:grid-cols-7' : 'flex flex-col gap-4'
       }
     >
       <Select
@@ -92,6 +98,12 @@ function FilterFields({ filters, setFilter, locationDraft, setLocationDraft, typ
         options={STATUS_OPTIONS}
         value={filters.status}
         onChange={(e) => setFilter('status', e.target.value)}
+      />
+      <Select
+        label="Priority"
+        options={PRIORITY_OPTIONS}
+        value={filters.priority}
+        onChange={(e) => setFilter('priority', e.target.value)}
       />
       <Select
         label="Accident type"
@@ -226,7 +238,7 @@ export default function ReportManagement() {
     let cancelled = false;
     setLoading(true);
     setError('');
-    const params = { limit: PAGE_SIZE, page };
+    const params = { limit: PAGE_SIZE, page, sort: 'priority' };
     FILTER_KEYS.forEach((key) => {
       if (filters[key]) params[key] = filters[key];
     });
@@ -277,7 +289,7 @@ export default function ReportManagement() {
     ? 'Loading reports…'
     : error
       ? 'Reports could not be loaded'
-      : `${total.toLocaleString('en-US')} ${total === 1 ? 'report' : 'reports'} ${activeCount ? (total === 1 ? 'matches' : 'match') + ' these filters' : 'in total'}`;
+      : `${total.toLocaleString('en-US')} ${total === 1 ? 'report' : 'reports'} ${activeCount ? (total === 1 ? 'matches' : 'match') + ' these filters' : 'in total'} · sorted by priority, then newest`;
 
   const columns = [
     {
@@ -290,9 +302,22 @@ export default function ReportManagement() {
         </span>
       ),
     },
+    { key: 'priority', header: 'Priority', render: (r) => <PriorityChip priority={r.priority} /> },
     { key: 'type', header: 'Accident type', render: (r) => r.accidentType?.type_name },
     { key: 'location', header: 'Location', className: 'min-w-40', render: (r) => r.accident_location },
-    { key: 'status', header: 'Status', render: (r) => <StatusChip status={r.report_status} /> },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (r) => {
+        const tag = dispatchTag(r);
+        return (
+          <span className="flex flex-col items-start gap-1">
+            <StatusChip status={r.report_status} />
+            {tag && <span className={`type-body-sm ${tag.tone}`}>{tag.text}</span>}
+          </span>
+        );
+      },
+    },
     { key: 'record', header: 'Record', render: (r) => <RecordBadge type={r.record_type} /> },
   ];
 
@@ -336,7 +361,7 @@ export default function ReportManagement() {
             {countText}
           </p>
         </div>
-        <div className="hidden gap-3 md:flex">
+        <div data-guide="export" className="hidden gap-3 md:flex">
           <Button variant="secondary" icon="download" className="w-46" disabled={Boolean(exporting)} onClick={() => exportFile('csv')}>
             {exporting === 'csv' ? 'Exporting…' : 'Export CSV'}
           </Button>
@@ -354,6 +379,7 @@ export default function ReportManagement() {
       <form
         role="search"
         aria-label="Search and filter reports"
+        data-guide="filters"
         onSubmit={(e) => {
           e.preventDefault();
           updateParams({ q: qDraft.trim(), location: locationDraft.trim() });
@@ -417,7 +443,7 @@ export default function ReportManagement() {
       </form>
 
       {/* Results */}
-      <section aria-label="Results" aria-busy={loading} className="flex flex-col gap-4">
+      <section data-guide="results" aria-label="Results" aria-busy={loading} className="flex flex-col gap-4">
         {loading && <p className="sr-only">Loading reports…</p>}
 
         {/* Desktop and tablet table */}
@@ -472,6 +498,8 @@ export default function ReportManagement() {
                       location={r.accident_location}
                       dateTime={formatDateTime(r.date_submitted)}
                       status={r.report_status}
+                      priority={r.priority}
+                      note={dispatchTag(r)}
                     />
                   </li>
                 ))}
